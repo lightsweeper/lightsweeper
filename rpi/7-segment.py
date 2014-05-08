@@ -14,8 +14,8 @@ segments = [('A', 'B', 'C','D','E','F' ),
             ('A','C', 'D','E','F','G'), #6
             ('A','B','C'), #7
             ('A','B','C', 'D','E','F','G'), #8
-            ('A','B','C', 'D','F','G')] #9
-
+            ('A','B','C', 'D','F','G'), #9
+	    ('A','E','F','G')]
 pins = {'A': 17, 'B':27, 'C':22, 'D':25, 'E':24, 'F':18, 'G':23}
 
 #GPIO functions
@@ -31,11 +31,13 @@ def display_number(num):
     print pins[pin]
     GPIO.setup(pins[pin], GPIO.OUT)
     GPIO.output(pins[pin], GPIO.HIGH)
-  sleep(10)
+  time.sleep(1)
   print "reset"
   display_nothing()
 
-for i in range (9):
+init_gpio()
+display_nothing()
+for i in range (11):
   display_number(i)
 
 
