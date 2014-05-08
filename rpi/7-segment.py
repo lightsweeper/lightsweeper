@@ -20,10 +20,10 @@ pins = {'A': 17, 'B':27, 'C':22, 'D':25, 'E':24, 'F':18, 'G':23}
 
 #GPIO functions
 
-def init_gpio:
+def init_gpio():
   GPIO.setmode(GPIO.BCM)
 
-def display_nothing:
+def display_nothing():
   GPIO.cleanup()
 
 def display_number(num):
