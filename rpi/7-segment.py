@@ -28,9 +28,9 @@ def display_nothing():
 
 def display_number(num):
   for pin in segments[num]:
-    print pins[num]
-    GPIO.setup(pins[num], GPIO.OUT)
-    GPIO.output(pins[num], GPIO.HIGH)
+    print pins[pin]
+    GPIO.setup(pins[pin], GPIO.OUT)
+    GPIO.output(pins[pin], GPIO.HIGH)
   sleep(10)
   print "reset"
   display_nothing()
