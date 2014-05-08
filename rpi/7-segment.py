@@ -15,11 +15,12 @@ segments = [('A', 'B', 'C','D','E','F' ),
             ('A','B','C'), #7
             ('A','B','C', 'D','E','F','G'), #8
             ('A','B','C', 'D','F','G'), #9
-	    ('A','E','F','G')]
+	          ('A','E','F','G')] #F
+
+# this is totally arbitrary and just based on my wiring 
 pins = {'A': 17, 'B':27, 'C':22, 'D':25, 'E':24, 'F':18, 'G':23}
 
 #GPIO functions
-
 def init_gpio():
   GPIO.setmode(GPIO.BCM)
 
@@ -37,6 +38,7 @@ def display_number(num):
 
 init_gpio()
 display_nothing()
+
 for i in range (11):
   display_number(i)
 
