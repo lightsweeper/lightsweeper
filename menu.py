@@ -103,6 +103,7 @@ def processmenu(menu, parent=None):
     if getin == optioncount:
         exitmenu = True
     elif menu['options'][getin]['type'] == COMMAND:
+      curses.endwin()
       os.system(menu['options'][getin]['command']) # run the command
     elif menu['options'][getin]['type'] == MENU:
       processmenu(menu['options'][getin], menu) # display the submenu
