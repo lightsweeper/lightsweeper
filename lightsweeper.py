@@ -5,6 +5,7 @@ import pygame
 
 from board import Board, Cell
 from inputs import ConsoleInput  
+from outputs import ConsoleOutput
 
 def create_board(width, height, mines):
     board = Board(tuple([tuple([Cell(False) for i in range(width)])
@@ -27,6 +28,7 @@ def main():
     # Initialize board
     board = create_board(SIZE_W, SIZE_H, MINES)
     console = ConsoleInput(board)
+    output = ConsoleOutput(board)
 
     # Initialize audio channel - using only a single channel for now
     pygame.mixer.init(48000, -16, 1, 1024)
@@ -44,7 +46,7 @@ def main():
     #hacky clear screen 
     print(chr(27) + "[2J") 
 
-    print(board)
+    output.printboard()
     while board.is_playing and not board.is_solved:
         (row_id, col_id, is_flag) = console.get_move()
         if not is_flag:
@@ -54,7 +56,7 @@ def main():
             board.flag(row_id, col_id)        
         #hacky clear screen 
         print(chr(27) + "[2J") 
-        print(board)
+        output.printboard()
 
     if board.is_solved:
         channelA.play(success_sound)
@@ -67,6 +69,7 @@ def main():
         print(chr(27) + "[2J") 
         print("Uh oh! You blew up!")
         board.showall()
+        output.printboard()
     wait = input("\n\nPress any key to return")
     
 if __name__ == "__main__":

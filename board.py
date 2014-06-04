@@ -35,15 +35,6 @@ class Board(tuple):
         else:
             return "."  #u"\uff18"
 
-    def __str__(self):
-        board_string = ("Mines: " + str(self.remaining_mines) + "\n  " +
-                        "".join([str(i) for i in range(len(self[0]))]))
-        for (row_id, row) in enumerate(self):
-            board_string += ("\n" + str(row_id) + " " + 
-                             "".join(self.mine_repr(row_id, col_id) for (col_id, _) in enumerate(row)) +
-                             " " + str(row_id))
-        board_string += "\n  " + "".join([str(i) for i in range(len(self[0]))])
-        return board_string
 
     def show(self, row_id, col_id):
         cell = self[row_id][col_id]
@@ -61,8 +52,7 @@ class Board(tuple):
     def showall(self):
         for row in self:
             for cell in row:
-                cell.show()
-        print(self)               
+                cell.show()               
         
     def flag(self, row_id, col_id):
         cell = self[row_id][col_id]
