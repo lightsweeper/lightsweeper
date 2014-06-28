@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 #############################################################################
 ##
 ## Copyright (C) 2013 Riverbank Computing Limited.
@@ -50,6 +49,9 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog,
 # Lightsweeper additions
 from PyQt5.QtWidgets import (QLCDNumber, QWidget, QFrame, QSpinBox, QStyle, QStyleOption, QToolButton)
 from PyQt5.QtGui import (QPainter)
+
+from LSEmulateTile import LSEmulateTile
+from LSEmulateFloor import LSEmulateFloor
 
 class Dialog(QDialog):
     NumRows = 8
@@ -217,151 +219,8 @@ class Dialog(QDialog):
         layout.addRow(QLabel("Line 3:"), QSpinBox())
         self.formGroupBox.setLayout(layout)
 
-# Lightsweeper classes
-
-class LSEmulateFloor(QGroupBox):
-
-    def __init__(self, rows=6, cols=8):
-        super(QGroupBox, self).__init__("Lightsweeper Floor Emulator")
-        self.rows = rows
-        self.cols = cols
-        floorLayout = QVBoxLayout()
-        self.setContentsMargins(0,0,0,0)
-
-        # make all the rows
-        self.tileRows = []
-        for row in range(rows):
-            thisRow = QFrame()
-            thisRow.setContentsMargins(0,0,0,0)
-            layout = QHBoxLayout()
-            tiles = []
-            # make the LSEmulateTile in each row
-            for col in range(cols):
-                tile = LSEmulateTile(row, col)
-                tile.setContentsMargins(0,0,0,0)
-                #tile.setMinimumSize(60, 80)
-                tile.display(col+1)
-                tile.show()
-                tiles.append(tile)
-                count = len(tiles)
-                layout.addWidget(tile)
-                if col == 0:
-                    tile.setColor("red")
-                elif col == 1:
-                    tile.setColor("green")
-                elif col == 2:
-                    tile.setColor("blue")
-                else:
-                    tile.setColor("white")
-                thisRow.setLayout(layout)
-
-            self.tileRows.append(tiles)
-            floorLayout.addWidget(thisRow)
-
-        self.setLayout(floorLayout)
-        # is that all ?
-
-    def flushQueue(self):
-        for row in self.tileRows:
-            for tile in row:
-                tile.flushQueue()
-
-    def getTileList (self, row, column):
-        tileList = []
-        # whole floor
-        if row < 1 and column < 1:
-            for tileRow in self.tileRows:
-                for tile in tileRow:
-                    tileList.append(tile)
-                    count = len(tileList)
-        # whole row
-        elif column < 1:
-            tileRow = self.tileRows[row-1]
-            for tile in tileRow:
-                tileList.append(tile)
-                count = len(tileList)
-        # whole column
-        elif row < 1:
-            for tileRow in self.tileRows:
-                tile = tileRow[column-1]
-                tileList.append(tile)
-                count = len(tileList)
-        # single tile
-        else:
-            tileRow = self.tileRows[row-1]
-            tileList = [tileRow[column-1]]
-        return tileList
-    
-    def getCols (self):
-        return self.cols
-
-    def getRows (self):
-        return self.rows
-
-    def setColor(self, row, column, color, setItNow = True):
-        tileList = self.getTileList(row, column)
-        for tile in tileList:
-            tile.setColor(color, setItNow)
-
-    def setDigit(self, row, column, digit, setItNow = True):
-        tileList = self.getTileList(row, column)
-        for tile in tileList:
-            tile.setDigit(digit, setItNow)
-
-class LSEmulateTile(QFrame):
-
-    def __init__(self, row=0, col=0):
-        super(QFrame, self).__init__()
-        self.row = row
-        self.col = col
-        self.segments = QLCDNumber(1) # 1 digit
-        self.segments.setMinimumSize(30, 40)
-        self.queueColor = "QLCDNumber {color: white }";
-        self.queueDigit = 8;
-        self.setContentsMargins(0,0,0,0)
-        self.button = QPushButton("%d %d" % (row+1, col+1))
-        #self.button = QToolButton()  # little button with no text
-        self.button.setCheckable(True)
-        layout = QVBoxLayout()
-        layout.addWidget(self.segments)
-        layout.addWidget(self.button)
-        self.setLayout(layout)
 
 
-    # attempt to get rid of
-    # QWindowsWindow::setGeometry: Unable to set geometry 97x91+192+60
-    #
-    #def paintEvent(QPaintEvent pe)
-    def paintEvent(self, pe):
-        o = QStyleOption()
-        o.initFrom(self)
-        p = QPainter(self)
-        self.style().drawPrimitive(QStyle.PE_Widget, o, p, self)
-
-    def flushQueue(self):
-            self.segments.setStyleSheet(self.queueColor)
-            self.segments.display(self.queueDigit)
-    
-    def setColor (self, newColor, setItNow = True):
-        str = "QLCDNumber {{color: {0} }}".format(newColor)
-        self.queueColor = str;
-        if setItNow:
-            self.segments.setStyleSheet(str)
-        pass
-    
-    def setDigit (self, newDigit, setItNow = True):
-        self.queueDigit = newDigit;
-        if setItNow:
-            self.segments.display(newDigit)
-    
-    def getCol (self):
-        return self.col
-
-    def getRow (self):
-        return self.row
-
-    def display (self, val):
-        self.segments.display(val)
 
 if __name__ == '__main__':
 
