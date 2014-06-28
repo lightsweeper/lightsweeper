@@ -32,7 +32,7 @@ class LSEmulateFloor(QGroupBox):
                 tile = LSEmulateTile(row, col)
                 tile.setContentsMargins(0,0,0,0)
                 #tile.setMinimumSize(60, 80)
-                tile.display(col+1)
+                #tile.display(col+1)
                 tile.show()
                 tiles.append(tile)
                 count = len(tiles)
@@ -53,12 +53,12 @@ class LSEmulateFloor(QGroupBox):
         self.setLayout(floorLayout)
         # is that all ?
 
-    def flushQueue(self):
+    def _flushQueue(self):
         for row in self.tileRows:
             for tile in row:
                 tile.flushQueue()
 
-    def getTileList (self, row, column):
+    def _getTileList (self, row, column):
         tileList = []
         # whole floor
         if row < 1 and column < 1:
@@ -84,18 +84,43 @@ class LSEmulateFloor(QGroupBox):
             tileList = [tileRow[column-1]]
         return tileList
     
-    def getCols (self):
+    def _getCols (self):
         return self.cols
 
-    def getRows (self):
+    def _getRows (self):
         return self.rows
 
     def setColor(self, row, column, color, setItNow = True):
-        tileList = self.getTileList(row, column)
+        tileList = self._getTileList(row, column)
         for tile in tileList:
-            tile.setColor(color, setItNow)
+            tile.setColor(color)
 
-    def setDigit(self, row, column, digit, setItNow = True):
-        tileList = self.getTileList(row, column)
+    def _setDigit(self, row, column, digit, setItNow = True):
+        tileList = self._getTileList(row, column)
         for tile in tileList:
-            tile.setDigit(digit, setItNow)
+            tile.setShape(digit)
+
+    #Implementation of the Lightsweeper API:
+
+    def printboard(self):
+        return
+
+    def clearboard(self):
+        return
+
+    def showboard(self):
+        return
+
+    def refreshboard(self):
+        return
+
+    def resetboard(self):
+        return
+
+    def purgetile(self,tile):
+        return FALSE 
+
+    def clock(self):
+        return
+
+

@@ -20,6 +20,7 @@ class LSEmulateTile(QFrame):
         self.setContentsMargins(0,0,0,0)
         self.button = QPushButton("%d %d" % (row+1, col+1))
         #self.button = QToolButton()  # little button with no text
+        self._display(col+1)
         self.button.setCheckable(True)
         layout = QVBoxLayout()
         layout.addWidget(self.segments)
@@ -37,29 +38,29 @@ class LSEmulateTile(QFrame):
         p = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, o, p, self)
 
-    def flushQueue(self):
+    def _flushQueue(self):
             self.segments.setStyleSheet(self.queueColor)
             self.segments.display(self.queueDigit)
     
-    def setColor (self, newColor, setItNow = True):
+    def _setColor (self, newColor, setItNow = True):
         str = "QLCDNumber {{color: {0} }}".format(newColor)
         self.queueColor = str;
         if setItNow:
             self.segments.setStyleSheet(str)
         pass
     
-    def setDigit (self, newDigit, setItNow = True):
+    def _setDigit (self, newDigit, setItNow = True):
         self.queueDigit = newDigit;
         if setItNow:
             self.segments.display(newDigit)
     
-    def getCol (self):
+    def _getCol (self):
         return self.col
 
-    def getRow (self):
+    def _getRow (self):
         return self.row
 
-    def display (self, val):
+    def _display (self, val):
         self.segments.display(val)
 
     ### Implementation of the Lightsweeper API
@@ -67,10 +68,11 @@ class LSEmulateTile(QFrame):
         return
 
     def setColor(self, color):
+        self._setColor(color)
         return
 
     def setShape(self, shape):
-        return
+        self._setDigit(shape)
 
     def setTransition(self, transition):
         return
