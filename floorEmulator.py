@@ -52,8 +52,8 @@ from PyQt5.QtWidgets import (QLCDNumber, QWidget, QFrame, QSpinBox, QStyle, QSty
 from PyQt5.QtGui import (QPainter)
 
 class Dialog(QDialog):
-    NumRows = 3
-    NumCols = 5
+    NumRows = 8
+    NumCols = 6
 
     def __init__(self):
         super(Dialog, self).__init__()
@@ -221,7 +221,7 @@ class Dialog(QDialog):
 
 class LSEmulateFloor(QGroupBox):
 
-    def __init__(self, rows=3, cols=5):
+    def __init__(self, rows=6, cols=8):
         super(QGroupBox, self).__init__("Lightsweeper Floor Emulator")
         self.rows = rows
         self.cols = cols
