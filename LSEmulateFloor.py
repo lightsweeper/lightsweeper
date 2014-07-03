@@ -38,7 +38,8 @@ class LSEmulateFloor(QGroupBox):
                 tile = LSEmulateTile(self, row, col)
                 tile.setContentsMargins(0,0,0,0)
                 tile.assignAddress(row*cols+col)
-                
+                tile.blank()
+        
                 # Debug: 
                 print(tile.getAddress())
                 
