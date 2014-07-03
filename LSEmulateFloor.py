@@ -11,12 +11,16 @@ from PyQt5.QtGui import (QPainter)
 
 from LSEmulateTile import LSEmulateTile
 
+#Basic Minesweeper classes
+from board import Board, Cell
+
 class LSEmulateFloor(QGroupBox):
 
-    def __init__(self, rows=6, cols=8):
+    def __init__(self, board, rows=6, cols=8):
         super(QGroupBox, self).__init__("Lightsweeper Floor Emulator")
         self.rows = rows
         self.cols = cols
+        self.board = board 
         floorLayout = QVBoxLayout()
         self.setContentsMargins(0,0,0,0)
 
@@ -27,24 +31,23 @@ class LSEmulateFloor(QGroupBox):
             thisRow.setContentsMargins(0,0,0,0)
             layout = QHBoxLayout()
             tiles = []
+            tileAddresses = []
             # make the LSEmulateTile in each row
             for col in range(cols):
-                tile = LSEmulateTile(row, col)
+                tile = LSEmulateTile(self.get_move, row, col)
                 tile.setContentsMargins(0,0,0,0)
+                tile.assignAddress(row*cols+col)
+                
+                # Debug: 
+                print(tile.getAddress())
+                
+                tileAddresses.append((row, col))
                 #tile.setMinimumSize(60, 80)
                 #tile.display(col+1)
                 tile.show()
                 tiles.append(tile)
                 count = len(tiles)
                 layout.addWidget(tile)
-                if col == 0:
-                    tile.setColor("red")
-                elif col == 1:
-                    tile.setColor("green")
-                elif col == 2:
-                    tile.setColor("blue")
-                else:
-                    tile.setColor("white")
                 thisRow.setLayout(layout)
 
             self.tileRows.append(tiles)
@@ -102,25 +105,101 @@ class LSEmulateFloor(QGroupBox):
 
     #Implementation of the Lightsweeper API:
 
-    def printboard(self):
+    def init(self, rows, cols):
+        __init__(self,rows, cols)
+        return
+
+    def printboard(self,board=None):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            if board != None:
+                (row, col) = (tile.getAddress() // self.rows, tile.getAddress() % self.rows)
+                cell = board.mine_repr(row,col)
+                if cell == '.':
+                    tile.blank()
+                elif cell == 'M':
+                    break
+                elif cell == 'F':
+                    break
+                else:
+                    tile.setShape(cell)
+            tile.update('NOW')
         return
 
     def clearboard(self):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            tile.blank()
         return
 
     def showboard(self):
         return
 
     def refreshboard(self):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            tile.update('CLOCK')
         return
 
     def resetboard(self):
+        for row in self.tileRows:
+            for tile in row:
+                tile.reset() 
         return
 
     def purgetile(self,tile):
         return FALSE 
 
     def clock(self):
-        return
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            try:
+                tile.read()
+            except:
+                print ("unexpected error on tile", tileAddresses[tile.getAddress()])
+        self.refreshboard()
+        return TRUE
 
+    # Minesweeper specific addition
+    def get_move(self):
+        tiles = self._getTileList(0,0)
+        row = -1 
+        col = -1
+        for tile in tiles:
+            status = tile.read()
+            if status == True:
+                (row, col) = (tile.getAddress() // self.rows, tile.getAddress() % self.rows)
+                break
+        print(row, col)
+        
+        row_id = row
+        col_id = col
+        is_flag = False
+
+        if self.board.is_playing and not self.board.is_solved:
+            if (row_id <0 or col_id < 0):
+                return
+            if not is_flag:
+    #            channelA.play(blop_sound)
+                self.board.show(row_id, col_id)
+            else:
+                self.board.flag(row_id, col_id)        
+            #hacky clear screen 
+            #print(chr(27) + "[2J") 
+            self.printboard(self.board)
+
+        if self.board.is_solved:
+    #        channelA.play(success_sound)
+            #hacky clear screen 
+            #print(chr(27) + "[2J") 
+            print("Well done! You solved the board!")
+        elif not self.board.is_playing:
+    #        channelA.play(explosion_sound)
+            #hacky clear screen 
+            #print(chr(27) + "[2J") 
+            print("Uh oh! You blew up!")
+            self.board.showall()
+            self.printboard(self.board)
+            #self.refreshboard()
+        return      
 

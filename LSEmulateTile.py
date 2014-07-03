@@ -9,7 +9,7 @@ from PyQt5.QtGui import (QPainter)
 
 
 class LSEmulateTile(QFrame):
-    def __init__(self, row=0, col=0):
+    def __init__(self, event, row=0, col=0):
         super(QFrame, self).__init__()
         self.row = row
         self.col = col
@@ -20,8 +20,9 @@ class LSEmulateTile(QFrame):
         self.setContentsMargins(0,0,0,0)
         self.button = QPushButton("%d %d" % (row+1, col+1))
         #self.button = QToolButton()  # little button with no text
-        self._display(col+1)
+        # self._display(col+1)
         self.button.setCheckable(True)
+        self.button.clicked.connect(event)
         layout = QVBoxLayout()
         layout.addWidget(self.segments)
         layout.addWidget(self.button)
@@ -53,6 +54,7 @@ class LSEmulateTile(QFrame):
         self.queueDigit = newDigit;
         if setItNow:
             self.segments.display(newDigit)
+        return
     
     def _getCol (self):
         return self.col
@@ -62,6 +64,15 @@ class LSEmulateTile(QFrame):
 
     def _display (self, val):
         self.segments.display(val)
+        return
+
+    def _getButtonState(self):
+        return self.button.isChecked()
+
+
+    def _buttonPressed(self):
+        print(self.button.isChecked())
+        return
 
     ### Implementation of the Lightsweeper API
     def destroy(self):
@@ -100,6 +111,7 @@ class LSEmulateTile(QFrame):
         return 1
 
     def blank(self):
+        self.setColor('white')
         return
 
     def locate(self):
@@ -126,11 +138,16 @@ class LSEmulateTile(QFrame):
     def unregister(self):
         return
 
-    def assignAddress(self):
+    def assignAddress(self, address):
+        self.address = address
         return
+
+    def getAddress(self):
+        return self.address
 
     def calibrate(self):
         return
 
     def read(self):
-        return
+        return self._getButtonState()
+        
