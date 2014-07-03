@@ -35,8 +35,8 @@ def create_board(width, height, mines):
 
 
 def main():
-    SIZE_W = 6
-    SIZE_H = 8
+    SIZE_W = 8
+    SIZE_H = 6
     MINES = 9
 
     # Initialize board
@@ -77,7 +77,6 @@ def main():
 
     output.printboard()
 
-    wait = input("\n\nPress any key to return")
     sys.exit()
 
     

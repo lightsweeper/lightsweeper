@@ -9,7 +9,7 @@ from PyQt5.QtGui import (QPainter)
 
 
 class LSEmulateTile(QFrame):
-    def __init__(self, event, row=0, col=0):
+    def __init__(self, floor, row=0, col=0):
         super(QFrame, self).__init__()
         self.row = row
         self.col = col
@@ -18,11 +18,13 @@ class LSEmulateTile(QFrame):
         self.queueColor = "QLCDNumber {color: white }";
         self.queueDigit = 8;
         self.setContentsMargins(0,0,0,0)
-        self.button = QPushButton("%d %d" % (row+1, col+1))
+        self.button = QPushButton("%d %d" % (row, col))
+        self.blank()
         #self.button = QToolButton()  # little button with no text
         # self._display(col+1)
         self.button.setCheckable(True)
-        self.button.clicked.connect(event)
+        self.floor = floor
+        self.button.clicked.connect(self._buttonPressed)
         layout = QVBoxLayout()
         layout.addWidget(self.segments)
         layout.addWidget(self.button)
@@ -71,7 +73,8 @@ class LSEmulateTile(QFrame):
 
 
     def _buttonPressed(self):
-        print(self.button.isChecked())
+        print("Button state is", self.button.isChecked(), self.row, self.col)
+        self.floor.get_move(self.row, self.col)
         return
 
     ### Implementation of the Lightsweeper API

@@ -27,6 +27,7 @@ class LSEmulateFloor(QGroupBox):
         # make all the rows
         self.tileRows = []
         for row in range(rows):
+            #print("creating row:", row) 
             thisRow = QFrame()
             thisRow.setContentsMargins(0,0,0,0)
             layout = QHBoxLayout()
@@ -34,7 +35,7 @@ class LSEmulateFloor(QGroupBox):
             tileAddresses = []
             # make the LSEmulateTile in each row
             for col in range(cols):
-                tile = LSEmulateTile(self.get_move, row, col)
+                tile = LSEmulateTile(self, row, col)
                 tile.setContentsMargins(0,0,0,0)
                 tile.assignAddress(row*cols+col)
                 
@@ -113,16 +114,22 @@ class LSEmulateFloor(QGroupBox):
         tiles = self._getTileList(0,0)
         for tile in tiles:
             if board != None:
-                (row, col) = (tile.getAddress() // self.rows, tile.getAddress() % self.rows)
+                (row, col) = (tile.getAddress() // self.cols, tile.getAddress() % self.cols)
+                print( "Printing:", row, col)
                 cell = board.mine_repr(row,col)
                 if cell == '.':
                     tile.blank()
                 elif cell == 'M':
-                    break
+                    tile.setColor("red")
+                    tile.setShape("8")
+                    tile.update('NOW')
                 elif cell == 'F':
                     break
                 else:
+                    print("Setting shape to:", cell) 
+                    tile.setColor("black")
                     tile.setShape(cell)
+                    tile.update('NOW')
             tile.update('NOW')
         return
 
@@ -161,16 +168,10 @@ class LSEmulateFloor(QGroupBox):
         return TRUE
 
     # Minesweeper specific addition
-    def get_move(self):
+    def get_move(self, row, col):
         tiles = self._getTileList(0,0)
-        row = -1 
-        col = -1
-        for tile in tiles:
-            status = tile.read()
-            if status == True:
-                (row, col) = (tile.getAddress() // self.rows, tile.getAddress() % self.rows)
-                break
-        print(row, col)
+
+        print("Got move for", row, col)
         
         row_id = row
         col_id = col
@@ -178,15 +179,16 @@ class LSEmulateFloor(QGroupBox):
 
         if self.board.is_playing and not self.board.is_solved:
             if (row_id <0 or col_id < 0):
+                print ("invalid row or col")
                 return
             if not is_flag:
+                print( "Showing:", row_id, col_id)
     #            channelA.play(blop_sound)
                 self.board.show(row_id, col_id)
             else:
                 self.board.flag(row_id, col_id)        
-            #hacky clear screen 
-            #print(chr(27) + "[2J") 
             self.printboard(self.board)
+
 
         if self.board.is_solved:
     #        channelA.play(success_sound)
