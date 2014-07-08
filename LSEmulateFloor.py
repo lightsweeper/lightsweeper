@@ -193,13 +193,9 @@ class LSEmulateFloor(QGroupBox):
 
         if self.board.is_solved:
     #        channelA.play(success_sound)
-            #hacky clear screen 
-            #print(chr(27) + "[2J") 
             print("Well done! You solved the board!")
         elif not self.board.is_playing:
     #        channelA.play(explosion_sound)
-            #hacky clear screen 
-            #print(chr(27) + "[2J") 
             print("Uh oh! You blew up!")
             self.board.showall()
             self.printboard(self.board)

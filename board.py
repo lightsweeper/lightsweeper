@@ -23,7 +23,8 @@ class Board(tuple):
         self.is_playing = True
 
     def mine_repr(self,row_id, col_id):
-        print ("min_repr for: ",row_id,col_id)
+        # Debug only 
+        # print ("min_repr for: ",row_id,col_id)
         cell = self[row_id][col_id]
         if cell.is_visible:
             if cell.is_mine:

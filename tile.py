@@ -4,6 +4,7 @@ class Tile:
 	def __init__(self, row=0, col=0):
 		self.x = col
 		self.y = row
+		self.address = -1
 		return
 
 	def destroy(self):
@@ -62,3 +63,17 @@ class Tile:
 		return
 
 	def latch(self):
+		return
+
+	def unregister(self):
+		return
+
+	def assignAddress(self, address):
+		self.address = address
+		return
+
+	def calibrate(self):
+		return
+
+	def read(self):
+		return

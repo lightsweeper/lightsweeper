@@ -19,7 +19,6 @@ class LSEmulateTile(QFrame):
         self.queueDigit = 8;
         self.setContentsMargins(0,0,0,0)
         self.button = QPushButton("%d %d" % (row, col))
-        self.blank()
         #self.button = QToolButton()  # little button with no text
         # self._display(col+1)
         self.button.setCheckable(True)
