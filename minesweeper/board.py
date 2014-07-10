@@ -70,7 +70,7 @@ class Board():
                 for (surr_row, surr_col) in self.get_neighbours(row_id, col_id):
                     if self.is_in_range(surr_row, surr_col):
                         self.show(surr_row, surr_col) 
-	
+
     def showall(self):
         for row in self.board:
             for cell in row:

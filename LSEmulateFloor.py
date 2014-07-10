@@ -136,24 +136,26 @@ class LSEmulateFloor(QGroupBox, LSApi):
                 (row, col) = (tile.getAddress() // self.cols, tile.getAddress() % self.cols)
                 # print( "Printing:", row, col, tile.getAddress(), self.cols)
                 cell = board.mine_repr(row,col)
-                if cell == '.' or cell == ' ' or cell == '':
+                if cell == '.':
+                    # tile.blank()
+                    # tile.update('NOW')
+                    tile.setColor("green")
+                    tile.setShape("0")
+                elif cell == ' ' or cell == '':
                     # tile.blank()
                     # tile.update('NOW')
                     tile.setColor("black")
                     tile.setShape("8")
-                    tile.update('NOW')
                 elif cell == 'M':
                     tile.setColor("red")
                     tile.setShape("8")
-                    tile.update('NOW')
                 elif cell == 'F':
                     break
                 else:
                     print("Setting shape to:", cell)
-                    tile.setColor("blue")
+                    tile.setColor("yellow")
                     tile.setShape(cell)
-                    tile.update('NOW')
-            tile.update('NOW')
+            # tile.update('NOW')
         return
 
     def clearboard(self):
@@ -192,6 +194,7 @@ class LSEmulateFloor(QGroupBox, LSApi):
 
     # Minesweeper specific addition
     def get_move(self, row, col):
+        # This is called anytime a tile is pressed
         tiles = self._getTileList(0,0)
 
         print("Got move for", row, col)
@@ -204,6 +207,7 @@ class LSEmulateFloor(QGroupBox, LSApi):
             return
 
         if (not self.board.is_playing):
+            # Currently create_board will always set board.is_playing back to True
             self.board.create_board(self.rows, self.cols, self.mines)
 
         if self.board.is_playing and not self.board.is_solved:
@@ -216,12 +220,15 @@ class LSEmulateFloor(QGroupBox, LSApi):
                 self.board.show(row_id, col_id)
             else:
                 self.board.flag(row_id, col_id)
+            # The main display call for the game - fires off whenever a tile is pressed
             self.printboard(self.board)
 
 
         if self.board.is_solved:
     #        channelA.play(success_sound)
             print("Well done! You solved the board!")
+            #self.board.showall()
+            self.printboard(self.board)
         elif not self.board.is_playing:
     #        channelA.play(explosion_sound)
             print("Uh oh! You blew up!")
