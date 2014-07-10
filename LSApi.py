@@ -20,13 +20,18 @@ class LSApi():
     segs7 = (1, 1, 1, 0, 0, 0, 0)
     segs8 = (0, 1, 1, 0, 1, 1, 1) #x instead of 8
     segs9 = (1, 1, 1, 1, 0, 1, 1)
-    segMasks = [segs0,segs1,segs2,segs3,segs4,segs5,segs6,segs7,segs8,segs9]
+    dash = (0, 0, 0, 0, 0, 0, 1)
+    segMasks = [segs0,segs1,segs2,segs3,segs4,segs5,segs6,segs7,segs8,segs9,dash]
 
     # TODO - there are no variable members in this API yet
     # perhaps no need to call constructor - super().__init__()
 
     # TODO - could throw exceptions here make sure derived classes implement them
     # but not worth the bother
+
+    @staticmethod
+    def getDash():
+        return LSApi.segMasks[10]
 
     # write any queued colors or segments to the display
     def flushQueue(self):
@@ -53,7 +58,7 @@ class LSApi():
         pass
 
     # return a list of active pressure sensors
-    def getSensors (self):
+    def getSensors(self):
         pass
 
     # TODO - not yet used perhaps useful if target slot can be passed in

@@ -136,7 +136,11 @@ class LSEmulateFloor(QGroupBox, LSApi):
                 (row, col) = (tile.getAddress() // self.cols, tile.getAddress() % self.cols)
                 # print( "Printing:", row, col, tile.getAddress(), self.cols)
                 cell = board.mine_repr(row,col)
-                if cell == '.':
+                if cell == "D":
+                    # Defused
+                    tile.setColor("violet")
+                    tile.setShape("-")
+                elif cell == '.':
                     # tile.blank()
                     # tile.update('NOW')
                     tile.setColor("green")
@@ -210,13 +214,13 @@ class LSEmulateFloor(QGroupBox, LSApi):
             # Currently create_board will always set board.is_playing back to True
             self.board.create_board(self.rows, self.cols, self.mines)
 
-        if self.board.is_playing and not self.board.is_solved:
+        if self.board.is_playing and not self.board.is_solved():
             if (row_id <0 or col_id < 0):
                 print ("invalid row or col")
                 return
             if not is_flag:
                 # print( "Showing:", row_id, col_id, "on: ", self.board)
-    #            channelA.play(blop_sound)
+                # channelA.play(blop_sound)
                 self.board.show(row_id, col_id)
             else:
                 self.board.flag(row_id, col_id)
@@ -224,15 +228,17 @@ class LSEmulateFloor(QGroupBox, LSApi):
             self.printboard(self.board)
 
 
-        if self.board.is_solved:
-    #        channelA.play(success_sound)
+        if self.board.is_solved():
+            # channelA.play(success_sound)
+            self.board.set_all_defused()
             print("Well done! You solved the board!")
             #self.board.showall()
             self.printboard(self.board)
         elif not self.board.is_playing:
-    #        channelA.play(explosion_sound)
+            # channelA.play(explosion_sound)
             print("Uh oh! You blew up!")
-            self.board.showall()
+            self.board.show_all()
             self.printboard(self.board)
             #self.refreshboard()
         return
+

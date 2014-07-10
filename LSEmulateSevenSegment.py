@@ -31,7 +31,7 @@ class LSEmulateSevenSegment(QFrame):
         self.colorG = "white"
         self.segColors = [self.colorG, self.colorF, self.colorE, self.colorD, self.colorC, self.colorB, self.colorA]
         self.queueColor = "white"
-        self.queueDigit = 8;
+        self.queueDigit = 8
         self.setContentsMargins(0,0,0,0)
         layout = QGridLayout()
         layout.setContentsMargins(0,0,0,0)
@@ -98,19 +98,23 @@ class LSEmulateSevenSegment(QFrame):
         self.display()
 
     def setColor (self, newColor, setItNow = True):
-        self.queueColor = newColor;
+        self.queueColor = newColor
         if setItNow:
             self.display()
 
     # set immediately or queue these segments in addressed tiles
     # segments is a seven-tuple interpreted as True or False
-    def setSegments(self, row, column, segments, setItNow = True):
-        self.segments.setSegments(segments, setItNow)
+    #def setSegments(self, row, column, segments, setItNow = True):
+        #self.segments.setSegments(segments, setItNow)
+        #for i in len(self.segments):
+        #    self.segments[i] = segments[i]
+
+
 	# TODO - split out part of display() to here
 	# and make each segment color independent
 
     def setDigit (self, newDigit, setItNow = True):
-        self.queueDigit = newDigit;
+        self.queueDigit = newDigit
         if setItNow:
             self.display()
 
@@ -118,7 +122,12 @@ class LSEmulateSevenSegment(QFrame):
         if self.queueDigit == " " or self.queueDigit == ".":
             self.queueDigit=8
             self.queueColor="black"
-        segs = LSApi.segMasks[int(self.queueDigit)]  # map digit to segment mask
+
+        if self.queueDigit == "-":
+            # There is clearly a better way to do this
+            segs = LSApi.getDash()
+        else:
+            segs = LSApi.segMasks[int(self.queueDigit)]  # map digit to segment mask
         for idx in range(len(segs)):
             litSeg = segs[idx]
             if litSeg:

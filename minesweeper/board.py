@@ -6,6 +6,7 @@ class Cell(object):
         self.is_mine = is_mine
         self.is_visible = is_visible
         self.is_flagged = is_flagged
+        self.is_defused = False
 
     def show(self):
         self.is_visible = True
@@ -15,6 +16,10 @@ class Cell(object):
 
     def place_mine(self):
         self.is_mine = True
+
+    def set_defused(self):
+        if self.is_mine:
+            self.is_defused = True
 
 
 class Board():
@@ -41,7 +46,9 @@ class Board():
         # Debug only 
         # print ("min_repr for: ",row_id,col_id)
         cell = self.board[row_id][col_id]
-        if cell.is_visible:
+        if cell.is_defused:
+            return "D"
+        elif cell.is_visible:
             if cell.is_mine:
                 return "M"
             else:
@@ -71,7 +78,7 @@ class Board():
                     if self.is_in_range(surr_row, surr_col):
                         self.show(surr_row, surr_col) 
 
-    def showall(self):
+    def show_all(self):
         for row in self.board:
             for cell in row:
                 cell.show()               
@@ -100,7 +107,6 @@ class Board():
     def is_in_range(self, row_id, col_id):
         return 0 <= row_id < len(self.board) and 0 <= col_id < len(self.board[0])
 
-    @property
     def remaining_mines(self):
         remaining = 0
         for row in self.board:
@@ -111,34 +117,23 @@ class Board():
                     remaining -= 1
         return remaining
     
-    def get_move(self, row, col):
-        row_id = row
-        col_id = col
-        is_flag = False
-        print("board get_move", row, col)
-        if self.is_playing and not self.is_solved:
-            if (row_id <0 or col_id < 0):
-                print ("invalid row or col")
-                return
-            if not is_flag:
-    #            channelA.play(blop_sound)
-                self.show(row_id, col_id)
-            else:
-                print("Flagging:", row_id, col_id)
-                self.flag(row_id, col_id)
+    def remaining_hidden(self):
+        remaining = 0
+        for row in self.board:
+            for cell in row:
+                if not cell.is_visible:
+                    remaining += 1
+        return remaining
 
-        if self.is_solved:
-    #        channelA.play(success_sound)
-            print("Well done! You solved the board!")
-        elif not self.is_playing:
-    #        channelA.play(explosion_sound)
-            print("Uh oh! You blew up!")
-            self.showall()
-            #self.display.showboard()
-            #self.refreshboard()
-        return   
+    def set_all_defused(self):
+        for row in self.board:
+            for cell in row:
+                cell.set_defused()
 
-    @property
     def is_solved(self):
-        return all((cell.is_visible or cell.is_flagged) for row in self.board for cell in row)
-		
+        #return all((cell.is_visible or cell.is_flagged) for row in self.board for cell in row)
+        print("Remaining Mines: ", self.remaining_mines(), " Remaining Hidden: ", self.remaining_hidden())
+        return self.remaining_mines() == self.remaining_hidden()
+
+
+
