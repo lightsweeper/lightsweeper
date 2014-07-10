@@ -298,7 +298,7 @@ def main():
     print("Available serial ports:")
     print(list(serial_ports()))
         
-    comPort = "COM8"
+    comPort = "COM3"
     theSerial = None
     try:
         theSerial = serial.Serial(comPort, 19200, timeout=0.001)

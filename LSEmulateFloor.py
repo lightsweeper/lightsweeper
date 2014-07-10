@@ -41,7 +41,7 @@ class LSEmulateFloor(QGroupBox):
                 tile.blank()
         
                 # Debug: 
-                print(tile.getAddress())
+                #print(tile.getAddress())
                 
                 tileAddresses.append((row, col))
                 #tile.setMinimumSize(60, 80)
@@ -57,6 +57,7 @@ class LSEmulateFloor(QGroupBox):
 
         self.setLayout(floorLayout)
         # is that all ?
+
 
     def _flushQueue(self):
         for row in self.tileRows:
@@ -112,28 +113,33 @@ class LSEmulateFloor(QGroupBox):
         return
 
     def printboard(self,board=None):
+        print("printboard")
         tiles = self._getTileList(0,0)
         for tile in tiles:
             if board != None:
                 (row, col) = (tile.getAddress() // self.cols, tile.getAddress() % self.cols)
-                print( "Printing:", row, col)
+                #print( "Printing:", row, col)
                 cell = board.mine_repr(row,col)
                 if cell == '.':
                     tile.blank()
+                    #print(row, col, "blank")
                 elif cell == 'M':
                     tile.setColor("red")
                     tile.setShape("8")
                     tile.update('NOW')
+                    print("mine!")
                 elif cell == 'F':
+                    print(row, col, "Flagged")
                     break
                 else:
                     print("Setting shape to:", cell) 
                     tile.setColor("black")
                     tile.setShape(cell)
                     tile.update('NOW')
+                    print(row, col, "setting to", cell)
             tile.update('NOW')
         return
-
+        
     def clearboard(self):
         tiles = self._getTileList(0,0)
         for tile in tiles:
@@ -141,6 +147,10 @@ class LSEmulateFloor(QGroupBox):
         return
 
     def showboard(self):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            tile.show()
+        self.printboard(self.board)
         return
 
     def refreshboard(self):
@@ -156,8 +166,32 @@ class LSEmulateFloor(QGroupBox):
         return
 
     def purgetile(self,tile):
-        return FALSE 
+        return FALSE
 
+    def show(self,row,col):
+        tile = LSEmulateTile(self, row, col)
+        print("showing tile", row, col, tile)
+        cell = self.board.mine_repr(row,col)
+        if cell == '.':
+            blank()
+            #print(row, col, "blank")
+        elif cell == 'M':
+            tile.setColor("red")
+            tile.setShape("8")
+            tile.update('NOW')
+            print("mine!")
+        elif cell == 'F':
+            print(row, col, "Flagged")
+        else:
+            print("Setting shape to:", cell) 
+            tile.setColor("black")
+            tile.setShape(cell)
+            tile.update('NOW')
+            print(row, col, "setting to", cell)
+            tile.update('NOW')
+        tile.show()
+        #tile.update('NOW')
+		
     def clock(self):
         tiles = self._getTileList(0,0)
         for tile in tiles:
@@ -168,37 +202,6 @@ class LSEmulateFloor(QGroupBox):
         self.refreshboard()
         return TRUE
 
-    # Minesweeper specific addition
     def get_move(self, row, col):
-        tiles = self._getTileList(0,0)
-
-        print("Got move for", row, col)
-        
-        row_id = row
-        col_id = col
-        is_flag = False
-
-        if self.board.is_playing and not self.board.is_solved:
-            if (row_id <0 or col_id < 0):
-                print ("invalid row or col")
-                return
-            if not is_flag:
-                print( "Showing:", row_id, col_id)
-    #            channelA.play(blop_sound)
-                self.board.show(row_id, col_id)
-            else:
-                self.board.flag(row_id, col_id)        
-            self.printboard(self.board)
-
-
-        if self.board.is_solved:
-    #        channelA.play(success_sound)
-            print("Well done! You solved the board!")
-        elif not self.board.is_playing:
-    #        channelA.play(explosion_sound)
-            print("Uh oh! You blew up!")
-            self.board.showall()
-            self.printboard(self.board)
-            #self.refreshboard()
-        return      
+        self.board.get_move(row, col)
 

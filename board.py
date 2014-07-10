@@ -16,7 +16,6 @@ class Cell(object):
     def place_mine(self):
         self.is_mine = True
 
-
 class Board(tuple):
     def __init__(self, tup):
         super().__init__()
@@ -37,20 +36,25 @@ class Board(tuple):
         else:
             return "."  #u"\uff18"
 
-
+    def set_display(self, display):
+        print("setting display")
+        self.display = display
+    
     def show(self, row_id, col_id):
         cell = self[row_id][col_id]
         if not cell.is_visible:
+            print("board.show", row_id, col_id)
             cell.show()
-
+            self.display.show(row_id, col_id)
             if (cell.is_mine and not
                 cell.is_flagged):
                 self.is_playing = False
+                print("mine'd!")
             elif self.count_surrounding(row_id, col_id) == 0:
                 for (surr_row, surr_col) in self.get_neighbours(row_id, col_id):
                     if self.is_in_range(surr_row, surr_col):
                         self.show(surr_row, surr_col) 
-
+	
     def showall(self):
         for row in self:
             for cell in row:
@@ -90,7 +94,35 @@ class Board(tuple):
                 if cell.is_flagged:
                     remaining -= 1
         return remaining
+    
+    def get_move(self, row, col):
+        row_id = row
+        col_id = col
+        is_flag = False
+        print("board get_move", row, col)
+        if self.is_playing and not self.is_solved:
+            if (row_id <0 or col_id < 0):
+                print ("invalid row or col")
+                return
+            if not is_flag:
+    #            channelA.play(blop_sound)
+                self.show(row_id, col_id)
+            else:
+                print("Flagging:", row_id, col_id)
+                self.flag(row_id, col_id)
+
+        if self.is_solved:
+    #        channelA.play(success_sound)
+            print("Well done! You solved the board!")
+        elif not self.is_playing:
+    #        channelA.play(explosion_sound)
+            print("Uh oh! You blew up!")
+            self.showall()
+            self.display.showboard()
+            #self.refreshboard()
+        return   
 
     @property
     def is_solved(self):
         return all((cell.is_visible or cell.is_flagged) for row in self for cell in row)
+		
