@@ -51,3 +51,57 @@ class LSEmulateTile(QFrame, LSApi):
 
     def getRow (self):
         return self.row
+
+    def update(self,type):
+        if (type == 'NOW'):
+            return
+        elif (type == 'CLOCK'):
+            return
+        elif (type == 'TRIGGER'):
+            return
+        else:
+            return
+
+    def version(self):
+        return 1
+
+    def blank(self):
+        self.setColor('white')
+        return
+
+    def locate(self):
+        return
+
+    def demo (self, seconds):
+        return
+
+    def setAnimation(self):
+        return
+
+    def flip(self):
+        return
+
+    def status(self):
+        return
+
+    def reset(self):
+        return
+
+    def latch(self):
+        return
+
+    def unregister(self):
+        return
+
+    def assignAddress(self, address):
+        self.address = address
+        return
+
+    def getAddress(self):
+        return self.address
+
+    def calibrate(self):
+        return
+
+    def read(self):
+        return self._getButtonState()

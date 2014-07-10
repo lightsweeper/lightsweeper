@@ -23,10 +23,21 @@ class LSEmulateFloor(QGroupBox, LSApi):
             layout = QHBoxLayout()
             layout.setContentsMargins(0,0,0,0) # collapses space between rows
             tiles = []
+            tileAddresses = []
             # make the LSEmulateTile in each row
             for col in range(cols):
                 tile = LSEmulateTile(row, col)
                 #tile.setContentsMargins(0,0,0,0)
+                tile.assignAddress(row*cols+col)
+                #tile.blank()
+        
+                # Debug: 
+                # print(tile.getAddress())
+                
+                tileAddresses.append((row, col))
+                #tile.setMinimumSize(60, 80)
+                #tile.display(col+1)
+                #tile.show()
                 tiles.append(tile)
                 count = len(tiles)
                 layout.addWidget(tile)
@@ -39,12 +50,12 @@ class LSEmulateFloor(QGroupBox, LSApi):
         self.setLayout(floorLayout)
         # is that all ?
 
-    def flushQueue(self):
+    def _flushQueue(self):
         for row in self.tileRows:
             for tile in row:
                 tile.flushQueue()
 
-    def getTileList (self, row, column):
+    def _getTileList (self, row, column):
         tileList = []
         # whole floor
         if row < 1 and column < 1:
@@ -69,9 +80,15 @@ class LSEmulateFloor(QGroupBox, LSApi):
             tileRow = self.tileRows[row-1]
             tileList = [tileRow[column-1]]
         return tileList
+    
+    def _getCols (self):
+        return self.cols
+
+    def _getRows (self):
+        return self.rows
 
     def setColor(self, row, column, color, setItNow = True):
-        tileList = self.getTileList(row, column)
+        tileList = self._getTileList(row, column)
         for tile in tileList:
             tile.setColor(color, setItNow)
 
@@ -83,6 +100,111 @@ class LSEmulateFloor(QGroupBox, LSApi):
             tile.setSegments(segments, setItNow)
 
     def setDigit(self, row, column, digit, setItNow = True):
-        tileList = self.getTileList(row, column)
+        tileList = self._getTileList(row, column)
         for tile in tileList:
             tile.setDigit(digit, setItNow)
+
+    def getSensors(self):
+        activeSensors = []
+        for row in self.tileRows:
+            for tile in row:
+                sensorChecked = tile.getSensors()
+                if sensorChecked:
+                    activeSensors.append(sensorChecked)
+        return activeSensors
+
+    #Implementation of the Lightsweeper API:
+    def init(self, rows, cols):
+        __init__(self,rows, cols)
+        return
+
+    def printboard(self,board=None):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            if board != None:
+                (row, col) = (tile.getAddress() // self.cols, tile.getAddress() % self.cols)
+                print( "Printing:", row, col)
+                cell = board.mine_repr(row,col)
+                if cell == '.':
+                    tile.blank()
+                elif cell == 'M':
+                    tile.setColor("red")
+                    tile.setShape("8")
+                    tile.update('NOW')
+                elif cell == 'F':
+                    break
+                else:
+                    print("Setting shape to:", cell)
+                    tile.setColor("black")
+                    tile.setShape(cell)
+                    tile.update('NOW')
+            tile.update('NOW')
+        return
+
+    def clearboard(self):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            tile.blank()
+        return
+
+    def showboard(self):
+        return
+
+    def refreshboard(self):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            tile.update('CLOCK')
+        return
+
+    def resetboard(self):
+        for row in self.tileRows:
+            for tile in row:
+                tile.reset()
+        return
+
+    def purgetile(self,tile):
+        return False
+
+    def clock(self):
+        tiles = self._getTileList(0,0)
+        for tile in tiles:
+            try:
+                tile.read()
+            except:
+                print ("unexpected error on tile", tileAddresses[tile.getAddress()])
+        self.refreshboard()
+        return True
+
+    # Minesweeper specific addition
+    def get_move(self, row, col):
+        tiles = self._getTileList(0,0)
+
+        print("Got move for", row, col)
+        
+        row_id = row
+        col_id = col
+        is_flag = False
+
+        if self.board.is_playing and not self.board.is_solved:
+            if (row_id <0 or col_id < 0):
+                print ("invalid row or col")
+                return
+            if not is_flag:
+                print( "Showing:", row_id, col_id)
+    #            channelA.play(blop_sound)
+                self.board.show(row_id, col_id)
+            else:
+                self.board.flag(row_id, col_id)        
+            self.printboard(self.board)
+
+
+        if self.board.is_solved:
+    #        channelA.play(success_sound)
+            print("Well done! You solved the board!")
+        elif not self.board.is_playing:
+    #        channelA.play(explosion_sound)
+            print("Uh oh! You blew up!")
+            self.board.showall()
+            self.printboard(self.board)
+            #self.refreshboard()
+        return      

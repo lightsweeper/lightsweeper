@@ -188,9 +188,7 @@ class Dialog(QDialog):
         self.formGroupBox.setLayout(layout)
 
 if __name__ == '__main__':
-
     import sys
-
     app = QApplication(sys.argv)
     dialog = Dialog()
     sys.exit(dialog.exec_())

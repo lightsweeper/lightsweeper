@@ -1,22 +1,9 @@
 #!/usr/bin/python3
 
 import random
-#import pygame 
-import sys
 
-#QT stuff - needs to be cleaned up
-from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog,
-        QDialogButtonBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
-        QLabel, QLineEdit, QMenu, QMenuBar, QPushButton, QSpinBox, QTextEdit,
-        QVBoxLayout)
-
-# Lightsweeper additions
-from PyQt5.QtWidgets import (QLCDNumber, QWidget, QFrame, QSpinBox, QStyle, QStyleOption, QToolButton)
-from PyQt5.QtGui import (QPainter)
-
-from LSEmulateTile import LSEmulateTile
+from PyQt5.QtWidgets import (QApplication, QDialog,QHBoxLayout)
 from LSEmulateFloor import LSEmulateFloor
-
 from minesweeper.board import Board, Cell
 
 def create_board(width, height, mines):
@@ -40,20 +27,6 @@ def main():
     # Initialize board
     board = create_board(SIZE_W, SIZE_H, MINES)
     print("board created")
-
-
-    # Initialize audio channel - using only a single channel for now
-#    pygame.mixer.init(48000, -16, 1, 1024)
-#    channelA = pygame.mixer.Channel(1)
-    
-    # Initialize sounds
-#    startup_sound = pygame.mixer.Sound("sounds/StartUp.wav")
-#    success_sound = pygame.mixer.Sound("sounds/Success.wav")
-#    reveal_sound = pygame.mixer.Sound("sounds/Reveal.wav")
-#    blop_sound = pygame.mixer.Sound("sounds/Blop.wav")
-#    explosion_sound = pygame.mixer.Sound("sounds/Explosion.wav")
-
-#    channelA.play(startup_sound)
 
     app = QApplication(sys.argv)
     dialog = QDialog()
@@ -82,5 +55,6 @@ def main():
     print("exiting")
     sys.exit()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    import sys
     main()
