@@ -16,15 +16,31 @@ class Cell(object):
     def place_mine(self):
         self.is_mine = True
 
-class Board(tuple):
-    def __init__(self, tup):
+
+class Board():
+
+    def __init__(self):
         super().__init__()
         self.is_playing = True
+
+    def create_board(self, rows, cols, mines):
+        print("creating board")
+        self.board = tuple([tuple([Cell(False) for col in range(cols)])
+                            for row in range(rows)])
+        available_pos = list(range((rows-1) * (cols-1)))
+        print("creating mines")
+        for i in range(mines):
+            new_pos = random.choice(available_pos)
+            available_pos.remove(new_pos)
+            (row_id, col_id) = (new_pos // (cols-1), new_pos % (rows-1))
+            self.place_mine(row_id, col_id)
+        self.is_playing = True
+        return
 
     def mine_repr(self,row_id, col_id):
         # Debug only 
         # print ("min_repr for: ",row_id,col_id)
-        cell = self[row_id][col_id]
+        cell = self.board[row_id][col_id]
         if cell.is_visible:
             if cell.is_mine:
                 return "M"
@@ -41,7 +57,7 @@ class Board(tuple):
         self.display = display
     
     def show(self, row_id, col_id):
-        cell = self[row_id][col_id]
+        cell = self.board[row_id][col_id]
         if not cell.is_visible:
             print("board.show", row_id, col_id)
             cell.show()
@@ -56,24 +72,24 @@ class Board(tuple):
                         self.show(surr_row, surr_col) 
 	
     def showall(self):
-        for row in self:
+        for row in self.board:
             for cell in row:
                 cell.show()               
         
     def flag(self, row_id, col_id):
-        cell = self[row_id][col_id]
+        cell = self.board[row_id][col_id]
         if not cell.is_visible:
             cell.flag()
         else:
             print("Cannot add flag, cell already visible.")
 
     def place_mine(self, row_id, col_id):
-        self[row_id][col_id].place_mine()
+        self.board[row_id][col_id].place_mine()
 
     def count_surrounding(self, row_id, col_id):
         return sum(1 for (surr_row, surr_col) in self.get_neighbours(row_id, col_id)
                         if (self.is_in_range(surr_row, surr_col) and
-                            self[surr_row][surr_col].is_mine))
+                            self.board[surr_row][surr_col].is_mine))
 
     def get_neighbours(self, row_id, col_id):
         SURROUNDING = ((-1, -1), (-1,  0), (-1,  1),
@@ -82,12 +98,12 @@ class Board(tuple):
         return ((row_id + surr_row, col_id + surr_col) for (surr_row, surr_col) in SURROUNDING)
 
     def is_in_range(self, row_id, col_id):
-        return 0 <= row_id < len(self) and 0 <= col_id < len(self[0])
+        return 0 <= row_id < len(self.board) and 0 <= col_id < len(self.board[0])
 
     @property
     def remaining_mines(self):
         remaining = 0
-        for row in self:
+        for row in self.board:
             for cell in row:
                 if cell.is_mine:
                     remaining += 1
@@ -118,11 +134,11 @@ class Board(tuple):
     #        channelA.play(explosion_sound)
             print("Uh oh! You blew up!")
             self.showall()
-            self.display.showboard()
+            #self.display.showboard()
             #self.refreshboard()
         return   
 
     @property
     def is_solved(self):
-        return all((cell.is_visible or cell.is_flagged) for row in self for cell in row)
+        return all((cell.is_visible or cell.is_flagged) for row in self.board for cell in row)
 		
