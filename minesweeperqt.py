@@ -36,7 +36,6 @@ def main():
     print("making lightsweeper floor")
     floor = LSEmulateFloor(6, 8, board)
     board.set_display(floor)
-    floor.printboard(board)
 
     #todo: make these calls possible
     #floor = LSRealFloor(board)
@@ -47,13 +46,14 @@ def main():
     dialog.setLayout(mainLayout)
     dialog.setWindowTitle("Lightsweeper")
     dialog.setVisible(True)
-    print("calling dialog.exec()")
-    dialog.exec_()
-    
     console = floor
     output = console
-    output.printboard()
-    
+
+    # Uncomment this to start with a blank board
+    # console.printboard(board)
+
+    print("calling dialog.exec()")
+    dialog.exec_()
     print("exiting")
     sys.exit()
 

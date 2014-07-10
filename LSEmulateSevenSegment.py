@@ -30,7 +30,7 @@ class LSEmulateSevenSegment(QFrame):
         self.colorF = "white"
         self.colorG = "white"
         self.segColors = [self.colorG, self.colorF, self.colorE, self.colorD, self.colorC, self.colorB, self.colorA]
-        self.queueColor = "white "
+        self.queueColor = "white"
         self.queueDigit = 8;
         self.setContentsMargins(0,0,0,0)
         layout = QGridLayout()

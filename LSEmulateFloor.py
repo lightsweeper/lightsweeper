@@ -127,8 +127,11 @@ class LSEmulateFloor(QGroupBox, LSApi):
                 cell = board.mine_repr(row,col)
                 # print( "Printing:", row, col, "cell: ", cell)
                 if cell == '.' or cell == ' ' or cell == '':
-                    tile.blank()
+                    # tile.blank()
                     # tile.update('NOW')
+                    tile.setColor("black")
+                    tile.setShape("8")
+                    tile.update('NOW')
                 elif cell == 'M':
                     tile.setColor("red")
                     tile.setShape("8")
