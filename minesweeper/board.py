@@ -129,6 +129,7 @@ class Board():
         for row in self.board:
             for cell in row:
                 cell.set_defused()
+        self.is_playing = False
 
     def is_solved(self):
         #return all((cell.is_visible or cell.is_flagged) for row in self.board for cell in row)
