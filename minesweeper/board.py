@@ -45,7 +45,7 @@ class Board(tuple):
         if not cell.is_visible:
             print("board.show", row_id, col_id)
             cell.show()
-            self.display.show(row_id, col_id)
+            # self.display.show(row_id, col_id)
             if (cell.is_mine and not
                 cell.is_flagged):
                 self.is_playing = False

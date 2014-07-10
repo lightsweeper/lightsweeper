@@ -7,10 +7,11 @@ from LSEmulateTile import LSEmulateTile
 
 class LSEmulateFloor(QGroupBox, LSApi):
 
-    def __init__(self, rows=6, cols=8):
+    def __init__(self, rows=6, cols=8, board=None):
         super(QGroupBox, self).__init__("Lightsweeper Floor Emulator")
         self.rows = rows
         self.cols = cols
+        self.board = board
         self.setContentsMargins(0,0,0,0)
         floorLayout = QVBoxLayout()
         floorLayout.setContentsMargins(0,0,0,0)
@@ -26,10 +27,10 @@ class LSEmulateFloor(QGroupBox, LSApi):
             tileAddresses = []
             # make the LSEmulateTile in each row
             for col in range(cols):
-                tile = LSEmulateTile(row, col)
+                tile = LSEmulateTile(self, row, col)
                 #tile.setContentsMargins(0,0,0,0)
                 tile.assignAddress(row*cols+col)
-                #tile.blank()
+                tile.blank()
         
                 # Debug: 
                 # print(tile.getAddress())
@@ -37,11 +38,11 @@ class LSEmulateFloor(QGroupBox, LSApi):
                 tileAddresses.append((row, col))
                 #tile.setMinimumSize(60, 80)
                 #tile.display(col+1)
-                #tile.show()
+                # tile.show()
                 tiles.append(tile)
                 count = len(tiles)
                 layout.addWidget(tile)
-                #tile.setColor("white")
+                tile.setColor("black")
                 thisRow.setLayout(layout)
 
             self.tileRows.append(tiles)
@@ -115,7 +116,7 @@ class LSEmulateFloor(QGroupBox, LSApi):
 
     #Implementation of the Lightsweeper API:
     def init(self, rows, cols):
-        __init__(self,rows, cols)
+        # __init__(self, rows, cols)
         return
 
     def printboard(self,board=None):
@@ -123,10 +124,11 @@ class LSEmulateFloor(QGroupBox, LSApi):
         for tile in tiles:
             if board != None:
                 (row, col) = (tile.getAddress() // self.cols, tile.getAddress() % self.cols)
-                print( "Printing:", row, col)
                 cell = board.mine_repr(row,col)
-                if cell == '.':
+                # print( "Printing:", row, col, "cell: ", cell)
+                if cell == '.' or cell == ' ' or cell == '':
                     tile.blank()
+                    # tile.update('NOW')
                 elif cell == 'M':
                     tile.setColor("red")
                     tile.setShape("8")
@@ -135,7 +137,7 @@ class LSEmulateFloor(QGroupBox, LSApi):
                     break
                 else:
                     print("Setting shape to:", cell)
-                    tile.setColor("black")
+                    tile.setColor("blue")
                     tile.setShape(cell)
                     tile.update('NOW')
             tile.update('NOW')
@@ -185,16 +187,19 @@ class LSEmulateFloor(QGroupBox, LSApi):
         col_id = col
         is_flag = False
 
+        if self.board is None:
+            return
+
         if self.board.is_playing and not self.board.is_solved:
             if (row_id <0 or col_id < 0):
                 print ("invalid row or col")
                 return
             if not is_flag:
-                print( "Showing:", row_id, col_id)
+                # print( "Showing:", row_id, col_id, "on: ", self.board)
     #            channelA.play(blop_sound)
                 self.board.show(row_id, col_id)
             else:
-                self.board.flag(row_id, col_id)        
+                self.board.flag(row_id, col_id)
             self.printboard(self.board)
 
 
@@ -207,4 +212,4 @@ class LSEmulateFloor(QGroupBox, LSApi):
             self.board.showall()
             self.printboard(self.board)
             #self.refreshboard()
-        return      
+        return

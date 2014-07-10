@@ -34,8 +34,10 @@ def main():
 
     # make the Lightsweeper floor
     print("making lightsweeper floor")
-    floor = LSEmulateFloor() #board)
+    floor = LSEmulateFloor(6, 8, board)
     board.set_display(floor)
+    floor.printboard(board)
+
     #todo: make these calls possible
     #floor = LSRealFloor(board)
     #board.set_display(floor)

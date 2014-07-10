@@ -9,7 +9,7 @@ from LSEmulateSevenSegment import LSEmulateSevenSegment
 # it does no segment processing, it just passes thru to the seven segment display
 class LSEmulateTile(QFrame, LSApi):
 
-    def __init__(self, row=0, col=0):
+    def __init__(self, floor, row=0, col=0):
         super(QFrame, self).__init__()
         self.row = row
         self.col = col
@@ -17,6 +17,8 @@ class LSEmulateTile(QFrame, LSApi):
         self.setContentsMargins(0,0,0,0) # maybe should use layout
         self.button = QPushButton("%d %d" % (row+1, col+1))
         self.button.setCheckable(True)
+        self.floor = floor
+        self.button.clicked.connect(self._buttonPressed)
         layout = QVBoxLayout()
         layout.setContentsMargins(0,0,0,0)
         layout.addWidget(self.segments)
@@ -31,11 +33,12 @@ class LSEmulateTile(QFrame, LSApi):
 
     # set immediately or queue these segments in addressed tiles
     # segments is a seven-tuple interpreted as True or False
-    def setSegments(self, row, column, segments, setItNow = True):
+    def setSegments(self, segments, setItNow = True):
         self.segments.setSegments(segments, setItNow)
 
     def setDigit (self, newDigit, setItNow = True):
         self.segments.setDigit(newDigit, setItNow)
+        return
 
     def getSensors(self):
         if self.button.isChecked():
@@ -51,6 +54,37 @@ class LSEmulateTile(QFrame, LSApi):
 
     def getRow (self):
         return self.row
+    def _display (self, val):
+        self.segments.display(val)
+        return
+
+    def _getButtonState(self):
+        return self.button.isChecked()
+
+
+    def _buttonPressed(self):
+        print("Button state is", self.button.isChecked(), self.row, self.col)
+        self.floor.get_move(self.row, self.col)
+        return
+
+    ### Implementation of the Lightsweeper API
+    def destroy(self):
+        return
+
+    def setShape(self, shape, setItNow = True):
+        self.setDigit(shape, setItNow)
+
+    def setTransition(self, transition):
+        return
+
+    def set(self,color=0, shape=0, transition=0):
+        if (color != 0):
+            self.setColor(color)
+        if (shape != 0 ):
+            self.setShape(shape)
+        if(transition != 0):
+            self.setTransition(transition)
+        return
 
     def update(self,type):
         if (type == 'NOW'):
@@ -66,7 +100,7 @@ class LSEmulateTile(QFrame, LSApi):
         return 1
 
     def blank(self):
-        self.setColor('white')
+        self.setColor('black')
         return
 
     def locate(self):

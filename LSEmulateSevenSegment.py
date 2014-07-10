@@ -115,7 +115,9 @@ class LSEmulateSevenSegment(QFrame):
             self.display()
 
     def display (self):
-        segs = LSApi.segMasks[self.queueDigit]  # map digit to segment mask
+        if self.queueDigit == " ":
+            self.queueDigit=8
+        segs = LSApi.segMasks[int(self.queueDigit)]  # map digit to segment mask
         for idx in range(len(segs)):
             litSeg = segs[idx]
             if litSeg:
