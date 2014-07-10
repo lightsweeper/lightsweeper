@@ -17,7 +17,7 @@ from PyQt5.QtGui import (QPainter)
 from LSEmulateTile import LSEmulateTile
 from LSEmulateFloor import LSEmulateFloor
 
-from board import Board, Cell
+from minesweeper.board import Board, Cell
 
 def create_board(width, height, mines):
     print("creating board")
@@ -61,7 +61,7 @@ def main():
 
     # make the Lightsweeper floor
     print("making lightsweeper floor")
-    floor = LSEmulateFloor(board)
+    floor = LSEmulateFloor() #board)
     board.set_display(floor)
     #todo: make these calls possible
     #floor = LSRealFloor(board)
