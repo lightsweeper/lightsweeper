@@ -1,33 +1,19 @@
 #!/usr/bin/python3
 
 import random
-#pygame is not compatable with Python 3.4
-#import pygame 
 
-from board import Board, Cell
-from inputs import ConsoleInput  
+from board import Board
+from inputs import ConsoleInput
 from outputs import ConsoleOutput
 
-def create_board(width, height, mines):
-    board = Board(tuple([tuple([Cell(False) for i in range(width)])
-                         for j in range(height)]))
-    available_pos = list(range((width-1) * (height-1)))
-    for i in range(mines):
-        new_pos = random.choice(available_pos)
-        available_pos.remove(new_pos)
-        (row_id, col_id) = (new_pos % (height-1), new_pos // (height-1))
-        board.place_mine(row_id, col_id)
-    return board
-
-
-
 def main():
-    SIZE_W = 6
-    SIZE_H = 8
+    ROWS = 6
+    COLS = 8
     MINES = 9
 
     # Initialize board
-    board = create_board(SIZE_W, SIZE_H, MINES)
+    board = Board()
+    board.create_board(ROWS, COLS, MINES)
     console = ConsoleInput(board)
     output = ConsoleOutput(board)
 
@@ -48,7 +34,7 @@ def main():
     print(chr(27) + "[2J") 
 
     output.printboard()
-    while board.is_playing and not board.is_solved:
+    while board.is_playing and not board.is_solved():
         (row_id, col_id, is_flag) = console.get_move()
         if not is_flag:
             #channelA.play(blop_sound)
@@ -59,7 +45,7 @@ def main():
         print(chr(27) + "[2J") 
         output.printboard()
 
-    if board.is_solved:
+    if board.is_solved():
         #channelA.play(success_sound)
         #hacky clear screen 
         print(chr(27) + "[2J") 
@@ -69,7 +55,7 @@ def main():
         #hacky clear screen 
         print(chr(27) + "[2J") 
         print("Uh oh! You blew up!")
-        board.showall()
+        board.show_all()
         output.printboard()
     wait = input("\n\nPress any key to return")
     
