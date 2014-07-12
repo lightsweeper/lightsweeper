@@ -4,35 +4,36 @@ import random
 
 from PyQt5.QtWidgets import (QApplication, QDialog,QHBoxLayout)
 from LSEmulateFloor import LSEmulateFloor
+from LSRealFloor import LSRealFloor
 
 def main():
-    app = QApplication(sys.argv)
-    dialog = QDialog()
-    mainLayout = QHBoxLayout()
+    emulator = False
+    print("starting")
+    #todo: remove all references to PyQt so we can compile
+    #this on a Pi without Qt
+    if emulator:
+        app = QApplication(sys.argv)
+        dialog = QDialog()
+        mainLayout = QHBoxLayout()
+        dialog.setContentsMargins(0,0,0,0)
+        dialog.setLayout(mainLayout)
+        dialog.setWindowTitle("Lightsweeper")
+        dialog.setVisible(True)
+        floor = LSEmulateFloor()
+        mainLayout.addWidget(floor)
 
-    # make the Lightsweeper floor
-    print("making lightsweeper floor")
-    floor = LSEmulateFloor()
+        console = floor
+        output = console
 
-    #todo: make these calls possible
-    #floor = LSRealFloor(board)
-    #board.set_display(floor)
-    mainLayout.addWidget(floor)
+        # Uncomment this to start with a blank board
+        # console.printboard(board)
 
-    dialog.setContentsMargins(0,0,0,0)
-    dialog.setLayout(mainLayout)
-    dialog.setWindowTitle("Lightsweeper")
-    dialog.setVisible(True)
-    console = floor
-    output = console
+        dialog.exec_()
+        sys.exit()
+    else:
+        print("creating LSRealFloor")
+        floor = LSRealFloor()
 
-    # Uncomment this to start with a blank board
-    # console.printboard(board)
-
-    print("calling dialog.exec()")
-    dialog.exec_()
-    print("exiting")
-    sys.exit()
 
 if __name__ == '__main__':
     import sys

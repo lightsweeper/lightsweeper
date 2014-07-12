@@ -135,6 +135,3 @@ class Board():
         #return all((cell.is_visible or cell.is_flagged) for row in self.board for cell in row)
         print("Remaining Mines: ", self.remaining_mines(), " Remaining Hidden: ", self.remaining_hidden())
         return self.remaining_mines() == self.remaining_hidden()
-
-
-

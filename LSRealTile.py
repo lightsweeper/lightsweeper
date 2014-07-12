@@ -99,7 +99,7 @@ class LSRealTile(LSTileAPI):
         cmd = SET_SHAPE
         self.__tileWrite([cmd, shape])
 
-    def setTransition(self, transition):
+    def setTransition(self, transition, shape):
         cmd = SET_TRANSITION
         self.__tileWrite([cmd, shape])
 
@@ -286,10 +286,12 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except serial.SerialException:
                 pass
+
     else:
         # unix
-        for port in list_ports.comports():
-            yield port[0]
+        print("TODO: had to comment this out because list_ports wasn't found")
+        #for port in list_ports.comports():
+        #    yield port[0]
 
 def main():
     print("Testing LSRealTile")
