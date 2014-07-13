@@ -127,12 +127,11 @@ class LSEmulateTile(QFrame, LSApi):
     def unregister(self):
         return
 
-    def assignAddress(self, address):
-        self.address = address
-        return
+    #def assignAddress(self, address):
+    #    self.address = address
 
-    def getAddress(self):
-        return self.address
+    #def getAddress(self):
+    #    return self.address
 
     def calibrate(self):
         return

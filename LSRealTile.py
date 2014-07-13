@@ -85,6 +85,16 @@ class LSRealTile(LSTileAPI):
     def __init__(self, sharedSerial, row=0, col=0):
         super().__init__(row, col)
         self.mySerial = sharedSerial
+        self.serialOpen = True
+        try:
+            self.mySerial.open()
+        except IOError:
+            self.serialOpen = False
+            pass
+        except:
+            print("Unexpected error")
+            self.serialOpen = False
+            pass
         # cmdNargs is address + command + N optional bytes
 
     def destroy(self):
@@ -95,7 +105,11 @@ class LSRealTile(LSTileAPI):
         cmd = SET_COLOR
         self.__tileWrite([cmd, color])
 
+    def getShape(self):
+        return self.shape
+
     def setShape(self, shape):
+        self.shape = shape
         cmd = SET_SHAPE
         self.__tileWrite([cmd, shape])
 
@@ -144,7 +158,8 @@ class LSRealTile(LSTileAPI):
         cmd = EEPROM_READ
         self.__tileWrite([cmd, eeAddr])
         # return response
-        thisRead = self.mySerial.read(8)
+        if self.serialOpen:
+            thisRead = self.mySerial.read(8)
         val = self.__tileRead()
         return val
 
@@ -154,7 +169,8 @@ class LSRealTile(LSTileAPI):
         cmd = RETURN_ERRORS
         self.__tileWrite([cmd])
         # return response
-        thisRead = self.mySerial.read(8) # expect MAX_ERRORS but be safe
+        if self.serialOpen:
+            thisRead = self.mySerial.read(8) # expect MAX_ERRORS but be safe
         val = self.__tileRead()
         return val
 
@@ -205,6 +221,8 @@ class LSRealTile(LSTileAPI):
         return
 
     # assignAddress and getAddress are in LSTileAPI base class
+    def getAddress(self):
+        return self.address
 
     def calibrate(self):
         raise NotImplementedError()
@@ -223,18 +241,25 @@ class LSRealTile(LSTileAPI):
         cmdLen = len(args)
         # insert address byte plus optional arg count
         #addr = ord(self.address)  # in case input was a char
-        addr = self.address
+        addr = self.getAddress()
         addr = addr + cmdLen - 1  # command is not counted
         args.insert(0, addr)
-        count = self.mySerial.write(args)
-        writeStr = (' '.join(format(x, '#02x') for x in args))
-        print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
+        if self.serialOpen:
+            count = self.mySerial.write(args)
+        else:
+            count = 0
+        if count:
+            writeStr = (' '.join(format(x, '#02x') for x in args))
+            print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
         #print(' '.join(format(x, '#02x') for x in args))
 
 
     # read from the tile
     def __tileRead(self):
-        thisRead = self.mySerial.read(8)
+        if self.serialOpen:
+            thisRead = self.mySerial.read(8)
+        else:
+            thisRead = []
         if len(thisRead) > 0:
             #print("Received " + thisRead.ToHex())
             print ("Received: " + ''.join(format(x, '02x') for x in thisRead))
@@ -248,7 +273,8 @@ class LSRealTile(LSTileAPI):
             #thisHex = ByteToHex(thisRead)
             #print("Received " + thisHex)
         else:
-            print("Received nothing")
+            #print("Received nothing")
+            pass
         return thisRead
 
 
@@ -267,7 +293,15 @@ class LSRealTile(LSTileAPI):
 
     # TODO - not yet used perhaps useful if target slot can be passed in
     def pollSensors(self):
-        raise NotImplementedError()
+        if self.serialOpen:
+            self.mySerial.write(TILE_STATUS)
+            #TODO: how long do we need to wait for the tile to respond?
+            #this should probably be event-driven
+            pressure = self.mySerial.read(6)
+            status = self.mySerial.read(2)
+        else:
+            pass
+        #raise NotImplementedError()
 
 
     ############################################

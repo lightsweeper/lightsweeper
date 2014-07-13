@@ -33,6 +33,7 @@ def main():
     else:
         print("creating LSRealFloor")
         floor = LSRealFloor()
+        floor.startLoop()
 
 
 if __name__ == '__main__':
