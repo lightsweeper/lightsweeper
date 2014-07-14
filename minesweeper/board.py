@@ -32,12 +32,12 @@ class Board():
         print("creating board")
         self.board = tuple([tuple([Cell(False) for col in range(cols)])
                             for row in range(rows)])
-        available_pos = list(range((rows-1) * (cols-1)))
+        available_pos = list(range((rows) * (cols)))
         print("creating mines")
         for i in range(mines):
             new_pos = random.choice(available_pos)
             available_pos.remove(new_pos)
-            (row_id, col_id) = (new_pos // (cols-1), new_pos % (rows-1))
+            (row_id, col_id) = (new_pos // (cols), new_pos % (rows))
             self.place_mine(row_id, col_id)
         self.is_playing = True
         return
@@ -64,7 +64,7 @@ class Board():
         self.display = display
     
     def show(self, row_id, col_id):
-        print("given:", row_id, col_id, "board:", len(self.board), len(self.board[0]))
+        #print("given:", row_id, col_id, "board:", len(self.board), len(self.board[0]))
         cell = self.board[row_id][col_id]
         if not cell.is_visible:
             print("board.show", row_id, col_id)

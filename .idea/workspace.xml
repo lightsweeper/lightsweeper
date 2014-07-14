@@ -4,11 +4,8 @@
     <list default="true" id="2a48dfdd-34ee-41a2-8e51-f2595a517952" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/LSRealFloor.py" afterPath="$PROJECT_DIR$/LSRealFloor.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/LSRealTile.py" afterPath="$PROJECT_DIR$/LSRealTile.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ATtiny/SoftwareSerialMod.cpp" afterPath="$PROJECT_DIR$/ATtiny/SoftwareSerialMod.cpp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/minesweeper/board.py" afterPath="$PROJECT_DIR$/minesweeper/board.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ATtiny/ls_july/ls_july.ino" afterPath="$PROJECT_DIR$/ATtiny/ls_july/ls_july.ino" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ATtiny/ls_wireAPI.h" afterPath="$PROJECT_DIR$/ATtiny/ls_wireAPI.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/minesweeperqt.py" afterPath="$PROJECT_DIR$/minesweeperqt.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/minesweeperqt_noqt.py" afterPath="$PROJECT_DIR$/minesweeperqt_noqt.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="lightsweeper.iws" />
@@ -32,34 +29,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="minesweeperqt.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/minesweeperqt.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="629">
-              <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-              <folding>
-                <element signature="e#20#83#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="minesweeperqt_noqt.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="minesweeperqt_noqt.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/minesweeperqt_noqt.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.52469134" vertical-offset="0" max-vertical-offset="324">
-              <caret line="10" column="26" selection-start-line="10" selection-start-column="26" selection-end-line="10" selection-end-column="26" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LSEmulateFloor.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/LSEmulateFloor.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="589" max-vertical-offset="4250">
-              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
-              <folding />
+            <state vertical-scroll-proportion="0.0" vertical-offset="595" max-vertical-offset="1105">
+              <caret line="41" column="16" selection-start-line="41" selection-start-column="16" selection-end-line="41" selection-end-column="16" />
+              <folding>
+                <element signature="e#20#55#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -77,8 +54,8 @@
       <file leaf-file-name="board.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/minesweeper/board.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1014" max-vertical-offset="2431">
-              <caret line="66" column="50" selection-start-line="66" selection-start-column="50" selection-end-line="66" selection-end-column="50" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1303" max-vertical-offset="2431">
+              <caret line="66" column="87" selection-start-line="66" selection-start-column="87" selection-end-line="66" selection-end-column="87" />
               <folding />
             </state>
           </provider>
@@ -94,14 +71,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LSRealFloor.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="LSRealFloor.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/LSRealFloor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="963" max-vertical-offset="3009">
-              <caret line="64" column="80" selection-start-line="64" selection-start-column="80" selection-end-line="64" selection-end-column="80" />
+            <state vertical-scroll-proportion="0.7905405" vertical-offset="1636" max-vertical-offset="3366">
+              <caret line="110" column="56" selection-start-line="110" selection-start-column="56" selection-end-line="110" selection-end-column="56" />
               <folding>
                 <element signature="e#45#78#0" expanded="true" />
-                <element signature="e#2971#3046#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -110,8 +86,8 @@
       <file leaf-file-name="LSRealTile.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/LSRealTile.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-4.107143" vertical-offset="1670" max-vertical-offset="7803">
-              <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
+            <state vertical-scroll-proportion="-6.535714" vertical-offset="1534" max-vertical-offset="8126">
+              <caret line="101" column="30" selection-start-line="101" selection-start-column="30" selection-end-line="101" selection-end-column="30" />
               <folding>
                 <element signature="e#51#74#0" expanded="true" />
               </folding>
@@ -136,11 +112,11 @@
         <option value="C:/Python34/Lib/site-packages/serial/serialwin32.py" />
         <option value="$PROJECT_DIR$/LSEmulateTile.py" />
         <option value="$PROJECT_DIR$/LSTileAPI.py" />
-        <option value="$PROJECT_DIR$/LSRealTile.py" />
         <option value="$PROJECT_DIR$/minesweeperqt.py" />
         <option value="$PROJECT_DIR$/minesweeper/board.py" />
-        <option value="$PROJECT_DIR$/LSRealFloor.py" />
         <option value="$PROJECT_DIR$/minesweeperqt_noqt.py" />
+        <option value="$PROJECT_DIR$/LSRealTile.py" />
+        <option value="$PROJECT_DIR$/LSRealFloor.py" />
       </list>
     </option>
   </component>
@@ -245,7 +221,9 @@
       <module name="lightsweeper" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/minesweeperqt_noqt.py" />
       <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PyDebugRunner" />
       <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PyDebugRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
@@ -421,11 +399,11 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32864675" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32864675" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25437203" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19872814" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.34210527" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.55263156" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.38245615" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -456,16 +434,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/minesweeperqt.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="544" max-vertical-offset="799">
-          <caret line="32" column="9" selection-start-line="32" selection-start-column="9" selection-end-line="32" selection-end-column="9" />
-          <folding>
-            <element signature="e#20#83#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/LSApi.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="493" max-vertical-offset="1241">
@@ -504,7 +472,6 @@
           <caret line="87" column="31" selection-start-line="87" selection-start-column="31" selection-end-line="87" selection-end-column="31" />
           <folding>
             <element signature="e#45#78#0" expanded="true" />
-            <element signature="e#2971#3046#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -575,7 +542,6 @@
           <caret line="56" column="24" selection-start-line="56" selection-start-column="24" selection-end-line="56" selection-end-column="24" />
           <folding>
             <element signature="e#45#78#0" expanded="true" />
-            <element signature="e#2971#3046#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -646,7 +612,6 @@
           <caret line="111" column="0" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
           <folding>
             <element signature="e#45#78#0" expanded="true" />
-            <element signature="e#2971#3046#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -701,7 +666,6 @@
           <caret line="41" column="35" selection-start-line="41" selection-start-column="35" selection-end-line="41" selection-end-column="35" />
           <folding>
             <element signature="e#45#78#0" expanded="true" />
-            <element signature="e#2971#3046#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -818,36 +782,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Python34/Lib/site-packages/serial/serialwin32.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="12.142858" vertical-offset="5015" max-vertical-offset="7888">
-          <caret line="278" column="48" selection-start-line="278" selection-start-column="48" selection-end-line="278" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/LSTileAPI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="981" max-vertical-offset="1887">
-          <caret line="64" column="8" selection-start-line="64" selection-start-column="8" selection-end-line="64" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/LSEmulateTile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2159" max-vertical-offset="2482">
           <caret line="131" column="0" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/LSRealTile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.107143" vertical-offset="1670" max-vertical-offset="7803">
-          <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
-          <folding>
-            <element signature="e#51#74#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -871,36 +810,71 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/LSEmulateFloor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="589" max-vertical-offset="4250">
+        <state vertical-scroll-proportion="0.31123918" vertical-offset="589" max-vertical-offset="4250">
           <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python34/Lib/os.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.08877285" vertical-offset="0" max-vertical-offset="16711">
+          <caret line="2" column="13" selection-start-line="0" selection-start-column="4" selection-end-line="21" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python34/Lib/site-packages/serial/serialwin32.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.07564576" vertical-offset="979" max-vertical-offset="7888">
+          <caret line="63" column="55" selection-start-line="63" selection-start-column="54" selection-end-line="63" selection-end-column="55" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/LSTileAPI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="981" max-vertical-offset="1887">
+          <caret line="64" column="8" selection-start-line="64" selection-start-column="8" selection-end-line="64" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/minesweeper/board.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1014" max-vertical-offset="2431">
-          <caret line="66" column="50" selection-start-line="66" selection-start-column="50" selection-end-line="66" selection-end-column="50" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1303" max-vertical-offset="2431">
+          <caret line="66" column="87" selection-start-line="66" selection-start-column="87" selection-end-line="66" selection-end-column="87" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/LSRealFloor.py">
+    <entry file="file://$PROJECT_DIR$/LSRealTile.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="963" max-vertical-offset="3009">
-          <caret line="64" column="80" selection-start-line="64" selection-start-column="80" selection-end-line="64" selection-end-column="80" />
+        <state vertical-scroll-proportion="-6.535714" vertical-offset="1534" max-vertical-offset="8126">
+          <caret line="101" column="30" selection-start-line="101" selection-start-column="30" selection-end-line="101" selection-end-column="30" />
           <folding>
-            <element signature="e#45#78#0" expanded="true" />
-            <element signature="e#2971#3046#0" expanded="false" />
+            <element signature="e#51#74#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/minesweeperqt_noqt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52469134" vertical-offset="0" max-vertical-offset="324">
-          <caret line="10" column="26" selection-start-line="10" selection-start-column="26" selection-end-line="10" selection-end-column="26" />
-          <folding />
+        <state vertical-scroll-proportion="0.0" vertical-offset="595" max-vertical-offset="1105">
+          <caret line="41" column="16" selection-start-line="41" selection-start-column="16" selection-end-line="41" selection-end-column="16" />
+          <folding>
+            <element signature="e#20#55#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/LSRealFloor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7905405" vertical-offset="1636" max-vertical-offset="3366">
+          <caret line="110" column="56" selection-start-line="110" selection-start-column="56" selection-end-line="110" selection-end-column="56" />
+          <folding>
+            <element signature="e#45#78#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

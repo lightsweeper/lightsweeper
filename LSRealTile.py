@@ -87,6 +87,8 @@ class LSRealTile(LSTileAPI):
         self.mySerial = sharedSerial
         # cmdNargs is address + command + N optional bytes
         self.Debug = True
+        #assign to false for debug without tiles
+        self.serialOpen = True
         
     def destroy(self):
         return
@@ -94,12 +96,28 @@ class LSRealTile(LSTileAPI):
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
         cmd = SET_COLOR
+        #todo: actually correct numeric color values
+        if color is "red":
+            color = 1
+        elif color is "green":
+            color = 2
+        elif color is "yellow":
+            color = 3
+        elif color is "blue":
+            color = 4
+        elif color is "violet":
+            color = 5
+        elif color is "black":
+            color = 0
         self.__tileWrite([cmd, color])
 
     def setShape(self, shape):
         cmd = SET_SHAPE
+        if shape is '-':
+            shape = 1
         self.__tileWrite([cmd, shape])
         self.shape = shape
+        print("setshape", shape)
 
     def getShape(self):
         return self.shape
@@ -119,6 +137,7 @@ class LSRealTile(LSTileAPI):
         return
 
     def setDigit(self, digit):
+        digit = int(digit)
         if ((digit < 0) | (digit > 9)):
             return  # some kind of error - see Noah example
         digitMaps=[0x7E,0x30,0x6D,0x79,0x33,0x5B,0x7D,0x70,0x7F,0x7B]
@@ -243,7 +262,7 @@ class LSRealTile(LSTileAPI):
             count = self.mySerial.write(args)
             if self.Debug:
                 writeStr = (' '.join(format(x, '#02x') for x in args))
-                print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
+                #print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
 
         # if no response is expected, read anyway to flush tile debug output
         if(not(expectResponse) and self.serialOpen):
@@ -317,7 +336,7 @@ def testSleep(secs=0.3):
 # simple testing function for LSRealTile
 def main():
     print("\nTesting LSRealTile")
-
+    serial_ports()
     # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
     availPorts = list(serial_ports())
     print("Available serial ports:" + str(availPorts))
@@ -329,7 +348,7 @@ def main():
     try:
         theSerial = serial.Serial(comPort, 19200, timeout=0.001)
         print(comPort + " opened")
-
+        
     except serial.SerialException:
         print(comPort + " is not available")
         
@@ -337,7 +356,7 @@ def main():
         print("\nStarting tests...")
 
         myTile = LSRealTile(theSerial,1,2)
-
+        myTile.serialOpen = True
         address = input("What is the tile address? (0 is global)")
         address = int(address)
         #address = 96 #80
@@ -393,7 +412,7 @@ def main():
             testSleep()
 
         print("\nTesting setShape - faster, with Debug off")
-        fastDelay = 0.001
+        fastDelay = 0.010
         fastTime = 10.0
         tmpDebug = myTile.Debug
         start = time.time()

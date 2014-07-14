@@ -11,25 +11,30 @@ class LSRealFloor():
     ROWS = 6
     MINES = 9
 
-    def __init__(self, rows=ROWS, cols=COLS, mines=MINES):
-        self.rows = 6
-        self.cols = 8
-        self.mines = 9
+    def __init__(self, rows=ROWS, cols=COLS, mines=MINES, addresses=None, serial=None):
+        self.rows = rows
+        self.cols = cols
+        self.mines = mines
+        print("RealFloor init", rows, cols, mines, addresses)
         # Initialize board
         self.board = Board()
         self.board.create_board(self.rows, self.cols, self.mines)
         print("board created")
-
+        tile = LSRealTile(serial)
+        tile.assignAddress(40)
+        tile.setColor(5)
+        tile.setShape(2)
         #make sharedSerial
-        self.sharedSerial = self.initSerial()
+        if serial is None:
+            self.sharedSerial = self.initSerial()
+        else:
+            self.sharedSerial = serial
         self.serialOpen = True
         try:
             self.sharedSerial.open()
         except IOError:
             self.serialOpen = False
             print("Serial not open")
-        else:
-            self.sharedSerial.close()
 
         # make all the rows
         self.tileRows = []
@@ -40,11 +45,15 @@ class LSRealFloor():
             self.tileAddresses = []
             for col in range(cols):
                 tile = LSRealTile(self.sharedSerial)
-                tile.serialOpen = self.serialOpen
-                tile.assignAddress(i)
+                if addresses:
+                    tile.assignAddress(addresses.pop())
+                else:
+                    tile.assignAddress(i)
+                print("address assigned:", tile.getAddress())
                 #print("test getAddress", tile.getAddress())
                 i += 1
-                tile.setShape(8)
+                tile.setColor(3)
+                tile.setShape("-")
                 #assign address
                 tiles.append(tile)
             self.tileRows.append(tiles)
@@ -55,22 +64,30 @@ class LSRealFloor():
     def startLoop(self):
         lastSensorPoll = time.time()
         while self.board.is_playing:
-            #print("Waiting for input")
-            #s = input('--> ')
-            #print("got ", s)
-            if time.time() - lastSensorPoll > 1:
+            if time.time() - lastSensorPoll > 3:
                 self.pollSensors()
-                if not self.serialOpen:
+                if True: #not self.serialOpen:
                     #have a ghost step on random tiles
-                    self.board.show(random.randrange(0, 6),random.randrange(0, 8))
+                    print("ghost step")
+                    self.board.show(random.randrange(0, self.rows),random.randrange(0, self.cols))
                 lastSensorPoll = time.time()
+                print("printing board")
                 self.printboard(self.board)
                 self.printToConsole()
+        print("A winner or loser is you!")
+        lastSensorPoll = time.time()
+        while not self.board.is_playing:
+            if time.time() - lastSensorPoll > 7:
+                self.board.is_playing = True
+                for row in self.tileRows:
+                    for tile in row:
+                        tile.setColor("black")
+                        tile.setShape("-")
 
     def printAddresses(self):
         s = ""
-        for row in range(0,6):
-            for col in range(0, 8):
+        for row in range(0,self.rows):
+            for col in range(0, self.cols):
                 s += str(self.tileRows[row][col].getAddress()) + " "
             print(s)
             s = ""
@@ -91,7 +108,7 @@ class LSRealFloor():
         boardString = ""
         for row in self.tileRows:
             for tile in row:
-                boardString += str(tile.getShape())
+                boardString += str(tile.getShape()) + " "
             print(boardString)
             boardString = ""
 
@@ -129,8 +146,9 @@ class LSRealFloor():
 
     def printboard(self, board):
         #tiles = self._getTileList(0,0)
-        for row in range(0,6):
-            for col in range(0,8):
+        print(self.rows, self.cols)
+        for row in range(0,self.rows):
+            for col in range(0,self.cols):
                 tile = self.tileRows[row][col]
                 if board != None:
                     #(row, col) = (tile.getAddress() // self.cols, tile.getAdddress() % self.cols)
@@ -141,18 +159,18 @@ class LSRealFloor():
                             tile.setsShape("-")
                     elif cell == '.':
                             tile.setColor("green")
-                            tile.setShape("0")
+                            tile.setDigit("0")
                     elif cell == ' ' or cell == '':
                             tile.setColor("black")
-                            tile.setShape("8")
+                            tile.setDigit("8")
                     elif cell == 'M':
                             tile.setColor("red")
-                            tile.setShape("8")
+                            tile.setDigit("8")
                     elif cell == 'F':
                             break
                     else:
                             tile.setColor("yellow")
-                            tile.setShape(cell)
+                            tile.setDigit(cell)
         return
 
     def clearboard(self):
