@@ -11,10 +11,7 @@ class LSRealFloor():
     ROWS = 6
     MINES = 9
 
-    def __init__(self):
-        rows = 6
-        cols = 8
-        mines = 9
+    def __init__(self, rows=ROWS, cols=COLS, mines=MINES):
         self.rows = 6
         self.cols = 8
         self.mines = 9
@@ -43,6 +40,7 @@ class LSRealFloor():
             self.tileAddresses = []
             for col in range(cols):
                 tile = LSRealTile(self.sharedSerial)
+                tile.serialOpen = self.serialOpen
                 tile.assignAddress(i)
                 #print("test getAddress", tile.getAddress())
                 i += 1
@@ -63,7 +61,8 @@ class LSRealFloor():
             if time.time() - lastSensorPoll > 1:
                 self.pollSensors()
                 if not self.serialOpen:
-                    self.board.show(random.randrange(0, 8),random.randrange(0, 6))
+                    #have a ghost step on random tiles
+                    self.board.show(random.randrange(0, 6),random.randrange(0, 8))
                 lastSensorPoll = time.time()
                 self.printboard(self.board)
                 self.printToConsole()
@@ -85,7 +84,7 @@ class LSRealFloor():
                 print("received ", val)
                 dataReceived = True
         if not dataReceived:
-            print("nothing received")
+            print("no poll data received")
         return
 
     def printToConsole(self):

@@ -1,9 +1,5 @@
-// ls_wireAPI.h - 5 July 2014
+// ls_wireAPI.h - 13 July 2014
 //
-// defines for serial port
-// pin 0 AKA DIP pin 5 is pulled too low by TinyISP, so program ATTiny out of its socket
-#define LS_TX_PIN 2
-#define LS_RX_PIN 0
 
 // Tiles respond to either specific address or the address of 0.
 // All commands follow one byte containing the address and the number of bytes.
@@ -27,6 +23,9 @@
 #define SENSOR_STATS 2 
 #define SEGMENT_TEST 3  // walks through all colors of all digits
 #define FASTEST_TEST 4  // walks through all colors of all digits fast, looks white
+#define ROLLING_FADE_TEST 5  // fades in and out from inside to out
+#define ROLLING_FADE_TEST2 6  // fades in and out from inside to out
+#define SHOW_ADDRESS 7  // display serial address for floor setup
 
 // one byte commands for major actions
 #define LS_LATCH     (0x10) // refresh display from queue - usually address 0
@@ -39,18 +38,21 @@
 #define LS_CALIBRATE_ON  (LS_LATCH+4) // reset ADC statistics and starts calibration
 #define LS_CALIBRATE_OFF (LS_LATCH+5) // ends calibration, writes ADC stats to EEPROM
 
+// enable or disable debug serial output
+#define LS_DEBUG         (LS_LATCH+7) // temporary command to control debug output
+
 // one byte commands defining whether tile is rightside up or not
 // the installation may be configured upside down at EEPROM address EE_CONFIG
 #define FLIP_ON      (LS_LATCH+8)   // temporary command to flip display upside down
 #define FLIP_OFF     (LS_LATCH+9)   // restore display rightside up
 
-// seven segment display commands with one data byte
+// seven segment immediate display commands with one data byte
 #define SET_COLOR      0x20          // set the tile color - use mask bits below
 #define COLOR_RED_MASK      1
 #define COLOR_GREEN_MASK    2
 #define COLOR_BLUE_MASK     4
 #define SET_SHAPE      (SET_COLOR+1) // set which segments are "on" - -abcdefg
-#define SET_TRANSITION (SET_COLOR+2) // set transition at the next refresh - format TBD
+#define SET_TRANSITION (SET_COLOR+2) // set transition at next refresh - format TBD
 // seven segment display commands with three data bytes
 #define SET_TILE       (SET_COLOR+3) // set the color, segments, and transition
 
@@ -87,6 +89,7 @@
 #define EE_ADC_MIN  4 // Low ADC value from calibration - 8 bits of 10 - not sensitive enough?
 #define EE_PUP_MODE 5 // Powerup/Reset mode - command from 0 to 0X0F
 //          commands that don't work result in the NOP_MODE
+#define EE_PUP_DEBUG    6 // debug output state at reset - 0 disables, 1 enables
 
 // one byte error system commands
 #define MAX_ERRORS      4    // number of command errors remembered in error queue
@@ -107,14 +110,14 @@
 //
 // One segment byte field will be provided for each of the RGB color bits declared
 // Three segment fields allow for arbitrary colors for each segment
-// Segment fields are defined in the abcdefg- order, to match the MAX driver
+// Segment fields are defined in the -abcdefg order, to match LedControl library
 #define SEGMENT_FIELD_MASK  0x38
 #define SEGMENT_FIELD_RED   0x20
 #define SEGMENT_FIELD_GREEN 0x10
 #define SEGMENT_FIELD_BLUE  0x08
 // Segment fields that are not given clear the associated target color segments
 // unless the LSB is set in one of the provided segment fields
-#define SEGMENT_KEEP_MASK   0x01 // if LSB set, do not clear any segment data
+#define SEGMENT_KEEP_MASK   0x80 // if MSB set, do not clear any segment data
 
 // The update condition bits define when these segments are applied to the display
 // There are three update events: immediate, LATCH commands or a sensor detection
@@ -137,18 +140,18 @@
 //
 // Set the segments to transition to a blue 4 on the next LATCH:
 // B Segments at LATCH  B=bcfg
-// 10 001 01 0          01100110
-// 0x8A                 0x66
+// 10 001 01 0          00110011
+// 0x8A                 0x33
 //
-// Set the segments to a red white and blue 0 at a sensor trigger:
-// RGB Segments at trigger  R=acdf    G=ad      B=abde
-// 10 111 10 0              10110100  10010000  11011000
-// 0xBC                     0xB4      0x90      0xD8
+// Set the segments to a red white and blue 8 at a sensor trigger:
+// RGB Segments at trigger  R=acdfg   G=adg     B=abdeg
+// 10 111 10 0              01011011  01001001  01101101
+// 0xBC                     0x5B      0x49      0x6D
 //
 // Immediately set a yellow 6 with transition effect #7:
 // Immediate RGB Segments   R=abcdeg  G=abcdeg Transition #7
-// 10 110 00 1              11111010  11111010 00000111 (TBD)
-// 0xB1                     0xFA      0xFA     0x07 (TBD)
+// 10 110 00 1              01111101  01111101 00000111 (TBD)
+// 0xB1                     0x7D      0x7D     0x07 (TBD)
 //
 // Clear the active display immediately - alternative way to using LS_CLEAR:
 // Immediately clear RGB by giving no segment field data

@@ -3,7 +3,6 @@
 # the API is the base class
 from LSTileAPI import *
 
-#from serial import *
 import serial
 #from struct import *
 
@@ -19,6 +18,7 @@ import time
 LS_LATCH = 0x10       # refresh display from queue - usually address 0
 LS_CLEAR = LS_LATCH+1 # blanks the tile
 LS_RESET = LS_LATCH+2 # reboot
+LS_DEBUG = LS_LATCH+7 # control tile debug output
 
 LS_RESET_ADC = (LS_LATCH+3)    # reset ADC statistics
 LS_CALIBRATE_ON = (LS_LATCH+4) # reset ADC statistics and starts calibration
@@ -85,18 +85,9 @@ class LSRealTile(LSTileAPI):
     def __init__(self, sharedSerial, row=0, col=0):
         super().__init__(row, col)
         self.mySerial = sharedSerial
-        self.serialOpen = True
-        try:
-            self.mySerial.open()
-        except IOError:
-            self.serialOpen = False
-            pass
-        except:
-            print("Unexpected error")
-            self.serialOpen = False
-            pass
         # cmdNargs is address + command + N optional bytes
-
+        self.Debug = True
+        
     def destroy(self):
         return
 
@@ -105,13 +96,13 @@ class LSRealTile(LSTileAPI):
         cmd = SET_COLOR
         self.__tileWrite([cmd, color])
 
-    def getShape(self):
-        return self.shape
-
     def setShape(self, shape):
-        self.shape = shape
         cmd = SET_SHAPE
         self.__tileWrite([cmd, shape])
+        self.shape = shape
+
+    def getShape(self):
+        return self.shape
 
     def setTransition(self, transition, shape):
         cmd = SET_TRANSITION
@@ -127,6 +118,14 @@ class LSRealTile(LSTileAPI):
             self.setTransition(transition)
         return
 
+    def setDigit(self, digit):
+        if ((digit < 0) | (digit > 9)):
+            return  # some kind of error - see Noah example
+        digitMaps=[0x7E,0x30,0x6D,0x79,0x33,0x5B,0x7D,0x70,0x7F,0x7B]
+        shape = digitMaps[digit]
+        cmd = SET_SHAPE
+        self.__tileWrite([cmd, shape])
+
     def update(self,type):
         raise NotImplementedError()
         if (type == 'NOW'):
@@ -141,9 +140,8 @@ class LSRealTile(LSTileAPI):
     def version(self):
         # send version command
         cmd = TILE_VERSION
-        self.__tileWrite([cmd])
+        self.__tileWrite([cmd], True)  # do not eat output
         # return response
-        thisRead = self.mySerial.read(8)
         val = self.__tileRead()
         return val
     
@@ -156,10 +154,8 @@ class LSRealTile(LSTileAPI):
     def eepromRead(self,eeAddr):
         # send read command
         cmd = EEPROM_READ
-        self.__tileWrite([cmd, eeAddr])
+        self.__tileWrite([cmd, eeAddr], True)  # do not eat output
         # return response
-        if self.serialOpen:
-            thisRead = self.mySerial.read(8)
         val = self.__tileRead()
         return val
 
@@ -167,10 +163,8 @@ class LSRealTile(LSTileAPI):
     def errorRead(self):
         # send read command
         cmd = RETURN_ERRORS
-        self.__tileWrite([cmd])
+        self.__tileWrite([cmd], True)  # do not eat output
         # return response
-        if self.serialOpen:
-            thisRead = self.mySerial.read(8) # expect MAX_ERRORS but be safe
         val = self.__tileRead()
         return val
 
@@ -181,7 +175,7 @@ class LSRealTile(LSTileAPI):
 
     # send mode command that displays stuff
     def locate(self):
-        cmd = 6
+        cmd = 7 # the SHOW_ADDRESS command
         self.__tileWrite([cmd])
 
     def demo (self, seconds):
@@ -205,11 +199,15 @@ class LSRealTile(LSTileAPI):
 
     def reset(self):
         versionCmd = LS_RESET
-        self.__tileWrite([versionCmd])
+        self.__tileWrite([versionCmd], True)  # do not eat output
         # return response in case tile spits stuff at reset
-        thisRead = self.mySerial.read(8)
+        time.sleep(1.0)
         val = self.__tileRead()
 
+    def setDebug(self, debugFlag):
+        cmd = LS_DEBUG
+        self.Debug = debugFlag
+        self.__tileWrite([cmd, debugFlag])
 
     # write any queued colors or segments to the display
     def latch(self):
@@ -221,8 +219,6 @@ class LSRealTile(LSTileAPI):
         return
 
     # assignAddress and getAddress are in LSTileAPI base class
-    def getAddress(self):
-        return self.address
 
     def calibrate(self):
         raise NotImplementedError()
@@ -237,44 +233,41 @@ class LSRealTile(LSTileAPI):
 
     # write a command to the tile
     # minimum args is command by itself
-    def __tileWrite(self, args):
-        cmdLen = len(args)
+    def __tileWrite(self, args, expectResponse=False):
+        #cmdLen = len(args)
         # insert address byte plus optional arg count
         #addr = ord(self.address)  # in case input was a char
-        addr = self.getAddress()
-        addr = addr + cmdLen - 1  # command is not counted
+        addr = self.address + len(args) - 1  # command is not counted
         args.insert(0, addr)
-        if self.serialOpen:
+        if(self.serialOpen):
             count = self.mySerial.write(args)
-        else:
-            count = 0
-        if count:
-            writeStr = (' '.join(format(x, '#02x') for x in args))
-            print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
-        #print(' '.join(format(x, '#02x') for x in args))
+            if self.Debug:
+                writeStr = (' '.join(format(x, '#02x') for x in args))
+                print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
+
+        # if no response is expected, read anyway to flush tile debug output
+        if(not(expectResponse) and self.serialOpen):
+            thisRead = self.mySerial.read(8)
+            if len(thisRead) > 0:
+                if self.Debug:
+                    print ("Debug response: " + ' '.join(format(x, '#02x') for x in thisRead))
+            #else:
+                #print("No debug response")
 
 
     # read from the tile
     def __tileRead(self):
-        if self.serialOpen:
+        if(self.serialOpen):
             thisRead = self.mySerial.read(8)
         else:
             thisRead = []
         if len(thisRead) > 0:
             #print("Received " + thisRead.ToHex())
-            print ("Received: " + ''.join(format(x, '02x') for x in thisRead))
-
-            new_str = "Received: " 
-            #for i in thisRead:
-                #new_str += "0x%s " % (i.encode('hex'))
-                #new_str += "0x%s " % (i.encode('hex'))
-            #print(new_str)
-        
+            print ("Received: " + ' '.join(format(x, '#02x') for x in thisRead))
             #thisHex = ByteToHex(thisRead)
             #print("Received " + thisHex)
-        else:
+        #else:
             #print("Received nothing")
-            pass
         return thisRead
 
 
@@ -293,15 +286,7 @@ class LSRealTile(LSTileAPI):
 
     # TODO - not yet used perhaps useful if target slot can be passed in
     def pollSensors(self):
-        if self.serialOpen:
-            self.mySerial.write(TILE_STATUS)
-            #TODO: how long do we need to wait for the tile to respond?
-            #this should probably be event-driven
-            pressure = self.mySerial.read(6)
-            status = self.mySerial.read(2)
-        else:
-            pass
-        #raise NotImplementedError()
+        raise NotImplementedError()
 
 
     ############################################
@@ -320,25 +305,29 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except serial.SerialException:
                 pass
-
     else:
         # unix
-        print("TODO: had to comment this out because list_ports wasn't found")
-        #for port in list_ports.comports():
-        #    yield port[0]
+        for port in list_ports.comports():
+            yield port[0]
 
+# simple delay between test statements with default delay
+def testSleep(secs=0.3):
+    time.sleep(secs)
+
+# simple testing function for LSRealTile
 def main():
-    print("Testing LSRealTile")
+    print("\nTesting LSRealTile")
 
     # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    print("Available serial ports:")
-    print(list(serial_ports()))
-        
-    comPort = "COM3"
+    availPorts = list(serial_ports())
+    print("Available serial ports:" + str(availPorts))
+    comPort = "COM8"
+    if len(availPorts) > 0:  # try the first port in the list
+        comPort = availPorts[0]
+    print("Attempting to open port " + comPort)
     theSerial = None
     try:
         theSerial = serial.Serial(comPort, 19200, timeout=0.001)
-        #theSerial.open()
         print(comPort + " opened")
 
     except serial.SerialException:
@@ -349,8 +338,9 @@ def main():
 
         myTile = LSRealTile(theSerial,1,2)
 
-        #address = input("What is the tile address?")
-        address = 80
+        address = input("What is the tile address? (0 is global)")
+        address = int(address)
+        #address = 96 #80
         
         myTile.assignAddress(address)
         #myTile.assignAddress(b'\x50')
@@ -362,43 +352,89 @@ def main():
         #for i in result:
         #    strRes  += "0x%s " % (i.encode('hex'))
         print("Tile address = " + strRes)
-        time.sleep(2)
+        testSleep()
 
-        print("Testing setColor")
-        myTile.setColor(7)
-        time.sleep(2)
-
-        print("Testing setShape")
-        myTile.setShape(51) # 0x33 AKA "4"
-        time.sleep(2)
-
-        print("Testing setColor")
-        myTile.setColor(1)
-        time.sleep(4)
-
-        print("Testing setShape")
-        myTile.setShape(112) # 0x70 AKA "7"
-        time.sleep(2)
-
-        print("Testing flip")
-        myTile.flip()
-        time.sleep(4)
-
-        print("Testing latch")
-        myTile.latch()
-        time.sleep(2)
-
-        print("Testing reset")
+        print("\nTesting reset")
         myTile.reset()
-        time.sleep(2)
+        testSleep(6)
+        
+        print("\nTesting setDebug - off")
+        myTile.setDebug(0)
+        testSleep()
 
-        print("Testing locate")
+        print("\nTesting setDebug - on")
+        myTile.setDebug(1)
+        testSleep()
+
+        print("\nTesting setColor - white")
+        myTile.setColor(7)
+        testSleep()
+
+        print("\nTesting setShape - 4")
+        myTile.setShape(51) # 0x33 AKA "4"
+        testSleep()
+
+        print("\nTesting setColor - red")
+        myTile.setColor(1)
+        testSleep()
+
+        print("\nTesting setShape - 7")
+        myTile.setShape(112) # 0x70 AKA "7"
+        testSleep()
+
+        print("\nTesting setDigit - all of them")
+        for i in range(10):
+            myTile.setDigit(i)
+            testSleep()
+
+        print("\nTesting setColor - all of them")
+        for i in range(0,8):
+            myTile.setColor(i)
+            testSleep()
+
+        print("\nTesting setShape - faster, with Debug off")
+        fastDelay = 0.001
+        fastTime = 10.0
+        tmpDebug = myTile.Debug
+        start = time.time()
+        myTile.setDebug(0)
+        for someLoops in range(0,100):  # loop a bunch to let this last long enough
+            for i in range(0,256):  # TODO - zero problem
+                myTile.setShape(i%256)
+                testSleep(fastDelay)  # may cause another OS swap of 15.6 ms
+            if (time.time() - start) > fastTime:
+                break
+        print("Restoring prior Debug")
+        myTile.setDebug(tmpDebug)
+
+        print("\nTesting errorRead")
+        myTile.errorRead()
+        testSleep()
+
+        print("\nTesting flip")
+        myTile.flip()
+        testSleep()
+
+        print("\nTesting unflip")
+        myTile.unflip()
+        testSleep()
+
+        print("\nTesting reset")
+        myTile.reset()
+        testSleep(4)
+
+        print("\nTesting latch")
+        myTile.latch()
+        testSleep()
+
+        print("\nTesting locate")
         myTile.locate()
-        time.sleep(4)
-
-        print("Testing eepromRead")
-        myTile.eepromRead(0)
-        time.sleep(2)
+        testSleep(6)
+        
+        print("\nTesting eepromRead - first few addresses")
+        for i in range(0,8):
+            myTile.eepromRead(i)
+            testSleep()
 
         print("\nVersion command should return something:")
         val = myTile.version()
@@ -409,8 +445,6 @@ def main():
         theSerial.close()
        
     input("\nDone - Press the Enter key to exit") # keeps double-click window open
-
-    #time.sleep(10)
 
 if __name__ == '__main__':
 

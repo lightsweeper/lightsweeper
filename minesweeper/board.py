@@ -64,6 +64,7 @@ class Board():
         self.display = display
     
     def show(self, row_id, col_id):
+        print("given:", row_id, col_id, "board:", len(self.board), len(self.board[0]))
         cell = self.board[row_id][col_id]
         if not cell.is_visible:
             print("board.show", row_id, col_id)

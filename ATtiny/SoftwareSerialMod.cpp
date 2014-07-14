@@ -458,6 +458,9 @@ size_t SoftwareSerial::write(uint8_t b)
   uint8_t oldSREG = SREG;
   cli();  // turn off interrupts for a clean txmit
 
+  // lightsweeper - restore pin to output during write
+  DDRB |= _transmitBitMask; // TX_PIN=2 ==> 0x4; TX_PIN=4 ==> 0x10
+  
   // Write the start bit
   tx_pin_write(_inverse_logic ? HIGH : LOW);
   tunedDelay(_tx_delay + XMIT_START_ADJUSTMENT);
@@ -488,13 +491,17 @@ size_t SoftwareSerial::write(uint8_t b)
     
       tunedDelay(_tx_delay);
     }
-
-    tx_pin_write(HIGH); // restore pin to natural state
   }
+
+  //tx_pin_write(HIGH); // restore pin to natural state
+
+  // lightsweeper - change pin to input while quiet
+  DDRB &= ~_transmitBitMask; // TX_PIN=2 => mask=0x4;
+  tx_pin_write(HIGH); // turns on input pullup
 
   SREG = oldSREG; // turn interrupts back on
   //tunedDelay(_tx_delay);
-  tunedDelay(_tx_delay*2);  // HACK - makes Bus Pirate happy even with multi-byte write calls
+  tunedDelay(_tx_delay*2);  // HACK - makes Bus Pirate happy even with multiple write calls
   
   return 1;
 }

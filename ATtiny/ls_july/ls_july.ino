@@ -2,6 +2,9 @@
 #include "SoftwareSerialMod.h" // local modified SoftwareSerial library
 #include <EEPROM.h>
 #include "ls_wireAPI.h"
+#include <avr/wdt.h> // watchdog timer - just for reset
+//#include <avr/io.h> //header file for AVR Microcontroller
+//#include <avr/boot.h>
 
 // BOF preprocessor bug prevent - insert me on top of your arduino-code
 // From: http://www.a-control.de/arduino-fehler/?lang=en
@@ -9,8 +12,55 @@
 __asm volatile ("nop");
 #endif
 
+// TODO - move this section to HW specific header file
+// possible versions:
+//      original dev board
+//      dev board with comm swap
+//      three PCB with comm swap
+//      three PCB with no swap
+
+
+#if false // version for dev board with comm swap
+
+// pin 0 AKA DIP pin 5 is pulled too low by TinyISP, so program ATTiny out of its socket
+// this is the swapped comm and MAX pin definition
+#define LS_TX_PIN 2
+#define LS_RX_PIN 0
+
+// defines for LED driver
+#define SEGCLK 4    // unswap was 0 // Clock line to the MAX72xx
+#define SEGDIN 1    // Data-IN on the MAX72xx
+#define SEGLOAD 3   // unswap was 2 // LOAD-pin to MAX72xx
+
+// Define how the RGB virtual displays are mapped to the MAX72xx digits
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+#endif
+
+
+#if true // version for triple PCB with no swap
+
+// this is the unswapped comm and MAX pin definition
+#define LS_TX_PIN 3 // ?  // swap is 2
+#define LS_RX_PIN 4 // ?  // swap is 0
+
+#define SEGCLK 0    // Clock line to the MAX72xx
+#define SEGDIN 1    // Data-IN on the MAX72xx
+#define SEGLOAD 2   // LOAD-pin to MAX72xx
+
+// Define how the RGB virtual displays are mapped to the MAX72xx digits
+// this accounts for both wiring and LED pinout changes
+#define BLUE 0
+#define RED 1
+#define GREEN 2
+#endif
+
+// end of move this section
+
 // returned by TILE_VERSION query
-const unsigned char tileVersion[2] = {0,0};
+const unsigned char tileVersion[2] = {0,2}; // tiles can share serial bus
+//const unsigned char tileVersion[2] = {0,1}; // support reset
 
 /* Attiny pin map:
   PHYS    INP
@@ -27,10 +77,6 @@ const unsigned char tileVersion[2] = {0,0};
 
 SoftwareSerial mySerial(LS_RX_PIN, LS_TX_PIN); // RX, TX
 
-// defines for LED driver
-#define SEGCLK 4 // was 0 // Clock line to the MAX72xx
-#define SEGDIN 1  // Data-IN on the MAX72xx
-#define SEGLOAD 3  // was 2 // LOAD-pin to MAX72xx
 #define TRIGGER 4 // Velostat pressure sensor
 LedControl lc=LedControl(SEGDIN,SEGCLK,SEGLOAD,1);
 
@@ -38,10 +84,6 @@ LedControl lc=LedControl(SEGDIN,SEGCLK,SEGLOAD,1);
 // TODO - seems to compile without this define
 #define LED_CONTROL
 
-// Define how the RGB virtual displays are mapped to the MAX72xx digits
-#define RED 0
-#define GREEN 1
-#define BLUE 2
 #define WAIT 150
 
 
@@ -62,15 +104,47 @@ unsigned char activeSegs[3]; // the currently displayed segments
 
 
 bool needInit = true;
+#define NEED_INIT   1
+#define UPDATE_SEGS 2
 unsigned char busAddress;
 unsigned char tileStatus;
+unsigned char debugFlag;
 
 // high level mode - volatile since used in ISR
 volatile unsigned char mode; // init in setup // was = 0;
 volatile bool modeChanged = true;
 
+// these seem to be defined in boot.h
+//#define GET_LOW_FUSE_BITS (0×0000)
+//#define GET_HIGH_FUSE_BITS (0×0003)
+//#define GET_LOCK_BITS (0×0001)
+//#define GET_EXTENDED_FUSE_BITS (0×0002)
+
+#define _SPM_GET_LOW_FUSEBITS()  __AddrToZByteToSPMCR_LPM((char*)0x0000U, 0x09U)
+#define _SPM_GET_HIGH_FUSEBITS()  __AddrToZByteToSPMCR_LPM((void __flash*)0x0003U, 0x09U)
+#define _SPM_GET_EXTENDED_FUSEBITS()  __AddrToZByteToSPMCR_LPM((void __flash*)0x0002U, 0x09U)
+
+
 void setup()
 {
+    // disable watchdog - probably have only 15 ms, hope we can do this in time
+    MCUSR = 0;
+    wdt_disable();
+
+// http://embeddedgurus.com/stack-overflow/2009/05/checking-the-fuse-bits-in-an-atmel-avr-at-run-time/
+    //char fuse_low = _SPM_GET_LOW_FUSEBITS();
+
+    //int high,low, lock,ext;
+    //_delay_ms(1); //DELAY to complete operation
+    //high=boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+    //_delay_ms(1);
+    //low=boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+    //_delay_ms(1);
+    //lock=boot_lock_fuse_bits_get(GET_LOCK_BITS);
+    //_delay_ms(1);
+    //ext=boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS);
+    //_delay_ms(1);
+    
     // Wake up the virtual displays
     lc.shutdown(RED, false);
     lc.shutdown(GREEN, false);
@@ -86,17 +160,25 @@ void setup()
     // Open serial communications and wait for port to open:
     mySerial.begin(19200);
     
-    mySerial.write(0xF0);
+    // initial debug mode
+    debugFlag = EEPROM.read(EE_PUP_DEBUG);
+    if (0xFF == debugFlag) // in case EEPROM hasn't been initialized
+        debugFlag = 0;
+
+    // REMOVEME - or use dlog only
+    //mySerial.write(0xEE); // REMOVEME - testing serial stuff
     mySerial.write(get_free_memory());
 
     busAddress = EEPROM.read(EE_ADDR);
-    mySerial.write(busAddress);
+    mySerial.write(busAddress); // greet with address
+    //sendOutput(busAddress); // greet with address
 
     setInversion(0); // basically just reads EEPROM here
 
     // initial operating mode
     mode = EEPROM.read(EE_PUP_MODE);
-    mode =6;  // REMOVEME
+    if (0xFF == mode) // in case EEPROM hasn't been initialized
+        mode = SHOW_ADDRESS; // ROLLING_FADE_TEST;
 }
 
 
@@ -110,6 +192,7 @@ int threshAdc = 512; // gotta start somewhere
 
 unsigned long lastLedMs;  // global - only one user at a time
 
+static unsigned char commandBytes[8]; // filled by cmdRead, used by cmdParse
 
 
 // Several kinds of behavior in any routine:
@@ -130,10 +213,11 @@ unsigned long lastLedMs;  // global - only one user at a time
 void loop()
 {
     // give ACDC a chance every time thru loop
-    //int pad;
-    //bool done = smoothread(10, &pad);
+    int pad;
+    bool adcDone = smoothread(10, &pad);
  
     needInit = false;
+
     if(modeChanged)
     {
         needInit = true;
@@ -149,6 +233,7 @@ void loop()
         modeChanged = false;
     }
 
+    // end processing this command with a display update if needed
     else
     switch (mode)
     {
@@ -170,23 +255,37 @@ void loop()
             fastestTestMode(needInit);
             break;
 
-        case 6: // TODO - need API
+        case ROLLING_FADE_TEST:
             activeSegs[0] = 0x5B;
             activeSegs[1] = 0x49;
             activeSegs[2] = 0x6D;
             rollingEffect(needInit);
             break;
             
-        case 7: // TODO - need API
+        case ROLLING_FADE_TEST2:
             activeSegs[0] = activeSegs[1] = activeSegs[2] = 0x6E; // different
             rollingEffect(needInit);
             break;
             
+        case SHOW_ADDRESS:
+            showAddress(needInit);
+            break;
+            
         case LS_RESET:
             // TODO - none of these reset approaches work yet
+            
             //__asm volatile ("rjmp RESET");  // apparently does not reset the hardware
-            //wdt_enable(WDTO_15MS); while(1){}  // use the watchdog timer
-            //pinMode(pin, OUTPUT); digitalWrite(pin, LOW); // use the RESET pin 
+            //__asm volatile ("rjmp 0");  // apparently does not reset the hardware
+            
+            // this bootloader does not disable the watchdog, so it keeps going off
+            // make sure to clear MCUSR ASAP in setup()
+            wdt_enable(WDTO_15MS); while(1){}  // use the watchdog timer
+            //wdt_enable(WDTO_500MS); while(1){}  // use the watchdog timer
+            //wdt_enable(WDTO_2S); while(1){}  // use the watchdog timer
+            
+            // could use the RESET pin except using it for sensor
+            //pinMode(pin, OUTPUT); digitalWrite(pin, LOW);
+
             break; // should never get here :)
 
         case LS_LATCH:
@@ -198,7 +297,8 @@ void loop()
             {
                 activeSegs[i] = queuedSegs[i];
             }
-            printSegments(activeSegs);        
+            //printSegments(activeSegs);        
+            printSegments();
             mode = NOP_MODE;
             break;
         }
@@ -210,7 +310,8 @@ void loop()
             {
                 activeSegs[i] = 0;
             }
-            printSegments(activeSegs);        
+            //printSegments(activeSegs);        
+            printSegments();
             mode = NOP_MODE;
             break;
             
@@ -219,6 +320,8 @@ void loop()
         case SET_SHAPE: // set which segments are "on" - -abcdefg
         case SET_TRANSITION: // set transition at the next refresh - format TBD
             singleColor(mode);
+            printSegments();
+            mode = NOP_MODE;
             break;
 
         // these commands are one-shot queries
@@ -234,32 +337,44 @@ void loop()
 
         // these commands are one-shot queries
         case TILE_STATUS:
-            mySerial.write(tileStatus);
+            mySerial.write(tileStatus); // sendOutput(tileStatus);
             mode = NOP_MODE;
             break;
         case TILE_VERSION:
             mySerial.write(tileVersion, sizeof(tileVersion));
+            // sendOutput(tileVersion, sizeof(tileVersion)); // TODO - does not support lengths
+            mode = NOP_MODE;
+            break;
+
+        case LS_DEBUG:         
+            debugFlag = commandBytes[2];
             mode = NOP_MODE;
             break;
 
         case FLIP_ON:
         case FLIP_OFF:
             setInversion(mode);
+            printSegments();
             mode = NOP_MODE;
             break;
 
+#if false
         case EEPROM_READ:
             eepromRead();
             mode = NOP_MODE;
-            //modeChanged = true;  //set to get init
             break;
 
         case EEPROM_WRITE:
             eepromWrite();
             mode = NOP_MODE;
-            //modeChanged = true;  //set to get init
             break;
-
+#else
+        case EEPROM_READ:
+        case EEPROM_WRITE:
+            eepromCmd(mode);
+            mode = NOP_MODE;
+            break;
+#endif
         case NOP_MODE:
             // do nothing here
             break;
@@ -275,9 +390,9 @@ void loop()
         default:
             processErrors(mode);
             mode = NOP_MODE; // this mode does nothing, needs no init
-            //modeChanged = true;  //set to get init
             break;
     }
+
 
     // simple command processor - requires address in top bits and mode in bottom bits
     // accumulate full command bytes
@@ -286,8 +401,6 @@ void loop()
     // parse command
     if (done) cmdParse();
 }
-
-static unsigned char commandBytes[8]; // filled by cmdRead, used by cmdParse
 
 // reads stuff from the serial input 
 // returns true when a complete command is acquired
@@ -325,7 +438,7 @@ bool cmdRead()
             char numBytes = (newChar & 0x07) + 2;
             //numBytes = 2; // HACK TEMP - two bytes total for now
             commandState = (numBytes << 4) + 1; // next byte idx is 1
-            logChar = 0xC0; // log beginning of command
+            //logChar = 0xC0; // log beginning of command
             timerInit(&cmdTimerInit);
         }
 
@@ -354,7 +467,7 @@ bool cmdRead()
                     else
                     {
                         done = false; // throw out this command
-                        logChar = 0xCE; // not good to send in a system
+                        //logChar = 0xCE; // not good to send in a system
                     }
 
                     // exit out of while loop with no more reads
@@ -490,6 +603,10 @@ void processSegmentCmd(unsigned char mode)
 
 void singleColor(unsigned char mode)
 {
+#if TRY_TO_MERGE_WITH_OTHER_CMDS
+    // Try to be smart and work from previously set multi-color setups
+    // The problem is when the color is black or the segments are all off
+    // This causes all the segments to be off forever :(
     unsigned char oneColorSegs = 0;
     unsigned char commonColor = 0;
 
@@ -498,7 +615,7 @@ void singleColor(unsigned char mode)
         // set the color of any segment lit now with the new color
         case SET_COLOR: // set the tile color - format TBD
             oneColorSegs = activeSegs[0] | activeSegs[1] | activeSegs[2];
-            dlog(oneColorSegs);
+            //dlog(oneColorSegs);
 
             commonColor = commandBytes[2];
             break;
@@ -511,7 +628,7 @@ void singleColor(unsigned char mode)
                 commonColor |= COLOR_GREEN_MASK;
             if (activeSegs[2])
                 commonColor |= COLOR_BLUE_MASK;
-            dlog(commonColor);
+            //dlog(commonColor);
 
             oneColorSegs = commandBytes[2];
             break;
@@ -522,12 +639,41 @@ void singleColor(unsigned char mode)
             return;
     }
 
+    // log the new color and segments
+    dlog(commonColor);
+    dlog(oneColorSegs);
+
+#else
+
+    static unsigned char oneColorSegs = 0;
+    static unsigned char commonColor = 0;
+
+    switch (mode)
+    {
+        // set the color of any segment lit with the new color
+        case SET_COLOR: // set the color of all segments
+            commonColor = commandBytes[2];
+            break;
+
+        // set the color of the new segment with the currently active colors
+        case SET_SHAPE: // set which segments are "on"  -abcdefg
+            oneColorSegs = commandBytes[2];
+            break;
+
+        // TODO - nothing here quite yet
+        case SET_TRANSITION: // set transition at the next refresh - format TBD
+        default:
+            return;
+    }
+
+#endif
+
     // now have the segments and the colors, load the display registers
     activeSegs[0] = (commonColor & COLOR_RED_MASK) ? oneColorSegs : 0;
     activeSegs[1] = (commonColor & COLOR_GREEN_MASK) ? oneColorSegs : 0;
     activeSegs[2] = (commonColor & COLOR_BLUE_MASK) ? oneColorSegs : 0;
 
-    printSegments(activeSegs);
+    //printSegments(activeSegs);
 }
 
 // demo and standalone modes
@@ -776,6 +922,7 @@ void fastestTestMode(bool init)
     //delay(5); // little delay
 }
 
+
 // walk thru colors and digits as fast as possible - in this control model
 void colorRampTestMode(bool init)
 {
@@ -824,6 +971,98 @@ void colorRampTestMode(bool init)
     delay(5); // little delay
 }
 
+
+// display serial address for floor setup - runs forever
+void showAddress(bool init)
+{
+    static char loopState;
+
+    unsigned long newMs = millis();
+
+    if(init)
+    {
+        loopState = 0;
+        lastLedMs = newMs;
+        dlog(0xB0);
+    }
+
+    unsigned long deltaMs = newMs - lastLedMs;
+
+    // split address into array of digits, LSD first
+    int val = busAddress;
+    char digits[3];
+    splitInt(val, 3, digits);
+    const int dispTimeMs = 2000;
+
+    switch (loopState)
+    {
+        // display first digit
+        case 0:
+            printDigit(digits[2], red); // display first digit
+
+            // prepare for next state
+            lastLedMs = newMs;
+            loopState = 1;
+            break;
+
+        // wait then display second digit
+        case 1:
+            if(deltaMs>dispTimeMs) // display digits long enough to see
+            {
+                printDigit(digits[1], yellow); // display second digit
+
+                // prepare for next state
+                lastLedMs = newMs;
+                loopState = 2;
+            }
+            break;
+
+        // wait then display third digit
+        case 2:
+            if(deltaMs>dispTimeMs) // display digits long enough to see
+            {
+                printDigit(digits[0], green); // display third digit
+
+                // prepare for next state
+                lastLedMs = newMs;
+                loopState = 3;
+            }
+            break;
+
+        // wait then display third digit
+        case 3:
+            if(deltaMs>dispTimeMs) // display digits long enough to see
+            {
+                //printDigit(8, black); // clear
+
+                activeSegs[0] = 0x08;
+                activeSegs[1] = 0x08;
+                activeSegs[2] = 0x08;
+                printSegments();
+
+                // prepare for next state
+                lastLedMs = newMs;
+                loopState = 4;
+            }
+            break;
+
+        // done
+        case 4:
+        default:
+            if(deltaMs>dispTimeMs)
+            {
+                // prepare for next state
+                lastLedMs = newMs;
+                loopState = 0; // done here
+                //return true; // really done here
+            }
+            break;
+    }
+
+    //return false;
+}
+
+
 // ADC and pressure sensor functions
 
 // sensor value is single char
@@ -849,7 +1088,7 @@ void getAdcStat(char stat)
         }
         retVal = selVal >> 2;
     }
-    mySerial.write(retVal);
+    mySerial.write(retVal); // sendOutput(retVal);
 }
 
 
@@ -862,20 +1101,12 @@ bool smoothread(int smoothing, int* avgAdc)
     static int total = 0;               // the running total
     static unsigned char readState = 0; // allows smoothing to 15 with 16 skips
 
-#if true
     if (timerExpired(&adcTimerInit, 5)) // long-ish period when logging
-#else
-    // TODO - this timing is pretty erratic - may need static and millis()
-    // read ADC every Nth call
-    if (0 == (readState%16))
-#endif
     {
         total = total + analogRead(inputPin);  // nominal 100 us per read
         //total = analogRead(inputPin);  // nominal 100 us per read
-#if true
         timerInit(&adcTimerInit);
         readState++;
-#endif
     }
 
     // accumulate for "smoothing" times
@@ -903,7 +1134,8 @@ bool smoothread(int smoothing, int* avgAdc)
         //dlog(readState);
         //dlog(average >> 4);  // 0-1023 to 8 bits
         int vble = map(average, 0, 1023, 0, 99);
-        dlog(vble);  // 99%
+        //dlog(vble);  // 99%
+        //mySerial.write(vble);  // 99% - lots of output - mostly 0x63
 
         done = true;
         readState = 0;
@@ -1005,8 +1237,6 @@ int prime(int n) {
 // returns true when done
 bool displayAdcPct(int val, const int *rgb)
 {
-    //bool done;
-
     static char dispState;
     static char digits[2];
     const int high = 1023; // maximum ADC value
@@ -1083,7 +1313,7 @@ void splitInt (int val, int numDigits, char* digits)
 }
 
 // rolling fade effect
-// keeps current segmentsm, but uses rolling mask on current segments
+// keeps current segments, but uses rolling mask on current segments
 inline void rollingEffect(bool init)
 {
     unsigned long newMs = millis();
@@ -1118,8 +1348,8 @@ inline void rollingEffect(bool init)
         }
         mapActiveToLive(mask);
         // TODO - change to liveSegs
-        printSegments(activeSegs);        
-    }  
+        printSegments();        
+    }
 }
 
 inline void mapActiveToLive(unsigned char mask)
@@ -1145,7 +1375,7 @@ void printDigit(int digit, const int *rgb)
         activeSegs[i] = thisColor;
     }
     //mySerial.write(activeSegs, 3);  // lots of output
-    printSegments(activeSegs);        
+    printSegments();
 }
 
 #if false
@@ -1168,8 +1398,10 @@ void printDigit(int digit, int red, int green, int blue)
 
 // seven-segment print signature with individual segment bits
 // TODO - could change from parameter to always using activeSegs
-void printSegments(unsigned char* colorSegments)
+//void printSegments(unsigned char* colorSegments)
+void printSegments()
 {
+    unsigned char* colorSegments = activeSegs;
     lc.clearDisplay(0);
 
     int row[3] = {RED, GREEN, BLUE};
@@ -1201,33 +1433,47 @@ void setInversion(unsigned char mode)
     flip &= STATUS_FLIP_MASK; // want only flip bit
     //dlog(flip);
     tileStatus = (tileStatus & ~STATUS_FLIP_MASK) | flip;
+    //printSegments(activeSegs);        // maybe temporary
 
     dlog(tileStatus); // MSB is flip bit
 }
 
 // utility functions
 
+#if false
 void eepromRead()
 {
     // TODO - use more than 256 bytes of EEPROM?
     unsigned char addr = commandBytes[2];
-    //dlog(0xE0);
     unsigned char val = EEPROM.read(addr);
-    dlog(val);
-    //dlog(0xEF);
+    mySerial.write(val); // sendOutput(val);
 }
 
 void eepromWrite()
 {
     // TODO - use more than 256 bytes of EEPROM?
     unsigned char addr = commandBytes[2];
+    unsigned char val = EEPROM.read(addr);
     unsigned char datum = commandBytes[3];
-    //dlog(0xE0);
-    //unsigned char val = EEPROM.write(addr, datum);
-    EEPROM.write(addr, datum);
-    //dlog(val);
-    //dlog(0xEF);
+    if (val != datum)
+        EEPROM.write(addr, datum);
 }
+#else
+void eepromCmd(unsigned char cmd)
+{
+    // TODO - use more than 256 bytes of EEPROM?
+    unsigned char addr = commandBytes[2];
+    unsigned char val = EEPROM.read(addr);
+    if (cmd == EEPROM_WRITE)
+    {
+        unsigned char datum = commandBytes[3];
+        if (val != datum)
+            EEPROM.write(addr, datum);
+    }
+    else
+        mySerial.write(val); // sendOutput(val);
+}
+#endif
 
 void processErrors(unsigned char mode)
 {
@@ -1237,7 +1483,7 @@ void processErrors(unsigned char mode)
     {
         if (RETURN_ERRORS == mode)
         {
-            //mySerial.write(sizeof(savedErrors), savedErrors);
+            // sendOutput(savedErrors, sizeof(savedErrors)); // TODO - does not support lengths
             mySerial.write(savedErrors, 4);
         }
         
@@ -1286,7 +1532,16 @@ bool timerExpired(unsigned char * initVal, unsigned char timerMs)
     return timeout;
 }
 
+// use this write for debug output
 inline void dlog (char thisChar)
+{
+    if(debugFlag)
+        mySerial.write(thisChar);
+}
+
+// use this write for queries and other desired output
+// TODO - DO NOT USE YET - something wrong with this
+inline void sendOutput (char thisChar)
 {
     mySerial.write(thisChar);
 }
