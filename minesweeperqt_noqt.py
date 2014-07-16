@@ -12,28 +12,14 @@ def main():
     print("Available serial ports:" + str(availPorts))
     comPort = "COM5"
     print("connecting to ", comPort)
-    serial = Serial(comPort, 19200, timeout=0.001)
+    serial = None
+    try:
+        serial = Serial(comPort, 19200, timeout=0.001)
+    except IOError:
+        print("Could not open ", comPort)
     debug = True
     if debug:
-        tile = LSRealTile(serial)
-        tile.serialOpen = True
-        tile.assignAddress(40)
-        lastTime = time.time()
-        print("setting color and shape of initial tile")
-        tile.setColor(3)
-        tile.setDigit(1)
-        while time.time() - lastTime < 2:
-            pass
-        lastTime = time.time()
-        tile.setColor(2)
-        tile.setDigit(2)
-        while time.time() - lastTime < 2:
-            pass
-        lastTime = time.time()
-        tile.setColor(4)
-        tile.setDigit(3)
-        while time.time() - lastTime < 2:
-            pass
+        testPatternCritical(serial)
 
     print("creating main class")
     addresses = [32, 40, 48]
@@ -54,6 +40,29 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except SerialException:
                 pass
+
+def testPatternCritical(serial):
+    tile = LSRealTile(serial)
+    for i in range(36):
+        tile.assignAddress(i * 8)
+        tile.setColor(LSRealFloor.RED)
+        tile.setDigit(8)
+    for i in range(36):
+        tile.assignAddress(i * 8)
+        tile.setColor(LSRealFloor.YELLOW)
+        tile.setDigit(8)
+    for i in range(36):
+        tile.assignAddress(i * 8)
+        tile.setColor(LSRealFloor.RED)
+        tile.setDigit(8)
+    for i in range(36):
+        tile.assignAddress(i * 8)
+        tile.setColor(LSRealFloor.RED)
+        tile.setDigit(8)
+    for i in range(36):
+        tile.assignAddress(i * 8)
+        tile.setColor(LSRealFloor.RED)
+        tile.setDigit(8)
 
 if __name__ == '__main__':
     main()

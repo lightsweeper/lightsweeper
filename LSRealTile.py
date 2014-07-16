@@ -87,42 +87,25 @@ class LSRealTile(LSTileAPI):
         self.mySerial = sharedSerial
         # cmdNargs is address + command + N optional bytes
         self.Debug = True
-        #assign to false for debug without tiles
-        self.serialOpen = True
-        
+        if sharedSerial is None:
+            print("Shared serial is None")
     def destroy(self):
         return
 
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
         cmd = SET_COLOR
-        #todo: actually correct numeric color values
-        if color is "red":
-            color = 1
-        elif color is "green":
-            color = 2
-        elif color is "yellow":
-            color = 3
-        elif color is "blue":
-            color = 4
-        elif color is "violet":
-            color = 5
-        elif color is "black":
-            color = 0
         self.__tileWrite([cmd, color])
 
     def setShape(self, shape):
         cmd = SET_SHAPE
-        if shape is '-':
-            shape = 1
         self.__tileWrite([cmd, shape])
         self.shape = shape
-        print("setshape", shape)
 
     def getShape(self):
         return self.shape
 
-    def setTransition(self, transition, shape):
+    def setTransition(self, transition):
         cmd = SET_TRANSITION
         self.__tileWrite([cmd, shape])
 
@@ -137,13 +120,12 @@ class LSRealTile(LSTileAPI):
         return
 
     def setDigit(self, digit):
-        digit = int(digit)
         if ((digit < 0) | (digit > 9)):
             return  # some kind of error - see Noah example
         digitMaps=[0x7E,0x30,0x6D,0x79,0x33,0x5B,0x7D,0x70,0x7F,0x7B]
-        shape = digitMaps[digit]
+        self.shape = digitMaps[digit]
         cmd = SET_SHAPE
-        self.__tileWrite([cmd, shape])
+        self.__tileWrite([cmd, self.shape])
 
     def update(self,type):
         raise NotImplementedError()
@@ -253,40 +235,37 @@ class LSRealTile(LSTileAPI):
     # write a command to the tile
     # minimum args is command by itself
     def __tileWrite(self, args, expectResponse=False):
-        #cmdLen = len(args)
+        if self.mySerial == None:
+            return
         # insert address byte plus optional arg count
-        #addr = ord(self.address)  # in case input was a char
         addr = self.address + len(args) - 1  # command is not counted
         args.insert(0, addr)
-        if(self.serialOpen):
-            count = self.mySerial.write(args)
-            if self.Debug:
-                writeStr = (' '.join(format(x, '#02x') for x in args))
-                #print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
+        count = self.mySerial.write(args)
+        if self.Debug:
+            writeStr = (' '.join(format(x, '#02x') for x in args))
+            print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
 
         # if no response is expected, read anyway to flush tile debug output
-        if(not(expectResponse) and self.serialOpen):
+        if(not(expectResponse)):
             thisRead = self.mySerial.read(8)
             if len(thisRead) > 0:
-                if self.Debug:
+                #if self.Debug:
+                # debug or not, if tile sends something, we want to see it
+                if True or self.Debug:
                     print ("Debug response: " + ' '.join(format(x, '#02x') for x in thisRead))
-            #else:
-                #print("No debug response")
-
 
     # read from the tile
     def __tileRead(self):
-        if(self.serialOpen):
-            thisRead = self.mySerial.read(8)
-        else:
-            thisRead = []
+        if self.mySerial == None:
+            return
+        thisRead = self.mySerial.read(8)
         if len(thisRead) > 0:
             #print("Received " + thisRead.ToHex())
             print ("Received: " + ' '.join(format(x, '#02x') for x in thisRead))
             #thisHex = ByteToHex(thisRead)
             #print("Received " + thisHex)
-        #else:
-            #print("Received nothing")
+        else:
+            print("Received nothing")
         return thisRead
 
 
@@ -333,50 +312,13 @@ def serial_ports():
 def testSleep(secs=0.3):
     time.sleep(secs)
 
-# simple testing function for LSRealTile
-def main():
-    print("\nTesting LSRealTile")
-    serial_ports()
-    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    availPorts = list(serial_ports())
-    print("Available serial ports:" + str(availPorts))
-    comPort = "COM8"
-    if len(availPorts) > 0:  # try the first port in the list
-        comPort = availPorts[0]
-    print("Attempting to open port " + comPort)
-    theSerial = None
-    try:
-        theSerial = serial.Serial(comPort, 19200, timeout=0.001)
-        print(comPort + " opened")
-        
-    except serial.SerialException:
-        print(comPort + " is not available")
-        
-    if theSerial != None:
-        print("\nStarting tests...")
-
-        myTile = LSRealTile(theSerial,1,2)
-        myTile.serialOpen = True
-        address = input("What is the tile address? (0 is global)")
-        address = int(address)
-        #address = 96 #80
-        
-        myTile.assignAddress(address)
-        #myTile.assignAddress(b'\x50')
-        result = myTile.getAddress()
-        #print("Tile address = " + result)
-        strRes = ""
-        #strRes = ''.join( [ "0x%02X " %  x for x in result ] ).strip()
-        strRes = repr(result)
-        #for i in result:
-        #    strRes  += "0x%s " % (i.encode('hex'))
-        print("Tile address = " + strRes)
-        testSleep()
-
-        print("\nTesting reset")
-        myTile.reset()
-        testSleep(6)
-        
+# send sync sequence
+def serialSync(mySerial):
+    #print("sync")  # probably should not print since it slows down timing
+    mySerial.write([0, 0, 0, 0])
+    
+# full suite of command tests
+def fullSuite(myTile):
         print("\nTesting setDebug - off")
         myTile.setDebug(0)
         testSleep()
@@ -392,6 +334,7 @@ def main():
         print("\nTesting setShape - 4")
         myTile.setShape(51) # 0x33 AKA "4"
         testSleep()
+
 
         print("\nTesting setColor - red")
         myTile.setColor(1)
@@ -412,17 +355,39 @@ def main():
             testSleep()
 
         print("\nTesting setShape - faster, with Debug off")
-        fastDelay = 0.010
-        fastTime = 10.0
+        fastDelay = 0.001
+        fastTime = 5.0
         tmpDebug = myTile.Debug
         start = time.time()
         myTile.setDebug(0)
         for someLoops in range(0,100):  # loop a bunch to let this last long enough
-            for i in range(0,256):  # TODO - zero problem
+            for i in range(0,256):
                 myTile.setShape(i%256)
                 testSleep(fastDelay)  # may cause another OS swap of 15.6 ms
             if (time.time() - start) > fastTime:
-                break
+                break;
+        print("Restoring prior Debug")
+        myTile.setDebug(tmpDebug)
+
+        print("\nTesting errorRead")
+        testSleep()
+        myTile.errorRead()
+        testSleep()
+
+        print("\nSetting same color and digit many times to test flicker")
+        fastDelay = 0.01
+        fastTime = 10.0
+        tmpDebug = myTile.Debug
+        myTile.setDebug(0)
+        start = time.time()
+        for someLoops in range(0,10000):  # loop a bunch to let this last long enough
+            for color in range(1,8):
+                myTile.setColor(color)
+                for i in range(0,20):
+                    myTile.setDigit(8)
+                    testSleep(fastDelay)  # may cause another OS swap of 15.6 ms
+            if (time.time() - start) > fastTime:
+                break;
         print("Restoring prior Debug")
         myTile.setDebug(tmpDebug)
 
@@ -430,13 +395,17 @@ def main():
         myTile.errorRead()
         testSleep()
 
+        print("\nSetting up to test flip")
+        myTile.setDigit(7)
+        myTile.setColor(7)
+        testSleep(1)
         print("\nTesting flip")
         myTile.flip()
-        testSleep()
+        testSleep(1)
 
         print("\nTesting unflip")
         myTile.unflip()
-        testSleep()
+        testSleep(1)
 
         print("\nTesting reset")
         myTile.reset()
@@ -460,7 +429,89 @@ def main():
         if len(val) > 0:
             #print("Version command returned 0x%2X " % (val))
             pass
+
+# lots of output - looking for loss of sync, overrun, etc
+def commTest(myTile, mySerial):
+        print("\nTesting setShape in many loops to look for timing bug")
+        myTile.setColor(7)
+        for yuck in range(100):
+            print("\nTesting setShape - faster, with Debug off")
+            fastDelay = 0.01
+            fastTime = 3.0
+            tmpDebug = myTile.Debug
+            start = time.time()
+            myTile.setDebug(0)
+            for someLoops in range(0,100):  # loop a bunch to let this last long enough
+                for i in range(0,256):
+                    if i%64 == 50:
+                        serialSync(mySerial)
+                    myTile.setShape(i%256)
+                    testSleep(fastDelay)  # may cause another OS swap of 15.6 ms
+                if (time.time() - start) > fastTime:
+                    break;
+
+            print("Restoring prior Debug")
+            myTile.setDebug(tmpDebug)
+
+
+# simple testing function for LSRealTile
+def main():
+    print("\nTesting LSRealTile")
+
+    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
+    availPorts = list(serial_ports())
+    print("Available serial ports:" + str(availPorts))
+    comPort = "COM8"
+    if len(availPorts) > 0:  # try the first port in the list
+        comPort = availPorts[0]
+    print("Attempting to open port " + comPort)
+    theSerial = None
+    try:
+        theSerial = serial.Serial(comPort, 19200, timeout=0.001)
+        print(comPort + " opened")
+
+    except serial.SerialException:
+        print(comPort + " is not available")
         
+    if theSerial != None:
+        print("\nStarting tests...")
+
+        myTile = LSRealTile(theSerial,1,2)
+
+        address = input("What is the tile address? (0 is global): ")
+        address = int(address)
+        #address = 96 #80
+        
+        myTile.assignAddress(address)
+        #myTile.assignAddress(b'\x50')
+        result = myTile.getAddress()
+        #print("Tile address = " + result)
+        strRes = ""
+        #strRes = ''.join( [ "0x%02X " %  x for x in result ] ).strip()
+        strRes = repr(result)
+        #for i in result:
+        #    strRes  += "0x%s " % (i.encode('hex'))
+        print("Tile address = " + strRes)
+        testSleep()
+
+        print("\nTesting reset")
+        myTile.reset()
+        testSleep(6)
+
+        print("Test choices:")
+        print("    0 - full test suite")
+        print("    1 - communications test")
+        testChoice = int(input("What test do you want to run? "))
+        if testChoice == 0:
+            fullSuite(myTile)
+        elif testChoice == 1:
+            commTest(myTile, theSerial)
+        else:
+            print("You did not enter a valid test choice")
+        
+        
+        print("\nFinal reset")
+        myTile.reset()        
         theSerial.close()
        
     input("\nDone - Press the Enter key to exit") # keeps double-click window open

@@ -58,8 +58,9 @@ __asm volatile ("nop");
 
 // end of move this section
 
-// returned by TILE_VERSION query
-const unsigned char tileVersion[2] = {0,2}; // tiles can share serial bus
+// returned by TILE_VERSION query - keep old version history here 
+const unsigned char tileVersion[2] = {0,3}; // sensor pullup and sensorReadings support, flicker fix
+//const unsigned char tileVersion[2] = {0,2}; // tiles can share serial bus
 //const unsigned char tileVersion[2] = {0,1}; // support reset
 
 /* Attiny pin map:
@@ -88,6 +89,7 @@ LedControl lc=LedControl(SEGDIN,SEGCLK,SEGLOAD,1);
 
 
 // colors are represented by an RGB triplet array
+#if false
 const int red[3] = {255, 0, 0};
 const int yellow[3] = {255, 255, 0};
 const int green[3] = {0, 255, 0};
@@ -96,6 +98,15 @@ const int blue[3] = {0, 0, 255};
 const int magenta[3] = {255, 0, 255};
 const int white[3] = {255, 255, 255};
 const int black[3] = {0, 0, 0};
+#endif
+const unsigned char red1[3] = {255, 0, 0};
+const unsigned char yellow1[3] = {255, 255, 0};
+const unsigned char green1[3] = {0, 255, 0};
+const unsigned char cyan1[3] = {0, 255, 255};
+const unsigned char blue1[3] = {0, 0, 255};
+const unsigned char magenta1[3] = {255, 0, 255};
+const unsigned char white1[3] = {255, 255, 255};
+const unsigned char black1[3] = {0, 0, 0};
 
 // LEDs in segments represented by char triplets
 unsigned char triggerSegs[3];// this display loads with a sensor activation
@@ -151,9 +162,12 @@ void setup()
     lc.shutdown(BLUE, false);
     lc.setScanLimit(0,2); // Only scan 3 digits
   
-    digitalWrite(A0, HIGH); // a little pull-up
-    analogReference(INTERNAL1V1);  // use internal 1 Volt - TODO - may not be working
-
+    //pinMode(A0, INPUT);
+    //digitalWrite(A0, HIGH); // a little pull-up
+    // WARNING - this pin is A0, but that has the wrong value for digital functions
+    // use the digital pin number instead.  A0 and D5 are the same physical pin
+    pinMode(5, INPUT_PULLUP);
+    analogReference(INTERNAL1V1);  // use internal 1 Volt - TODO - may not be working 
     // Set brightness for all colors (intensity=1-15)
     lc.setIntensity(0, 14);
 
@@ -179,18 +193,24 @@ void setup()
     mode = EEPROM.read(EE_PUP_MODE);
     if (0xFF == mode) // in case EEPROM hasn't been initialized
         mode = SHOW_ADDRESS; // ROLLING_FADE_TEST;
+    //mode = SENSOR_TEST; // HACK TEMP
 }
 
 
 /// ADC and pressure sensor variables
-unsigned char curSensor; // TODO - MSB is current state, lower bits recent history
+unsigned char sensorReadings; // MSB is current reading, lower bits recent history
 int curAdc;
 // TODO - get min and max out of EEPROM
 int maxAdc = 0;
 int minAdc = 1023;
 int threshAdc = 512; // gotta start somewhere
 
-unsigned long lastLedMs;  // global - only one user at a time
+// These vbles are used by display updating code
+// such as standalone modes and transitions and effects
+// These are global - only one user at a time
+// They will usually be updated at the same time
+unsigned long updateLedMs; 
+unsigned char updateLedState;
 
 static unsigned char commandBytes[8]; // filled by cmdRead, used by cmdParse
 
@@ -272,8 +292,6 @@ void loop()
             break;
             
         case LS_RESET:
-            // TODO - none of these reset approaches work yet
-            
             //__asm volatile ("rjmp RESET");  // apparently does not reset the hardware
             //__asm volatile ("rjmp 0");  // apparently does not reset the hardware
             
@@ -412,6 +430,8 @@ bool cmdRead()
 
     // top 4 bits is byte count in command,  bottom 4 is next write index
     static char commandState = 0;
+    // use magic sequence of characters to synchronize
+    static char syncCount = 0;
 
     // timeout any command that has been waiting to finish for too long
     // it is most likely that some byte got lost somehow
@@ -419,13 +439,32 @@ bool cmdRead()
     if ((commandState != 0) && timerExpired(&cmdTimerInit, 100))
     {
         commandState = 0; // reset at timeout
-        logChar = 0xCF; // timeout - but not good to send in a system
+        //logChar = 0xCF; // timeout - but not good to send in a system
+        //mySerial.write(0x40); // HACK TEMP - want to see errors on scope
     }
     else // this else allows logChar to be logged in this call
     
     while (mySerial.available())
     {
         char newChar = mySerial.read();
+
+        // resynchronize on FOUR zero bytes in a row - this is two global NOP_MODE commands
+        if (0 == newChar)
+        {
+            syncCount++;
+            if (4 == syncCount) // resynchronize !
+            {
+                commandState = 0;
+                syncCount = 0;
+                char syncOut = 0x0;
+                mySerial.write(syncOut); // all tiles should send this
+                break; // break out of while loop
+            }
+        }
+        else
+        {
+            syncCount = 0;
+        }
 
         // each clause needs to set commandState for next entry
         // initially it should also send a byte for debugging
@@ -436,7 +475,6 @@ bool cmdRead()
             commandBytes[0] = newChar;
             // numBytes is bottom 3 bits, does not include address and command
             char numBytes = (newChar & 0x07) + 2;
-            //numBytes = 2; // HACK TEMP - two bytes total for now
             commandState = (numBytes << 4) + 1; // next byte idx is 1
             //logChar = 0xC0; // log beginning of command
             timerInit(&cmdTimerInit);
@@ -468,6 +506,7 @@ bool cmdRead()
                     {
                         done = false; // throw out this command
                         //logChar = 0xCE; // not good to send in a system
+                        //mySerial.write(commandBytes, 3); // HACK TEMP - want to see errors on scope
                     }
 
                     // exit out of while loop with no more reads
@@ -538,6 +577,7 @@ void processSegmentCmd(unsigned char mode)
     unsigned char* target2 = 0;
     switch (condx)
     {
+        default: // saves a few bytes
         case CONDX_IMMED: target1 = activeSegs; break;
         case CONDX_LATCH: target1 = queuedSegs; break;
         case CONDX_TRIG: target1 = queuedSegs; break;
@@ -681,25 +721,25 @@ void singleColor(unsigned char mode)
 // mode = SENSOR_TEST
 void sensorTestMode(bool init)
 {
-    static char loopState;
     unsigned long newMs = millis();
 
     if(init)
     {
-        loopState = 0;
-        lastLedMs = newMs;
+        updateLedMs = newMs;
+        updateLedState = 0;
         dlog(0xB0);
     }
 
     bool done;
-    unsigned long deltaMs = newMs - lastLedMs;
-    const int *dispColor;
+    unsigned long deltaMs = newMs - updateLedMs;
+    //const int *dispColor;
     int digit;
 
-    switch (loopState)
+    switch (updateLedState)
     {
         // take ADC readings
         case 0:
+        default: // saves a few bytes
         {
             //curAdc = (curAdc+10)%1024; // HACK TEMP - ramp
             int pad;
@@ -708,7 +748,7 @@ void sensorTestMode(bool init)
             if (done)
             {
                 curAdc = pad;
-                loopState = 1; // done here
+                updateLedState = 1; // done here
                 dlog(0xB1);
             }
             break;
@@ -719,11 +759,13 @@ void sensorTestMode(bool init)
         {
             int curVal = curAdc;
             bool overThresh = (curVal > threshAdc);
-            dispColor = overThresh ? yellow : cyan; // color shows whether over or under threshold
+            //dispColor = overThresh ? yellow : cyan; // color shows whether over or under threshold
+            // color shows whether over or under threshold
+            const unsigned char* dispColor = overThresh ? yellow1 : cyan1;
             digit = map(curVal, 0, 1023, 0, 9); // map input to single digit
             printDigit(digit, dispColor); // display first digit
-            lastLedMs = newMs;
-            loopState = 2; // done here
+            updateLedMs = newMs;
+            updateLedState = 2; // done here
             break;
         }
 
@@ -731,16 +773,10 @@ void sensorTestMode(bool init)
         case 2:
             if (deltaMs > 100) // display new digit
             {
-                lastLedMs = newMs;
-                loopState = 3;
+                updateLedMs = newMs;
+                updateLedState = 3;
                 //dlog(0xB3);
             }
-            break;
-
-        // coding failsafe
-        default:
-            loopState = 0; // done here
-            //dlog(0xBF);
             break;
     }
 }
@@ -748,38 +784,30 @@ void sensorTestMode(bool init)
 // mode = SENSOR_STATS
 void sensorStats(bool needInit)
 {
-    static int loopState;
+    //static int loopState;
     unsigned long newMs = millis();
-
-    // static to cache values in case calibration routine is changing them
-    //static int curVal;
-    //static bool overThresh;
 
     if(needInit)
     {
-        loopState = 0;
-        //curVal = 0;
-        //overThresh = false;
-        lastLedMs = newMs;
+        updateLedMs = newMs;
+        updateLedState = 0;
     }
 
     bool done;
-    unsigned long deltaMs = newMs - lastLedMs;
-    const int *dispColor;
+    unsigned long deltaMs = newMs - updateLedMs;
     int pad;
     
-    switch (loopState)
+    switch (updateLedState)
     {
         // take ADC readings
         case 0:
+        default: // saves a few bytes
             done = smoothread(10, &pad);
 
             if (done)
             {
                 curAdc = pad;
-                //curVal = curAdc;
-                //overThresh = (curVal > threshAdc);
-                loopState = 1; // done here
+                updateLedState = 1; // done here
             }
             break;
 
@@ -788,10 +816,14 @@ void sensorStats(bool needInit)
         {
             int curVal = curAdc;
             bool overThresh = (curVal > threshAdc);
-            dispColor = overThresh ? yellow : cyan; // color shows whether over or under threshold
+            //const int *dispColor;
+            //dispColor = overThresh ? yellow : cyan; // color shows whether over or under threshold
+            //done = displayAdcPct(curVal, dispColor);
+            // color shows whether over or under threshold
+            const unsigned char *dispColor = overThresh ? yellow1 : cyan1;
             done = displayAdcPct(curVal, dispColor);
             if (done)
-                loopState = 2; // done here
+                updateLedState = 2; // done here
             break;
         }
 
@@ -799,41 +831,40 @@ void sensorStats(bool needInit)
         case 2:
             if (deltaMs > 20000) // display more information every 10 secs
             {
-                lastLedMs = newMs;
-                loopState = 3;
+                updateLedMs = newMs;
+                updateLedState = 3;
             }
             else
-                loopState = 0; // done here
+                updateLedState = 0; // done here
             
             break;
 
         // display ADC threshold
         case 3:
-            done = displayAdcPct(threshAdc, (int*)green); // display threshold in green
+            //done = displayAdcPct(threshAdc, (int*)green); // display threshold in green
+            //done = displayAdcPct(threshAdc, (unsigned char*)green1); // display threshold in green
+            done = displayAdcPct(threshAdc, green1); // display threshold in green
             if (done)
-                loopState = 4;
+                updateLedState = 4;
             break;
 
         // display maximum ADC
         case 4:
-            done = displayAdcPct(maxAdc, (int*)red); // display max in red
+            //done = displayAdcPct(maxAdc, (int*)red); // display max in red
+            //done = displayAdcPct(maxAdc, (unsigned char*)red1); // display max in red
+            done = displayAdcPct(maxAdc, red1); // display max in red
             if (done)
-                loopState = 5;
+                updateLedState = 5;
             break;
 
         // display minimum ADC
         case 5:
-            done = displayAdcPct(minAdc, blue); // display min in blue
+            //done = displayAdcPct(minAdc, blue); // display min in blue
+            done = displayAdcPct(minAdc, blue1); // display min in blue
             if (done)
             {
-                loopState = 0; // done here
-                loopState = 6; // HACK TEMP
+                updateLedState = 0; // done here
             }
-            break;
-
-        // coding failsafe
-        default:
-            loopState = 0; // done here
             break;
     }
 }
@@ -856,36 +887,38 @@ void segmentTestMode(bool init)
     unsigned long newMs = millis();
 
     // loop thru colors and thru digits
-    static char colorIdx = 0;
     static char digit = 0;
-
-    const int* colors[] = {white, red, yellow, green, cyan, blue, magenta};
 
     if(init)
     {
-        colorIdx = 0;
         digit = 0;
-        lastLedMs = newMs;
+        updateLedMs = newMs;
+        updateLedState = 0; // used for color index
     }
 
-    unsigned long deltaMs = newMs - lastLedMs;
+    unsigned long deltaMs = newMs - updateLedMs;
 
     if(init || (deltaMs>1000))
     {
         // prepare for next state
-        lastLedMs = newMs;
+        updateLedMs = newMs;
 
         // increment color
-        colorIdx++;
-        if (colorIdx == 7)
+        updateLedState++;
+        if (updateLedState == 7)
         {
-            colorIdx = 0;
+            updateLedState = 0;
             // maybe increment digit
             digit++;
             digit = digit%10;
             dlog(32+digit);
         }
-        int* color = (int*) colors[(int)colorIdx];
+
+        //const int* colors[] = {white, red, yellow, green, cyan, blue, magenta};
+        //int* color = (int*) colors[(int)updateLedState];
+        const unsigned char* colors[] = {white1, red1, yellow1, green1, cyan1, blue1, magenta1};
+        const unsigned char* color = colors[(int)updateLedState];
+
         printDigit(digit, color);
     }
 }
@@ -894,30 +927,31 @@ void segmentTestMode(bool init)
 void fastestTestMode(bool init)
 {
     // loop thru colors and thru digits
-    static char colorIdx = 0;
     static char digit = 0;
-
-    const int* colors[] = {white, red, yellow, green, cyan, blue, magenta};
 
     if(init)
     {
-        colorIdx = 0;
+        updateLedState = 0; // used for color index
         digit = 0;
     }
 
     {
         // increment color
-        colorIdx++;
-        if (colorIdx == 7)
+        updateLedState++;
+        if (updateLedState == 7)
         {
-            colorIdx = 0;
+            updateLedState = 0;
             // maybe increment digit
             digit++;
             digit = digit%10;
         }
     }
 
-    int* color = (int*) colors[(int)colorIdx];
+    //const int* colors[] = {white, red, yellow, green, cyan, blue, magenta};
+    //int* color = (int*) colors[(int)updateLedState];
+    const unsigned char* colors[] = {white1, red1, yellow1, green1, cyan1, blue1, magenta1};
+    const unsigned char* color = colors[(int)updateLedState];
+
     printDigit(digit, color);
     //delay(5); // little delay
 }
@@ -929,30 +963,27 @@ void colorRampTestMode(bool init)
     unsigned long newMs = millis();
 
     // loop thru colors and thru digits
-    static int colorIdx = 0;
     static int digit = 0;
-
-    //const int* colors[] = {white, red, yellow, green, cyan, blue, magenta};
 
     if(init)
     {
-        colorIdx = 0;
         digit = 0;
-        lastLedMs = newMs;
+        updateLedMs = newMs;
+        updateLedState = 0; // used for color index
     }
 
-    unsigned long deltaMs = newMs - lastLedMs;
+    unsigned long deltaMs = newMs - updateLedMs;
 
     if(deltaMs>100)
     {
         // prepare for next state
-        lastLedMs = newMs;
+        updateLedMs = newMs;
 
         // increment color
-        colorIdx++;
-        if (colorIdx == 7)
+        updateLedState++;
+        if (updateLedState == 7)
         {
-            colorIdx = 0;
+            updateLedState = 0;
             // maybe increment digit
             digit++;
             digit = digit%10;
@@ -960,13 +991,14 @@ void colorRampTestMode(bool init)
     }
 
     //int* color = (int*) colors[colorIdx];
-    int color[3];
-    color[0] = (colorIdx %1) * digit * 25; // 0 to 225
-    color[1] = (colorIdx/2 %1) * digit * 25;
-    color[2] = (colorIdx/4 %1) * digit * 25;
+    //int color[3];
+    unsigned char color[3];
+    color[0] = (updateLedState %1) * digit * 25; // 0 to 225
+    color[1] = (updateLedState/2 %1) * digit * 25;
+    color[2] = (updateLedState/4 %1) * digit * 25;
     color[0] = digit * 25; // 0 to 225
     color[1] = 0 * digit * 25;
-    color[2] = (colorIdx/4 %1) * digit * 25;
+    color[2] = (updateLedState/4 %1) * digit * 25;
     printDigit(digit, color);
     delay(5); // little delay
 }
@@ -975,45 +1007,43 @@ void colorRampTestMode(bool init)
 // display serial address for floor setup - runs forever
 void showAddress(bool init)
 {
-    static char loopState;
-
     unsigned long newMs = millis();
 
     if(init)
     {
-        loopState = 0;
-        lastLedMs = newMs;
+        updateLedMs = newMs;
+        updateLedState = 0;
         dlog(0xB0);
     }
 
-    unsigned long deltaMs = newMs - lastLedMs;
+    unsigned long deltaMs = newMs - updateLedMs;
 
     // split address into array of digits, LSD first
     int val = busAddress;
     char digits[3];
     splitInt(val, 3, digits);
-    const int dispTimeMs = 2000;
+    const unsigned long dispTimeMs = 2000;
 
-    switch (loopState)
+    switch (updateLedState)
     {
         // display first digit
         case 0:
-            printDigit(digits[2], red); // display first digit
+            printDigit(digits[2], red1); // display first digit
 
             // prepare for next state
-            lastLedMs = newMs;
-            loopState = 1;
+            updateLedMs = newMs;
+            updateLedState = 1;
             break;
 
         // wait then display second digit
         case 1:
             if(deltaMs>dispTimeMs) // display digits long enough to see
             {
-                printDigit(digits[1], yellow); // display second digit
+                printDigit(digits[1], yellow1); // display second digit
 
                 // prepare for next state
-                lastLedMs = newMs;
-                loopState = 2;
+                updateLedMs = newMs;
+                updateLedState = 2;
             }
             break;
 
@@ -1021,11 +1051,11 @@ void showAddress(bool init)
         case 2:
             if(deltaMs>dispTimeMs) // display digits long enough to see
             {
-                printDigit(digits[0], green); // display third digit
+                printDigit(digits[0], green1); // display third digit
 
                 // prepare for next state
-                lastLedMs = newMs;
-                loopState = 3;
+                updateLedMs = newMs;
+                updateLedState = 3;
             }
             break;
 
@@ -1033,16 +1063,14 @@ void showAddress(bool init)
         case 3:
             if(deltaMs>dispTimeMs) // display digits long enough to see
             {
-                //printDigit(8, black); // clear
-
                 activeSegs[0] = 0x08;
                 activeSegs[1] = 0x08;
                 activeSegs[2] = 0x08;
                 printSegments();
 
                 // prepare for next state
-                lastLedMs = newMs;
-                loopState = 4;
+                updateLedMs = newMs;
+                updateLedState = 4;
             }
             break;
 
@@ -1052,14 +1080,11 @@ void showAddress(bool init)
             if(deltaMs>dispTimeMs)
             {
                 // prepare for next state
-                lastLedMs = newMs;
-                loopState = 0; // done here
-                //return true; // really done here
+                updateLedMs = newMs;
+                updateLedState = 0; // done here
             }
             break;
     }
-
-    //return false;
 }
 
 
@@ -1074,17 +1099,21 @@ void getAdcStat(char stat)
 
     if (SENSOR_NOW == stat)
     {
-        retVal = curSensor;
+        retVal = sensorReadings;
+
+        // Host should not be expected to keep track of which readings it has seen,
+        // Fill all bits with most recent reading so only new changes will be in next status read
+        sensorReadings = (sensorReadings >= 128) ? 0xFF : 0x0;
     }
     else
     {
         switch(stat)
         {
+            default: // saves a few bytes
             case ADC_NOW:       selVal = curAdc; break;
             case ADC_THRESH:    selVal = threshAdc; break;
             case ADC_MIN:       selVal = minAdc; break;
             case ADC_MAX:       selVal = maxAdc; break;
-            default:            selVal = 0; break;
         }
         retVal = selVal >> 2;
     }
@@ -1110,12 +1139,7 @@ bool smoothread(int smoothing, int* avgAdc)
     }
 
     // accumulate for "smoothing" times
-    // about 110 ms for 160 inside sensorTest
-#if false
-    if ((readState>>4) >= smoothing)
-#else
     if (readState >= smoothing)
-#endif
     {
         int average = total / smoothing;
         //int average = total;
@@ -1123,6 +1147,7 @@ bool smoothread(int smoothing, int* avgAdc)
         const int low = 0;
         average = constrain(average, low, high);
         *avgAdc = average;
+        curAdc = average; // global
 
         if (maxAdc < average) maxAdc = average;
         if (minAdc > average) minAdc = average;
@@ -1133,17 +1158,19 @@ bool smoothread(int smoothing, int* avgAdc)
         //dlog(0xC0);
         //dlog(readState);
         //dlog(average >> 4);  // 0-1023 to 8 bits
-        int vble = map(average, 0, 1023, 0, 99);
+        //int vble = map(average, 0, 1023, 0, 99);
         //dlog(vble);  // 99%
         //mySerial.write(vble);  // 99% - lots of output - mostly 0x63
 
         done = true;
         readState = 0;
         total = 0;
+
+        // add the current reading to the accumulated status byte for the host
+        sensorReadings = sensorReadings >> 1;   // shift out oldest reading
+        if (average >= threshAdc)               // insert new reading in MSB
+            sensorReadings |= 0x80;
     }
-#if false
-    readState++;
-#endif
 
     return done;
 }
@@ -1170,11 +1197,13 @@ void colorcounter() {
                 g = 1;
                 p = loops;
                 for (int i=0;i<loops;i++) {
-                    printDigit(iterator,white);
+                    //printDigit(iterator,white);
+                    printDigit(iterator,white1);
                     delay(1);
                 }
             } else {
-                int color[3];
+                //int color[3];
+                unsigned char color[3];
                 color[0] = r * 255;
                 color[1] = g * 255;
                 color[2] = b * 255;
@@ -1184,7 +1213,8 @@ void colorcounter() {
 
 
         } else {
-            int color[3];
+            //int color[3];
+            unsigned char color[3];
             color[0] = r * 255;
             color[1] = g * 255;
             color[2] = b * 255;
@@ -1235,9 +1265,10 @@ int prime(int n) {
 
 // display ADC value as 2 digit percentage of maximum
 // returns true when done
-bool displayAdcPct(int val, const int *rgb)
+//bool displayAdcPct(int val, const int *rgb)
+bool displayAdcPct(int val, const unsigned char *rgb)
 {
-    static char dispState;
+    static char dispState; // separate from display state?
     static char digits[2];
     const int high = 1023; // maximum ADC value
     const int low = 0;
@@ -1250,6 +1281,7 @@ bool displayAdcPct(int val, const int *rgb)
     {
         // convert ADC val and display first digit
         case 0:
+        default: // saves a few bytes
             val = constrain(val, low, high);
             val = map(val, 0, high, 0, 99); // map input to two digit percent
             splitInt (val, 2, digits); // splits into array of digits, LSD first
@@ -1276,7 +1308,7 @@ bool displayAdcPct(int val, const int *rgb)
         case 2:
             if(deltaMs>500) // wait to clear second digit
             {
-                printDigit(8, black); // clear
+                printDigit(8, black1); // clear
                 // prepare for next state
                 lastMs = newMs;
                 dispState = 3; // done here
@@ -1317,28 +1349,27 @@ void splitInt (int val, int numDigits, char* digits)
 inline void rollingEffect(bool init)
 {
     unsigned long newMs = millis();
-    static char effectIdx = 0;
     
     if(init)
     {
-        effectIdx = 0;
-        lastLedMs = newMs;
+        updateLedMs = newMs;
+        updateLedState = 0;
     }
 
-    unsigned long deltaMs = newMs - lastLedMs;
+    unsigned long deltaMs = newMs - updateLedMs;
 
     if(init || (deltaMs>200))
     {
         // prepare for next state
-        lastLedMs = newMs;
-        effectIdx++;
-        if (effectIdx > 5)
-            effectIdx = 0;
+        updateLedMs = newMs;
+        updateLedState++;
+        if (updateLedState > 5)
+            updateLedState = 0;
             
         unsigned char mask;
-        switch (effectIdx)
+        switch (updateLedState)
         {
-            default:
+            default: // saves a few bytes
             case 0: mask = 0; break;
             case 1: mask = 0x01; break;  // g
             case 2: mask = 0x6E; mask = 0x37; break; //  bc ef g
@@ -1361,6 +1392,24 @@ inline void mapActiveToLive(unsigned char mask)
 }
 
 
+// seven-segment print signature with RGB byte array
+void printDigit(int digit, const unsigned char *rgb)
+{
+    // map digit with defined color to segments array
+    for (int i=0; i<3; i++)
+    {
+        unsigned char thisColor = 0x7f;
+        //thisColor = charTable[(int)digit]; // something blows up with whole table
+        thisColor = lsCharTable[(int)digit];
+        if (rgb[i] < 127)
+            thisColor = 0;
+        activeSegs[i] = thisColor;
+    }
+    //mySerial.write(activeSegs, 3);  // lots of output
+    printSegments();
+}
+
+#if false // TESTING
 // seven-segment print signature with RGB array
 void printDigit(int digit, const int *rgb)
 {
@@ -1377,6 +1426,7 @@ void printDigit(int digit, const int *rgb)
     //mySerial.write(activeSegs, 3);  // lots of output
     printSegments();
 }
+#endif
 
 #if false
 // seven-segment print signature with individual RGB ints
@@ -1402,13 +1452,19 @@ void printDigit(int digit, int red, int green, int blue)
 void printSegments()
 {
     unsigned char* colorSegments = activeSegs;
+#if false // this old code caused repeated writes to flicker
     lc.clearDisplay(0);
+#else
+    static unsigned char lastSegs[3];
+#endif
 
     int row[3] = {RED, GREEN, BLUE};
     for(int i=0; i<3; i++)
     {
         unsigned char thisSeg = colorSegments[i];
+#if false // this old code caused repeated writes to flicker
         if (thisSeg)  // more to do if any segment is lit
+#endif
         {
             // rotate segments if tile inversion
             if (tileStatus & STATUS_FLIP_MASK)
@@ -1418,7 +1474,16 @@ void printSegments()
                 const int g   = 0x01;
                 thisSeg = ((thisSeg & abc) >> 3) | ((thisSeg & def) << 3) | (thisSeg & g);
             }
+#if false // this old code caused repeated writes to flicker
             lc.setRow(0,row[i], thisSeg);
+#else
+            // update the display only if virtual digit changes to prevent flicker
+            //if (lastSegs[i] != thisSeg) // not needed for flicker prevention
+            {
+                lc.setRow(0, row[i], thisSeg);
+                lastSegs[i] = thisSeg;
+            }
+#endif
         }
     }
 }

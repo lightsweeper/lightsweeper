@@ -11,6 +11,13 @@ class LSRealFloor():
     ROWS = 6
     MINES = 9
 
+    BLACK = 0
+    RED = 1
+    YELLOW = 2
+    GREEN = 3
+    VIOLET = 5
+
+
     def __init__(self, rows=ROWS, cols=COLS, mines=MINES, addresses=None, serial=None):
         self.rows = rows
         self.cols = cols
@@ -24,17 +31,7 @@ class LSRealFloor():
         tile.assignAddress(40)
         tile.setColor(5)
         tile.setShape(2)
-        #make sharedSerial
-        if serial is None:
-            self.sharedSerial = self.initSerial()
-        else:
-            self.sharedSerial = serial
-        self.serialOpen = True
-        try:
-            self.sharedSerial.open()
-        except IOError:
-            self.serialOpen = False
-            print("Serial not open")
+        self.sharedSerial = serial
 
         # make all the rows
         self.tileRows = []
@@ -53,7 +50,7 @@ class LSRealFloor():
                 #print("test getAddress", tile.getAddress())
                 i += 1
                 tile.setColor(3)
-                tile.setShape("-")
+                tile.setShape(1)
                 #assign address
                 tiles.append(tile)
             self.tileRows.append(tiles)
@@ -97,7 +94,7 @@ class LSRealFloor():
         dataReceived = False
         for tile in tiles:
             val = tile.eepromRead(tile.address)
-            if len(val) > 0:
+            if val and len(val) > 0:
                 print("received ", val)
                 dataReceived = True
         if not dataReceived:
@@ -111,11 +108,6 @@ class LSRealFloor():
                 boardString += str(tile.getShape()) + " "
             print(boardString)
             boardString = ""
-
-    def initSerial(self):
-        serial = Serial()
-        print("TODO: serial logic")
-        return serial
 
     def _getTileList(self,row,column):
         tileList = []
@@ -155,22 +147,22 @@ class LSRealFloor():
                     cell = board.mine_repr(row, col)
                     if cell == "D":
                             #Defused
-                            tile.setColor("violet")
-                            tile.setsShape("-")
+                            tile.setColor(LSRealFloor.VIOLET)
+                            tile.setsShape(1)
                     elif cell == '.':
-                            tile.setColor("green")
-                            tile.setDigit("0")
+                            tile.setColor(LSRealFloor.GREEN)
+                            tile.setDigit(0)
                     elif cell == ' ' or cell == '':
-                            tile.setColor("black")
-                            tile.setDigit("8")
+                            tile.setColor(LSRealFloor.BLACK)
+                            tile.setDigit(8)
                     elif cell == 'M':
-                            tile.setColor("red")
-                            tile.setDigit("8")
+                            tile.setColor(LSRealFloor.RED)
+                            tile.setDigit(8)
                     elif cell == 'F':
                             break
                     else:
-                            tile.setColor("yellow")
-                            tile.setDigit(cell)
+                            tile.setColor(LSRealFloor.YELLOW)
+                            tile.setDigit(int(cell))
         return
 
     def clearboard(self):
