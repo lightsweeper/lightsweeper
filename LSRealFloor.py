@@ -13,44 +13,53 @@ class LSRealFloor():
 
     BLACK = 0
     RED = 1
-    YELLOW = 2
-    GREEN = 3
+    GREEN = 2
+    YELLOW = 3
+    BLUE = 4
     VIOLET = 5
+    CYAN = 6
+    WHITE = 7
 
-
-    def __init__(self, rows=ROWS, cols=COLS, mines=MINES, addresses=None, serial=None):
+    def __init__(self, rows=ROWS, cols=COLS, mines=MINES, serials=None):
         self.rows = rows
         self.cols = cols
         self.mines = mines
-        print("RealFloor init", rows, cols, mines, addresses)
+        print("RealFloor init", rows, cols, mines)
         # Initialize board
         self.board = Board()
         self.board.create_board(self.rows, self.cols, self.mines)
         print("board created")
-        tile = LSRealTile(serial)
-        tile.assignAddress(40)
-        tile.setColor(5)
-        tile.setShape(2)
-        self.sharedSerial = serial
-
+        #tile = LSRealTile(serial)
+        #tile.assignAddress(40)
+        #tile.setColor(5)
+        #tile.setShape(2)
+        self.sharedSerials = serials
+        self.addressToRowColumn = {}
         # make all the rows
         self.tileRows = []
-        #todo: request built-in address from physical tile
+        pickle = open('floor_config', 'r')
+        print(pickle)
         i = 0
         for row in range(rows):
             tiles = []
             self.tileAddresses = []
             for col in range(cols):
-                tile = LSRealTile(self.sharedSerial)
-                if addresses:
-                    tile.assignAddress(addresses.pop())
-                else:
-                    tile.assignAddress(i)
+                line = (pickle.readline()).strip('()\n').replace('\'','')
+                line = tuple(line.split(','))
+                print(line)
+                # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
+                # 1 being top-left, 4 bottom-right
+                comNumber = int(line[2]) - 1
+                tile = LSRealTile(serials[comNumber])
+                tile.comNumber = comNumber
+                address = int(line[3])
+                tile.assignAddress(address)
+                self.addressToRowColumn[(address,comNumber)] = (row, col)
                 print("address assigned:", tile.getAddress())
                 #print("test getAddress", tile.getAddress())
                 i += 1
-                tile.setColor(3)
-                tile.setShape(1)
+                tile.setColor(LSRealFloor.YELLOW)
+                tile.setDigit(8)
                 #assign address
                 tiles.append(tile)
             self.tileRows.append(tiles)
@@ -62,8 +71,9 @@ class LSRealFloor():
         lastSensorPoll = time.time()
         while self.board.is_playing:
             if time.time() - lastSensorPoll > 3:
-                self.pollSensors()
-                if True: #not self.serialOpen:
+                sensors = self.pollSensors()
+                ghost = False
+                if ghost: #not self.serialOpen:
                     #have a ghost step on random tiles
                     print("ghost step")
                     self.board.show(random.randrange(0, self.rows),random.randrange(0, self.cols))
@@ -74,12 +84,15 @@ class LSRealFloor():
         print("A winner or loser is you!")
         lastSensorPoll = time.time()
         while not self.board.is_playing:
+            # do win screen
+
             if time.time() - lastSensorPoll > 7:
+                #reset to initial state
                 self.board.is_playing = True
                 for row in self.tileRows:
                     for tile in row:
-                        tile.setColor("black")
-                        tile.setShape("-")
+                        tile.setColor(LSRealFloor.YELLOW)
+                        tile.setShape(1)
 
     def printAddresses(self):
         s = ""
@@ -96,10 +109,15 @@ class LSRealFloor():
             val = tile.eepromRead(tile.address)
             if val and len(val) > 0:
                 print("received ", val)
-                dataReceived = True
+                self.handleTileSensed(tile.address, tile.comNumber)
         if not dataReceived:
             print("no poll data received")
-        return
+        return None
+
+    def handleTileSensed(self, address, comNumber):
+        rowCol = self.addressToRowColumn[(address, comNumber)]
+        self.tileRows[rowCol[0]][rowCol[1]].show()
+        pass
 
     def printToConsole(self):
         boardString = ""

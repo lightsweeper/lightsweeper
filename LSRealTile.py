@@ -86,7 +86,7 @@ class LSRealTile(LSTileAPI):
         super().__init__(row, col)
         self.mySerial = sharedSerial
         # cmdNargs is address + command + N optional bytes
-        self.Debug = True
+        self.Debug = False
         if sharedSerial is None:
             print("Shared serial is None")
     def destroy(self):
@@ -95,6 +95,7 @@ class LSRealTile(LSTileAPI):
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
         cmd = SET_COLOR
+        #print("writing ", cmd, color)
         self.__tileWrite([cmd, color])
 
     def setShape(self, shape):
