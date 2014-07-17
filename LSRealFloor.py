@@ -70,17 +70,13 @@ class LSRealFloor():
     def startLoop(self):
         lastSensorPoll = time.time()
         while self.board.is_playing:
-            if time.time() - lastSensorPoll > 3:
-                sensors = self.pollSensors()
-                ghost = False
-                if ghost: #not self.serialOpen:
-                    #have a ghost step on random tiles
-                    print("ghost step")
-                    self.board.show(random.randrange(0, self.rows),random.randrange(0, self.cols))
+            if time.time() - lastSensorPoll > 0.5:
+                self.pollSensors()
                 lastSensorPoll = time.time()
-                print("printing board")
-                self.printboard(self.board)
+                #print("printing board")
                 self.printToConsole()
+                self.printboard(self.board)
+
         print("A winner or loser is you!")
         lastSensorPoll = time.time()
         while not self.board.is_playing:
