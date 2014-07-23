@@ -64,10 +64,11 @@ class Board():
         self.display = display
     
     def show(self, row_id, col_id):
+        self.showingMultiple = False
         #print("given:", row_id, col_id, "board:", len(self.board), len(self.board[0]))
         cell = self.board[row_id][col_id]
         if not cell.is_visible:
-            print("board.show", row_id, col_id)
+            #print("board.show", row_id, col_id)
             cell.show()
             # self.display.show(row_id, col_id)
             if (cell.is_mine and not
@@ -75,6 +76,7 @@ class Board():
                 self.is_playing = False
                 print("mine'd!")
             elif self.count_surrounding(row_id, col_id) == 0:
+                self.showingMultiple = True
                 for (surr_row, surr_col) in self.get_neighbours(row_id, col_id):
                     if self.is_in_range(surr_row, surr_col):
                         self.show(surr_row, surr_col) 
@@ -112,7 +114,7 @@ class Board():
         remaining = 0
         for row in self.board:
             for cell in row:
-                if cell.is_mine:
+                if cell.is_mine and not cell.is_visible:
                     remaining += 1
                 if cell.is_flagged:
                     remaining -= 1
@@ -134,5 +136,5 @@ class Board():
 
     def is_solved(self):
         #return all((cell.is_visible or cell.is_flagged) for row in self.board for cell in row)
-        print("Remaining Mines: ", self.remaining_mines(), " Remaining Hidden: ", self.remaining_hidden())
+        #print("Remaining Mines: ", self.remaining_mines(), " Remaining Hidden: ", self.remaining_hidden())
         return self.remaining_mines() == self.remaining_hidden()

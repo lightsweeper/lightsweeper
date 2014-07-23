@@ -4,6 +4,7 @@
 from LSTileAPI import *
 
 import serial
+from serial.tools import list_ports
 #from struct import *
 
 # imports for testing
@@ -84,6 +85,8 @@ CLEAR_ERRORS  = (ERROR_CMD+2)  # not really needed, but nearly free
 class LSRealTile(LSTileAPI):
     def __init__(self, sharedSerial, row=0, col=0):
         super().__init__(row, col)
+        self.row = row
+        self.col = col
         self.mySerial = sharedSerial
         # cmdNargs is address + command + N optional bytes
         self.Debug = False
@@ -92,6 +95,9 @@ class LSRealTile(LSTileAPI):
     def destroy(self):
         return
 
+    def getRowCol(self):
+        return (self.row, self.col)
+        
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
         cmd = SET_COLOR
@@ -171,13 +177,16 @@ class LSRealTile(LSTileAPI):
         return val
 
     def blank(self):
-        raise NotImplementedError()
-        self.setColor('white')
+        self.setColor(0)
         return
 
     # send mode command that displays stuff
     def locate(self):
         cmd = 7 # the SHOW_ADDRESS command
+        self.__tileWrite([cmd])
+
+    def sensorTest(self):
+        cmd = 1
         self.__tileWrite([cmd])
 
     def demo (self, seconds):
@@ -198,7 +207,22 @@ class LSRealTile(LSTileAPI):
     def status(self):
         raise NotImplementedError()
         return
-
+        
+    def sensorStatus(self):
+        #self.__tileWrite([SENSOR_NOW], True)  # do not eat output
+        #self.__tileWrite([EEPROM_READ, 0], True)  # do not eat output
+        self.__tileWrite([ADC_NOW], True)  # do not eat output
+        # return response
+        thisRead = self.__tileRead()
+        #print ("Sensor status = " + ' '.join(format(x, '#02x') for x in thisRead))
+        #if thisRead != None:
+        if thisRead:
+            for x in thisRead:
+                intVal = int(x)
+                return intVal #x # val
+        # yikes - no return on read from tile?
+        return 234
+        
     def reset(self):
         versionCmd = LS_RESET
         self.__tileWrite([versionCmd], True)  # do not eat output
@@ -252,7 +276,7 @@ class LSRealTile(LSTileAPI):
             if len(thisRead) > 0:
                 #if self.Debug:
                 # debug or not, if tile sends something, we want to see it
-                if True or self.Debug:
+                if False or self.Debug:
                     print ("Debug response: " + ' '.join(format(x, '#02x') for x in thisRead))
 
     # read from the tile
@@ -262,11 +286,12 @@ class LSRealTile(LSTileAPI):
         thisRead = self.mySerial.read(8)
         if len(thisRead) > 0:
             #print("Received " + thisRead.ToHex())
-            print ("Received: " + ' '.join(format(x, '#02x') for x in thisRead))
+            if self.Debug:
+                print ("Received: " + ' '.join(format(x, '#02x') for x in thisRead))
             #thisHex = ByteToHex(thisRead)
             #print("Received " + thisHex)
-        else:
-            print("Received nothing")
+        #else:
+        #    print("Received nothing")
         return thisRead
 
 
@@ -306,8 +331,9 @@ def serial_ports():
                 pass
     else:
         # unix
-        for port in list_ports.comports():
-            yield port[0]
+        yield '/dev/ttyUSB1'
+ #       for port in list_ports.comports():
+ #           yield port[0]
 
 # simple delay between test statements with default delay
 def testSleep(secs=0.3):
@@ -431,6 +457,9 @@ def fullSuite(myTile):
             #print("Version command returned 0x%2X " % (val))
             pass
 
+        print("\nFinal reset")
+        myTile.reset()        
+
 # lots of output - looking for loss of sync, overrun, etc
 def commTest(myTile, mySerial):
         print("\nTesting setShape in many loops to look for timing bug")
@@ -453,6 +482,28 @@ def commTest(myTile, mySerial):
 
             print("Restoring prior Debug")
             myTile.setDebug(tmpDebug)
+            
+def sensorTest(myTile):
+       print("\nSetting sensor test mode")
+       myTile.sensorTest()
+
+ 
+def sensorStatusTest(myTile):
+    print("looping while reading sensorStatus")
+    for i in range(200):
+        val = myTile.sensorStatus()
+        print("sensorStatus for " + repr(myTile.getAddress()) + " returned " + repr(val))
+        testSleep(1)
+    print("")
+
+def singleModeTest(mySerial):
+    print("Standalone modes:")
+    print("1 - pressure sensor test")
+    print("5 - address displaay")
+    mode = input("What mode do you want? ")
+    intMode = int(mode)
+    mySerial.write([0, intMode])
+    input("Press enter to exit")
 
 
 # simple testing function for LSRealTile
@@ -465,10 +516,14 @@ def main():
     comPort = "COM8"
     if len(availPorts) > 0:  # try the first port in the list
         comPort = availPorts[0]
+    comPort = "/dev/ttyUSB3"
+    #portNum = input("Enter the number to append to /dev/ttyUSB:")
+    #comPort = "/dev/ttyUSB" + portNum
+    comPort = input("Enter the port:")
     print("Attempting to open port " + comPort)
     theSerial = None
     try:
-        theSerial = serial.Serial(comPort, 19200, timeout=0.001)
+        theSerial = serial.Serial(comPort, 19200, timeout=0.01)
         print(comPort + " opened")
 
     except serial.SerialException:
@@ -497,22 +552,30 @@ def main():
 
         print("\nTesting reset")
         myTile.reset()
-        testSleep(6)
+        testSleep(2)
 
         print("Test choices:")
         print("    0 - full test suite")
         print("    1 - communications test")
+        print("    2 - sensor test")
+        print("    3 - sensorStatus test")
+        print("    4 - run single digit mode")
         testChoice = int(input("What test do you want to run? "))
         if testChoice == 0:
             fullSuite(myTile)
         elif testChoice == 1:
             commTest(myTile, theSerial)
+        elif testChoice == 2:
+            sensorTest(myTile)
+            input("Enter to exit")
+        elif testChoice == 3:
+            sensorStatusTest(myTile)
+        elif testChoice == 4:
+            singleModeTest(theSerial)
         else:
             print("You did not enter a valid test choice")
         
         
-        print("\nFinal reset")
-        myTile.reset()        
         theSerial.close()
        
     input("\nDone - Press the Enter key to exit") # keeps double-click window open
