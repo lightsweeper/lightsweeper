@@ -331,9 +331,8 @@ def serial_ports():
                 pass
     else:
         # unix
-        yield '/dev/ttyUSB1'
- #       for port in list_ports.comports():
- #           yield port[0]
+        for port in list_ports.comports():
+            yield port[0]
 
 # simple delay between test statements with default delay
 def testSleep(secs=0.3):
