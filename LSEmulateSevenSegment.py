@@ -94,10 +94,34 @@ class LSEmulateSevenSegment(QFrame):
         self.setLayout(layout)
         self.update()
 
+
+    def setSegments(self, segments, setItNow=True):
+        #print("SevenSegments.setSegments", segments)
+
+        if segments is not 126:
+            print(bin(segments))
+        #print(segments & 0b1000000 > 0, segments & 0b0100000 > 0, segments & 0b0010000 > 0, segments & 0b0001000 > 0,
+        #      segments & 0b0000100 > 0, segments & 0b0000010 > 0, segments & 0b0000001 > 0)
+        self.segColors[0] = segments & 0b1000000 > 0
+        self.segColors[1] = segments & 0b0100000 > 0
+        self.segColors[2] = segments & 0b0010000 > 0
+        self.segColors[3] = segments & 0b0001000 > 0
+        self.segColors[4] = segments & 0b0000100 > 0
+        self.segColors[5] = segments & 0b0000010 > 0
+        self.segColors[6] = segments & 0b0000001 > 0
+        str = "QWidget {{background-color: {0} }}".format(self.queueColor)
+        for i in range(7):
+           self.segments[i].setStyleSheet(str)
+        pass
+
+    def bin(s):
+        return str(s) if s<=1 else bin(s>>1) + str(s&1)
+
     def flushQueue(self):
         self.display()
 
     def setColor (self, newColor, setItNow = True):
+        #print("setting color to", newColor)
         self.queueColor = newColor
         if setItNow:
             self.display()

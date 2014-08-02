@@ -19,11 +19,11 @@ class LSEmulateTile(QFrame, LSApi):
         self.button.setCheckable(True)
         self.floor = floor
         self.button.clicked.connect(self._buttonPressed)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(self.segments)
-        layout.addWidget(self.button)
-        self.setLayout(layout)
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.addWidget(self.segments)
+        self.layout.addWidget(self.button)
+        self.setLayout(self.layout)
 
     def flushQueue(self):
         self.segments.flushQueue()
@@ -64,8 +64,7 @@ class LSEmulateTile(QFrame, LSApi):
 
     def _buttonPressed(self):
         print("Button state is", self.button.isChecked(), self.row, self.col)
-        self.floor.get_move(self.row, self.col)
-        return
+        self.floor.handleTileSensed(self.row, self.col)
 
     ### Implementation of the Lightsweeper API
     def destroy(self):
@@ -127,11 +126,11 @@ class LSEmulateTile(QFrame, LSApi):
     def unregister(self):
         return
 
-    #def assignAddress(self, address):
-    #    self.address = address
+    def assignAddress(self, address):
+        self.address = address
 
-    #def getAddress(self):
-    #    return self.address
+    def getAddress(self):
+        return self.address
 
     def calibrate(self):
         return

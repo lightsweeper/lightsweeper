@@ -1,44 +1,67 @@
 ### Implementation of the Lightsweeper floor
 from LSRealTile import LSRealTile
-from minesweeper.board import Board
 from serial import Serial
+from serial import SerialException
 import time
-import random
 import winsound
+import os
 
+#handles all communications with RealTile objects, serving as the interface to the
+#actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
+#(sensor changes)
 class LSRealFloor():
     COLS = 8
     ROWS = 6
     MINES = 9
 
-    BLACK = 0
-    RED = 1
-    GREEN = 2
-    YELLOW = 3
-    BLUE = 4
-    VIOLET = 5  # Really more pink than violet
-    CYAN = 6
-    WHITE = 7
-
-    def __init__(self, rows=ROWS, cols=COLS, mines=MINES, serials=None):
+    def __init__(self, rows=ROWS, cols=COLS, serials=None):
         self.rows = rows
         self.cols = cols
-        self.mines = mines
-        print("RealFloor init", rows, cols, mines)
-        # Initialize board
-        self.board = Board()
-        self.board.create_board(self.rows, self.cols, self.mines)
-        print("board created")
-        #tile = LSRealTile(serial)
-        #tile.assignAddress(40)
-        #tile.setColor(5)
-        #tile.setShape(2)
-        self.sharedSerials = serials
+        print("RealFloor init", rows, cols)
+
+        if serials is None:
+            # top-left, A1,2,3
+            comPort1 = "COM5"
+            # top-right, A4,5,6
+            comPort2 = "COM7"
+            # bottom-left, B1,2,3
+            comPort3 = "COM8"
+            # bottom-right, B4,5,6
+            comPort4 = "COM9"
+            availPorts = list(serial_ports())
+            print("Available serial ports:" + str(availPorts))
+            print("connecting to ", comPort1, comPort2, comPort3, comPort4)
+            serial1 = None
+            serial2 = None
+            serial3 = None
+            serial4 = None
+            try:
+                serial1 = Serial(comPort1, 19200, timeout=0.005)
+            except IOError:
+                print("Could not open", comPort1)
+            try:
+                serial2 = Serial(comPort2, 19200, timeout=0.005)
+            except IOError:
+               print("Could not open", comPort2)
+            try:
+                serial3 = Serial(comPort3, 19200, timeout=0.005)
+            except IOError:
+                print("Could not open", comPort3)
+            try:
+                serial4 = Serial(comPort4, 19200, timeout=0.005)
+            except IOError:
+                print("Could not open", comPort4)
+            self.sharedSerials = [serial1, serial2, serial3, serial4]
+            print("finished with COM ports")
+        else:
+            self.sharedSerials = serials
+
         self.addressToRowColumn = {}
         # make all the rows
         self.tileRows = []
+        print("Using Jay-Daddy's pickling system")
         pickle = open('floor_small_config', 'r')
-        print(pickle)
+        #print(pickle)
         i = 0
         for row in range(rows):
             tiles = []
@@ -46,7 +69,6 @@ class LSRealFloor():
             for col in range(cols):
                 line = (pickle.readline()).strip('()\n').replace('\'','')
                 line = tuple(line.split(','))
-                print(line)
                 # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
                 # 1 being top-left, 4 bottom-right
                 comNumber = int(line[2]) - 1
@@ -55,151 +77,18 @@ class LSRealFloor():
                 address = int(line[3])
                 tile.assignAddress(address)
                 self.addressToRowColumn[(address,comNumber)] = (row, col)
-                print("address assigned:", tile.getAddress())
+                #print("address assigned:", tile.getAddress())
                 #print("test getAddress", tile.getAddress())
                 i += 1
-                tile.setColor(LSRealFloor.BLACK)
-                tile.setShape(1)
-                tile.setDebug(0)
                 #assign address
                 tiles.append(tile)
             self.tileRows.append(tiles)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setShape(1)
-                tile.setColor(LSRealFloor.YELLOW)
-        #self.printboard(self.board)
-        #self.printToConsole()
-
-        #create calibration dictionary
-        self.tileMinPressure = {}
-        self.tileMaxPressure = {}
-        for row in self.tileRows:
-            for tile in row:
-                self.tileMinPressure[(tile.address, tile.comNumber)] = 255
-                self.tileMaxPressure[(tile.address, tile.comNumber)] = 0
         return
-
-    def startLoop(self):
-        #winsound.Beep(400, 300)
-        #self.playSong()
-        # use to turn on and off game
-        game =  True
-        # use to turn on and off other modes
-        interactiveMode = False
-        self.rainbowMode = False
-        self.board.is_playing = True
-        # animating tiles
-        #self.animFrame = 0
-        lastSensorPoll = time.time()
-        wonGame = False
-        while True:
-            self.playSong()
-            self.blankFloor()
-            if self.board.is_playing and game:
-                print("* * * minesweeper * * *")
-            while self.board.is_playing and game:
-                if time.time() - lastSensorPoll > 0.2:
-                    self.pollSensors()
-                    lastSensorPoll = time.time()
-                    if self.board.is_solved():
-                        self.board.set_all_defused()
-                        print("Well done! You solved the board!")
-                        wonGame = True
-                    elif not self.board.is_playing:
-                        print("Uh oh! You blew up!")
-                        self.board.show_all()
-                        wonGame = False
-                        winsound.PlaySound('sounds/Explosion.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)jkkkkkkkhjkl
-                    self.printboard(self.board)
-            self.wait(3)
-            if wonGame and game:
-                print("A winner is you!")
-                winsound.PlaySound('sounds/Success.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
-                self.RAINBOWMODE()
-                self.RAINBOWMODE()
-                self.RAINBOWMODE()
-            elif game:
-                print("You lost! Insert coins to continue")
-                winsound.PlaySound('sounds/Explosion.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
-                self.setAllColor(LSRealFloor.RED)
-                for row in self.tileRows:
-                    for tile in row:
-                        tile.setDigit(8)
-                blargflarg = time.time()
-                black = False
-                while time.time() - blargflarg < 4:
-                    #if random.randint(0, 20) is 1:
-                    #    winsound.PlaySound('sounds/Explosion.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
-                    self.wait(0.1)
-                    if black:
-                        self.setAllColor(LSRealFloor.RED)
-                        black = False
-                    else:
-                        self.setAllColor(LSRealFloor.BLACK)
-                        black = True
-            self.board.create_board(self.rows, self.cols, random.randint(2,3))
-            self.blankFloor()
-            self.wait(1)
-            if interactiveMode:
-                print("__interactive mode__")
-                self.wait(2)
-                self.setAllColor(LSRealFloor.BLACK)
-                self.wait(45)
-            self.blankFloor()
-            if self.rainbowMode:
-                # wait for it
-                self.wait(2)
-                print("~~~~~RAINBOWMODE ENGAGE~~~~~")
-                self.RAINBOWMODE()
-                self.RAINBOWMODE()
-                self.RAINBOWMODE()
-                self.RAINBOWMODE()
-                self.RAINBOWMODE()
-            self.blankFloor()
-
-    def wait(self, seconds):
-        # self.pollSensors()
-        lastSensorPoll = time.time()
-        while time.time() - lastSensorPoll < seconds:
-            pass
 
     def setAllColor(self, color):
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(color)
-
-    def playSong(self):
-        rand = random.randint(0,3)
-        if rand is 0:
-            print("playing 1")
-            winsound.PlaySound('sounds/BetweenGames1.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
-        if rand is 1:
-            print("playing 2")
-            winsound.PlaySound('sounds/BetweenGames2.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
-        if rand is 2:
-            print("playing 3")
-            winsound.PlaySound('sounds/BetweenGames3.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
-        if rand is 3:
-            print("playing 4")
-            winsound.PlaySound('sounds/BetweenGames4.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
-
-    def blankFloor(self):
-        #for row in self.tileRows:
-        #    for tile in row:
-        #        tile.setColor(LSRealFloor.BLACK)
-        zeroTile = LSRealTile(self.sharedSerials[0])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
-        zeroTile = LSRealTile(self.sharedSerials[1])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
-        zeroTile = LSRealTile(self.sharedSerials[2])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
-        zeroTile = LSRealTile(self.sharedSerials[3])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
 
     def RAINBOWMODE(self):
         self.pollSensors()
@@ -248,24 +137,15 @@ class LSRealFloor():
             s = ""
 
     def pollSensors(self):
-        # the minimum difference between min and max sensor values required for a sensor to be sensed
-        minMaxSpread = 100
+        sensorsChanged = []
         tiles = self._getTileList(0,0)
         for tile in tiles:
             val = tile.sensorStatus()
-            min = self.tileMinPressure[(tile.address, tile.comNumber)]
-            max = self.tileMaxPressure[(tile.address, tile.comNumber)]
-            if min > val:
-                self.tileMinPressure[(tile.address, tile.comNumber)] = val
-            if max < val:
-                self.tileMaxPressure[(tile.address, tile.comNumber)] = val
-            #if max > min + minMaxSpread and val < (max - min) / 20 + min:
-            if val < 12:
-                if not self.rainbowMode:
-                    self.handleTileSensed(tile.address, tile.comNumber)
+            if val < 15:
+                #self.handleTileSensed(tile.address, tile.comNumber)
+                rowCol = self.addressToRowColumn[(tile.address, tile.comNumber)]
+                sensorsChanged.append((rowCol, val))
                 print("tile sensed: ", tile.address, tile.comNumber, "min=",min, "val=", val, "max=", max)
-            #elif not max > min + 20:
-            #    print("window not reached", tile.address, tile.comNumber)
         return None
 
     def handleTileSensed(self, address, comNumber):
@@ -277,14 +157,6 @@ class LSRealFloor():
         if self.board.showingMultiple:
             winsound.PlaySound('sounds/Reveal.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
         pass
-
-    def printToConsole(self):
-        boardString = ""
-        for row in self.tileRows:
-            for tile in row:
-                boardString += str(tile.getShape()) + " "
-            #print(boardString)
-            boardString = ""
 
     def _getTileList(self,row,column):
         tileList = []
@@ -313,44 +185,19 @@ class LSRealFloor():
             tileList = [tileRow[column-1]]
         return tileList
 
-    def printboard(self, board):
-        #tiles = self._getTileList(0,0)
-        lastTileUpdated = time.time()
-        #print(self.rows, self.cols)
-        for row in range(0,self.rows):
-            for col in range(0,self.cols):
-                tile = self.tileRows[row][col]
-                while time.time() - lastTileUpdated < 0.01:
-                    pass
-                lastTileUpdated = time.time()
-                if board != None:
-                    #(row, col) = (tile.getAddress() // self.cols, tile.getAdddress() % self.cols)
-                    cell = board.mine_repr(row, col)
-                    if cell == "D":
-                            #Defused
-                            tile.setColor(LSRealFloor.VIOLET)
-                            tile.setShape(1)
-                            print("DEFUSED")
-                    elif cell == '.':
-                            tile.setColor(LSRealFloor.GREEN)
-                            tile.setDigit(0)
-                    elif cell == ' ' or cell == '':
-                            tile.setColor(LSRealFloor.BLACK)
-                            tile.setDigit(8)
-                    elif cell == 'M':
-                            # mine symbol
-                            tile.setColor(LSRealFloor.RED)
-                            tile.setShape(1)
-                     #       tile.setShape(55)  # "X"
-                    elif cell == 'F':
-                            break
-                    else:
-                            tile.setColor(LSRealFloor.YELLOW)
-                            tile.setDigit(int(cell))
-        return
-
     def clearboard(self):
-        return
+        zeroTile = LSRealTile(self.sharedSerials[0])
+        zeroTile.assignAddress(0)
+        zeroTile.blank()
+        zeroTile = LSRealTile(self.sharedSerials[1])
+        zeroTile.assignAddress(0)
+        zeroTile.blank()
+        zeroTile = LSRealTile(self.sharedSerials[2])
+        zeroTile.assignAddress(0)
+        zeroTile.blank()
+        zeroTile = LSRealTile(self.sharedSerials[3])
+        zeroTile.assignAddress(0)
+        zeroTile.blank()
 
     def showboard(self):
         return
@@ -366,3 +213,17 @@ class LSRealFloor():
 
     def clock(self):
         return
+
+def serial_ports():
+    """
+    Returns a generator for all available serial ports
+    """
+    if os.name == 'nt':
+        # windows
+        for i in range(256):
+            try:
+                s = Serial(i)
+                s.close()
+                yield 'COM' + str(i + 1)
+            except SerialException:
+                pass

@@ -1,6 +1,6 @@
 import random
 
-
+#the minesweeper board
 class Cell(object):
     def __init__(self, is_mine, is_visible=False, is_flagged=False):
         self.is_mine = is_mine
@@ -42,8 +42,7 @@ class Board():
         self.is_playing = True
         return
 
-    def mine_repr(self,row_id, col_id):
-        # Debug only 
+    def getCellState(self,row_id, col_id):
         # print ("min_repr for: ",row_id,col_id)
         cell = self.board[row_id][col_id]
         if cell.is_defused:
