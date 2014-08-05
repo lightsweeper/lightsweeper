@@ -29,7 +29,8 @@ class LSEmulateSevenSegment(QFrame):
         self.colorE = "white"
         self.colorF = "white"
         self.colorG = "white"
-        self.segColors = [self.colorG, self.colorF, self.colorE, self.colorD, self.colorC, self.colorB, self.colorA]
+        #self.segColors = [self.colorG, self.colorF, self.colorE, self.colorD, self.colorC, self.colorB, self.colorA]
+        self.segColors = [self.colorA, self.colorB, self.colorC, self.colorD, self.colorE, self.colorF, self.colorG]
         self.queueColor = "white"
         self.queueDigit = 8
         self.setContentsMargins(0,0,0,0)
@@ -102,17 +103,31 @@ class LSEmulateSevenSegment(QFrame):
             print(bin(segments))
         #print(segments & 0b1000000 > 0, segments & 0b0100000 > 0, segments & 0b0010000 > 0, segments & 0b0001000 > 0,
         #      segments & 0b0000100 > 0, segments & 0b0000010 > 0, segments & 0b0000001 > 0)
-        self.segColors[0] = segments & 0b1000000 > 0
-        self.segColors[1] = segments & 0b0100000 > 0
-        self.segColors[2] = segments & 0b0010000 > 0
-        self.segColors[3] = segments & 0b0001000 > 0
-        self.segColors[4] = segments & 0b0000100 > 0
-        self.segColors[5] = segments & 0b0000010 > 0
-        self.segColors[6] = segments & 0b0000001 > 0
+        colors = []
+        colors.append(self.queueColor if segments & 0b1000000 > 0 else "black")
+        colors.append(self.queueColor if segments & 0b0100000 > 0 else "black")
+        colors.append(self.queueColor if segments & 0b0010000 > 0 else "black")
+        colors.append(self.queueColor if segments & 0b0001000 > 0 else "black")
+        colors.append(self.queueColor if segments & 0b0000100 > 0 else "black")
+        colors.append(self.queueColor if segments & 0b0000010 > 0 else "black")
+        colors.append(self.queueColor if segments & 0b0000001 > 0 else "black")
+        self.setSegmentsCustom(colors)
+        #str = "QWidget {{background-color: {0} }}".format(self.queueColor)
+        #for i in range(7):
+        #   self.segments[i].setStyleSheet(str)
+
+    def setSegmentsCustom(self, colors):
+        print(colors[0], colors[1], colors[2], colors[3], colors[4], colors[5], colors[6])
+        self.segColors[0] = colors[0]
+        self.segColors[1] = colors[1]
+        self.segColors[2] = colors[2]
+        self.segColors[3] = colors[3]
+        self.segColors[4] = colors[4]
+        self.segColors[5] = colors[5]
+        self.segColors[6] = colors[6]
         str = "QWidget {{background-color: {0} }}".format(self.queueColor)
         for i in range(7):
            self.segments[i].setStyleSheet(str)
-        pass
 
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)

@@ -114,7 +114,7 @@ class LSRealTile(LSTileAPI):
 
     def setTransition(self, transition):
         cmd = SET_TRANSITION
-        self.__tileWrite([cmd, shape])
+        self.__tileWrite([cmd, self.shape])
 
     def set(self,color=0, shape=0, transition=0):
         raise NotImplementedError()
@@ -125,6 +125,11 @@ class LSRealTile(LSTileAPI):
         if(transition != 0):
             self.setTransition(transition)
         return
+
+    # expecting a 7-tuple of Color constants
+    def setSegmentsCustom(self, segments, setItNow = True):
+
+        pass
 
     def setDigit(self, digit):
         if ((digit < 0) | (digit > 9)):

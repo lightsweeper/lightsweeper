@@ -6,8 +6,8 @@ from LSAudio import Audio
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FRAME_GAP = 1 / 30
-    REAL_FLOOR = False
-    EMULATOR_FLOOR = True
+    REAL_FLOOR = True
+    EMULATOR_FLOOR = False
     CONSOLE = True
 
     def __init__(self):

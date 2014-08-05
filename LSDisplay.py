@@ -1,4 +1,4 @@
-import LSRealFloor
+from LSRealFloor import LSRealFloor
 import Shapes
 from PyQt5.QtWidgets import (QApplication, QDialog, QHBoxLayout, QWidget)
 from PyQt5.QtCore import (QEvent)
@@ -24,7 +24,6 @@ class Display():
             self.app = QApplication(sys.argv)
             self.emulateFloor = LSEmulateFloor(row, col)
             self.dialog = LSDialog(None, self.emulateFloor)
-
         else:
             self.simulator = None
         self.floor = []
@@ -67,19 +66,32 @@ class Display():
             consoleIn = consoleIn.split(',')
             move = Move(int(consoleIn[0]), int(consoleIn[1]), 0)
             sensorsChanged.append(move)
+        #we want to ensure we never return a NoneType
+        if sensorsChanged is None:
+            return []
         return sensorsChanged
 
     def set(self, row, col, shape, color):
         #print("set:", row, col, shape, color)
-        if shape is not 126:
-            print("set", row, col, bin(shape))
+        #if shape is not 126:
+        #    print("set", row, col, bin(shape))
         if self.console:
             self.floor[row][col] = Shapes.hexToDigit(shape)
         if self.simulator:
             self.emulateFloor.setColor(row, col, color, True)
             self.emulateFloor.setSegments(row, col, shape)
+        if self.realFloor:
+            self.realFloor.set(row, col, shape, color)
 
-    def setCustom(self, row, col, colors):
+    def setFrame(self, frame):
+        print("set frame called")
+        for row in range(self.row):
+            for col in range(self.col):
+                if frame.hasChangesFor(row, col):
+                    self.set(row, col, frame.getShape(row, col), frame.getColor(row, col))
+                    print("...")
+
+    def setSegmentsCustom(self, row, col, colors):
         pass
 
     def add(self, row, col, shape, color):
@@ -94,6 +106,7 @@ class Display():
     def clear(self):
         pass
 
+#handles timer events from the emulated floor dialog
 class LSDialog(QDialog):
     def __init__(self, parent, floor):
         wid = QWidget()

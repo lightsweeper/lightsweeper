@@ -5,9 +5,7 @@ import random
 from minesweeper.board import Board
 import Colors
 import Shapes
-import time
-import LSGameAPI
-
+from Frame import Frame
 
 class Minesweeper():
     def __init__(self, display, audio, rows, cols):
@@ -43,12 +41,10 @@ class Minesweeper():
                 self.endAnim = EndAnimation(False)
                 self.animatingEnd = True
         elif self.animatingEnd:
-            print('animating end')
             frame = self.endAnim.getFrame()
             if frame:
                 #update display of each tile
-                print(frame)
-                pass
+                self.display.setFrame(frame)
             if self.endAnim.ended:
                 self.ended = True
         #push changed tiles to display
@@ -64,7 +60,6 @@ class Minesweeper():
                     cell = board.getCellState(row, col)
                     if cell == "D":
                         self.display.set(row, col, Shapes.DASH, Colors.VIOLET)
-                        print("DEFUSED")
                     elif cell == '.':
                         self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
                     elif cell == ' ' or cell == '':
@@ -87,11 +82,40 @@ class EndAnimation:
     def __init__(self, win):
         self.ended = False
         self.frames = []
-        self.frames.append("stub")
         if win:
-            print('win animation')
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.CYAN)
+                self.frames.append(frame)
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.BLUE)
+                self.frames.append(frame)
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.GREEN)
+                self.frames.append(frame)
         else:
-            print('loss animation')
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.RED)
+                self.frames.append(frame)
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.BLACK)
+                self.frames.append(frame)
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.RED)
+                self.frames.append(frame)
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.BLACK)
+                self.frames.append(frame)
+            for i in range(5):
+                frame = Frame(3, 3)
+                frame.setAllColor(Colors.RED)
+                self.frames.append(frame)
 
     def getFrame(self):
         if len(self.frames) is 0:

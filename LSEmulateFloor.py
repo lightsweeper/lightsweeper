@@ -1,11 +1,12 @@
-from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout,QVBoxLayout)
+from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout,QVBoxLayout, QFrame, QApplication, QWidget, QDialog)
+import sys
 
 # Lightsweeper additions
-from PyQt5.QtWidgets import (QFrame)
 from LSApi import LSApi
 from LSEmulateTile import LSEmulateTile
 from Move import Move
 import Colors
+
 
 class LSEmulateFloor(QGroupBox, LSApi):
     COLS = 8
@@ -115,9 +116,10 @@ class LSEmulateFloor(QGroupBox, LSApi):
     def setSegments(self, row, col, segments, setItNow = True):
         tile = self.tileRows[row][col]
         tile.setSegments(segments)
-        #tileList = self.getTileList(row, column)
-        #for tile in tileList:
-        #    tile.setSegments(segments, setItNow)
+
+    def setSegmentsCustom(self, row, col, colors):
+        tile = self.tileRows[row][col]
+        tile.setSegmentsCustom(colors)
 
     def setDigit(self, row, column, digit, setItNow = True):
         tileList = self._getTileList(row, column)
@@ -171,3 +173,24 @@ class LSEmulateFloor(QGroupBox, LSApi):
                 print ("unexpected error on tile", self.tileAddresses[tile.getAddress()])
         self.refreshboard()
         return True
+
+#handles timer events from the emulated floor dialog
+class LSDialog(QDialog):
+    def __init__(self, parent, floor):
+        wid = QWidget()
+        super(LSDialog, self).__init__()
+        self.mainLayout = QHBoxLayout()
+        self.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+        self.setWindowTitle("Lightsweeper")
+        self.setVisible(True)
+        self.mainLayout.addWidget(floor)
+
+if __name__ == "__main__":
+    print("testing EmulateFloor")
+    app = QApplication(sys.argv)
+    floor = LSEmulateFloor(3, 3)
+    floor.setSegmentsCustom(0,0,["red", "yellow", "green", "cyan", "blue", "violet", "white"])
+    dialog = LSDialog(None, floor)
+    dialog.exec()
+    print("dialog exited")

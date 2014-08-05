@@ -5,6 +5,9 @@ from serial import SerialException
 import time
 import winsound
 import os
+import Colors
+import Shapes
+from Move import Move
 
 #handles all communications with RealTile objects, serving as the interface to the
 #actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
@@ -18,16 +21,15 @@ class LSRealFloor():
         self.rows = rows
         self.cols = cols
         print("RealFloor init", rows, cols)
-
         if serials is None:
             # top-left, A1,2,3
             comPort1 = "COM5"
             # top-right, A4,5,6
-            comPort2 = "COM7"
+            comPort2 = "COM12"
             # bottom-left, B1,2,3
-            comPort3 = "COM8"
+            comPort3 = "COM13"
             # bottom-right, B4,5,6
-            comPort4 = "COM9"
+            comPort4 = "COM14"
             availPorts = list(serial_ports())
             print("Available serial ports:" + str(availPorts))
             print("connecting to ", comPort1, comPort2, comPort3, comPort4)
@@ -72,11 +74,13 @@ class LSRealFloor():
                 # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
                 # 1 being top-left, 4 bottom-right
                 comNumber = int(line[2]) - 1
-                tile = LSRealTile(serials[comNumber])
+                tile = LSRealTile(self.sharedSerials[comNumber])
                 tile.comNumber = comNumber
                 address = int(line[3])
                 tile.assignAddress(address)
                 self.addressToRowColumn[(address,comNumber)] = (row, col)
+                tile.setColor(Colors.WHITE)
+                tile.setShape(Shapes.ZERO)
                 #print("address assigned:", tile.getAddress())
                 #print("test getAddress", tile.getAddress())
                 i += 1
@@ -90,42 +94,50 @@ class LSRealFloor():
             for tile in row:
                 tile.setColor(color)
 
-    def RAINBOWMODE(self):
+    def set(self, row, col, shape, color):
+        tile = self.tileRows[row][col];
+        tile.setColor(color)
+        tile.setShape(shape)
+
+    def setSegmentsCustom(self, row, col, segments):
+        tile = self.tileRows[row][col]
+        tile.setSegmentsCustom(segments)
+
+    def RAINBOWMODE(self, updateFrequency = 0.4):
         self.pollSensors()
-        updateFrequency = 0.4
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.WHITE)
+                tile.setColor(Colors.RED)
                 tile.setShape(126)
-        self.wait(updateFrequency)
+        wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.YELLOW)
+                tile.setColor(Colors.YELLOW)
                 tile.setShape(126)
-        self.wait(updateFrequency)
+        wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.GREEN)
+                tile.setColor(Colors.GREEN)
                 tile.setShape(126)
-        self.wait(updateFrequency)
+        wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.CYAN)
+                tile.setColor(Colors.CYAN)
                 tile.setShape(126)
-        self.wait(updateFrequency)
+        wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.BLUE)
+                tile.setColor(Colors.BLUE)
                 tile.setShape(126)
-        self.wait(updateFrequency)
+        wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.VIOLET)
+                tile.setColor(Colors.VIOLET)
                 tile.setShape(126)
-        self.wait(updateFrequency)
+        wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
-                tile.setColor(LSRealFloor.WHITE)
+                tile.setColor(Colors.WHITE)
                 tile.setShape(126)
 
     def printAddresses(self):
@@ -144,9 +156,10 @@ class LSRealFloor():
             if val < 15:
                 #self.handleTileSensed(tile.address, tile.comNumber)
                 rowCol = self.addressToRowColumn[(tile.address, tile.comNumber)]
-                sensorsChanged.append((rowCol, val))
-                print("tile sensed: ", tile.address, tile.comNumber, "min=",min, "val=", val, "max=", max)
-        return None
+                move = Move(rowCol[0], rowCol[1], val)
+                sensorsChanged.append(move)
+                #print("tile sensed: ", tile.address, tile.comNumber, "min=",min, "val=", val, "max=", max)
+        return sensorsChanged
 
     def handleTileSensed(self, address, comNumber):
         rowCol = self.addressToRowColumn[(address, comNumber)]
@@ -227,3 +240,20 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except SerialException:
                 pass
+
+def wait(seconds):
+    # self.pollSensors()
+    currentTime = time.time()
+    while time.time() - currentTime < seconds:
+        pass
+
+if __name__ == "__main__":
+    print("todo: testing RealFloor")
+    floor = LSRealFloor(3, 3)
+    #call not implemented yet
+    #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])
+    floor.RAINBOWMODE(0.1)
+    floor.RAINBOWMODE(0.1)
+    floor.RAINBOWMODE(0.1)
+    while True:
+        floor.RAINBOWMODE(1)

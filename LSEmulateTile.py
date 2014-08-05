@@ -36,6 +36,9 @@ class LSEmulateTile(QFrame, LSApi):
     def setSegments(self, segments, setItNow = True):
         self.segments.setSegments(segments, setItNow)
 
+    def setSegmentsCustom(self, colors):
+        self.segments.setSegmentsCustom(colors)
+
     def setDigit (self, newDigit, setItNow = True):
         self.segments.setDigit(newDigit, setItNow)
         return
