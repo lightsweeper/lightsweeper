@@ -792,7 +792,8 @@ def setSegmentsTest(myTile):
                 if blue == 128:
                     blue = 2
                 rgb = [red, green, blue]
-                myTile.setSegments(rgb)
+                myTile.setSegments(rgb, conditionLatch = True)
+                myTile.latch()
                 seg = seg * 2
                 testSleep(0.08) # chase blurs when faster than this
    
@@ -810,12 +811,18 @@ def sensorStatusTest(myTile):
     print("")
 
 def singleModeTest(mySerial):
-    print("Standalone modes:")
+    print("\nStandalone modes:")
     print("1 - pressure sensor test")
-    print("5 - address displaay")
+    print("3 - walk thru all colors of all digits")
+    #FASTEST_TEST    = 4     # walks through all colors of all digits fast, looks white
+    print("5 - Fourth of July display")
+    print("6 - another rolling fade display")
+    print("7 - address display")
     mode = input("What mode do you want? ")
     intMode = int(mode)
+    # TODO - why force address 0 global?
     mySerial.write([0, intMode])
+    # TODO - why need this?
     input("Press enter to exit")
 
 
@@ -874,7 +881,7 @@ def main():
         print("    3 - sensorStatus test")
         print("    4 - run single digit mode")
         print("    5 - EEPROM tasks")
-        print("    6 - walk the address space")
+        print("    6 - discovery walk thru the address space")
         print("    7 - test setSegments API")
         testChoice = int(input("What test do you want to run? "))
         if testChoice == 0:
