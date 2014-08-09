@@ -27,10 +27,12 @@ class Minesweeper():
         self.updateBoard(self.board)
 
     def heartbeat(self, sensorsChanged):
-        for move in sensorsChanged:
-            print("got move at", move.row, move.col, "value:", move.val)
-            self.board.show(move.row, move.col)
-        if not self.board.is_playing and not self.animatingEnd:
+        if self.board.is_playing:
+            for move in sensorsChanged:
+                print("got move at", move.row, move.col, "value:", move.val)
+                self.board.show(move.row, move.col)
+            self.updateBoard(self.board)
+        elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
                 self.endAnim = EndAnimation(True)
@@ -46,9 +48,9 @@ class Minesweeper():
                 #update display of each tile
                 self.display.setFrame(frame)
             if self.endAnim.ended:
+                print("ended")
                 self.ended = True
         #push changed tiles to display
-        self.updateBoard(self.board)
 
     # currently this is just iterating across all the cells in the internal game state and pushing
     # the corresponding shape/color to the display for the given tile's position. a slightly better design would
@@ -81,44 +83,79 @@ class Minesweeper():
 class EndAnimation:
     def __init__(self, win):
         self.ended = False
+        self.currentFrame = None
         self.frames = []
         if win:
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.CYAN)
-                self.frames.append(frame)
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.BLUE)
-                self.frames.append(frame)
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.GREEN)
-                self.frames.append(frame)
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.CYAN)
+            self.frames.append(frame)
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.BLUE)
+            self.frames.append(frame)
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.GREEN)
+            self.frames.append(frame)
         else:
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.RED)
-                self.frames.append(frame)
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.BLACK)
-                self.frames.append(frame)
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.RED)
-                self.frames.append(frame)
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.BLACK)
-                self.frames.append(frame)
-            for i in range(5):
-                frame = Frame(3, 3)
-                frame.setAllColor(Colors.RED)
-                self.frames.append(frame)
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.RED)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 30
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.BLACK)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.RED)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.BLACK)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.RED)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.BLACK)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.RED)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.BLACK)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
+
+            frame = Frame(3, 3)
+            frame.setAllColor(Colors.RED)
+            frame.setAllShape(Shapes.EIGHT)
+            frame.heartbeats = 10
+            self.frames.append(frame)
 
     def getFrame(self):
         if len(self.frames) is 0:
             self.ended = True
             return None
-        return self.frames.pop()
+        if self.currentFrame and self.currentFrame.heartbeats > 0:
+            self.currentFrame.heartbeats -= 1
+        else:
+            self.currentFrame = self.frames.pop()
+        return self.currentFrame

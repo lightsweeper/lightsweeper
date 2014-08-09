@@ -29,7 +29,7 @@ class LSRealFloor():
             # bottom-left, B1,2,3
             comPort3 = "COM13"
             # bottom-right, B4,5,6
-            comPort4 = "COM14"
+            comPort4 = "COM15"
             availPorts = list(serial_ports())
             print("Available serial ports:" + str(availPorts))
             print("connecting to ", comPort1, comPort2, comPort3, comPort4)
@@ -99,6 +99,14 @@ class LSRealFloor():
         tile.setColor(color)
         tile.setShape(shape)
 
+    def setColor(self, row, col, color):
+        tile = self.tileRows[row][col]
+        tile.setColor(color)
+
+    def setShape(self, row, col, shape):
+        tile = self.tileRows[row][col]
+        tile.setShape(shape)
+
     def setSegmentsCustom(self, row, col, segments):
         tile = self.tileRows[row][col]
         tile.setSegmentsCustom(segments)
@@ -139,6 +147,7 @@ class LSRealFloor():
             for tile in row:
                 tile.setColor(Colors.WHITE)
                 tile.setShape(126)
+        wait(updateFrequency)
 
     def printAddresses(self):
         s = ""
@@ -253,6 +262,7 @@ if __name__ == "__main__":
     #call not implemented yet
     #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])
     floor.RAINBOWMODE(0.1)
+    print("Floor should be displaying things now")
     floor.RAINBOWMODE(0.1)
     floor.RAINBOWMODE(0.1)
     while True:

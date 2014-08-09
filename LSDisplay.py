@@ -83,13 +83,26 @@ class Display():
         if self.realFloor:
             self.realFloor.set(row, col, shape, color)
 
+    def setColor(self, row, col, color):
+        if self.simulator:
+            self.emulateFloor.setColor(row, col, color)
+        if self.realFloor:
+            self.realFloor.setColor(row, col, color)
+
+    def setShape(self, row, col, shape):
+        if self.simulator:
+            self.emulateFloor.setColor(row, col, shape)
+        if self.realFloor:
+            self.realFloor.setShape(row, col, shape)
+
     def setFrame(self, frame):
-        print("set frame called")
         for row in range(self.row):
             for col in range(self.col):
-                if frame.hasChangesFor(row, col):
-                    self.set(row, col, frame.getShape(row, col), frame.getColor(row, col))
-                    print("...")
+                #if frame.hasChangesFor(row, col):
+                if frame.hasColorChangesFor(row, col):
+                    self.setColor(row, col, frame.getColor(row, col))
+                if frame.hasShapeChangesFor(row, col):
+                    self.setShape(row, col, frame.getShape(row, col))
 
     def setSegmentsCustom(self, row, col, colors):
         pass

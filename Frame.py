@@ -3,15 +3,20 @@ class Frame():
     def __init__(self, row, col):
         self.rows = row
         self.columns = col
+        self.heartbeats = 1
         self.shapes = {}
         self.colors = {}
 
-    def hasChangesFor(self, row, col):
+    def hasShapeChangesFor(self, row, col):
         val = True
         try:
             self.shapes[(row, col)]
         except:
             val = False
+        return val
+
+    def hasColorChangesFor(self, row, col):
+        val = True
         try:
             self.colors[(row, col)]
         except:
@@ -27,6 +32,7 @@ class Frame():
         for row in range(self.rows):
             for col in range(self.columns):
                 self.shapes[(row, col)] = shape
+
 
     def getShape(self, row, col):
         return self.shapes[(row, col)]
