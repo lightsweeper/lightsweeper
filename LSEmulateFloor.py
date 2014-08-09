@@ -108,6 +108,7 @@ class LSEmulateFloor(QGroupBox, LSApi):
 
     def setColor(self, row, column, color, setItNow = True):
         tileList = self._getTileList(row, column)
+        print("Setting color to", color)
         for tile in tileList:
             tile.setColor(Colors.intToName(color), setItNow)
 

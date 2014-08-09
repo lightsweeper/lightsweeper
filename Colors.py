@@ -6,6 +6,7 @@ BLUE = 4
 VIOLET = 5  # Really more pink than violet
 CYAN = 6
 WHITE = 7
+ORANGE = 8
 
 def intToName(i):
     if i is BLACK:
@@ -24,3 +25,5 @@ def intToName(i):
         return "cyan"
     if i is WHITE:
         return "white"
+    if i is ORANGE:
+        return "orange"

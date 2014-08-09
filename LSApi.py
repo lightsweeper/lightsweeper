@@ -18,7 +18,7 @@ class LSApi():
     segs5 = (1, 0, 1, 1, 0, 1, 1)
     segs6 = (1, 0, 1, 1, 1, 1, 1)
     segs7 = (1, 1, 1, 0, 0, 0, 0)
-    segs8 = (0, 1, 1, 0, 1, 1, 1) #x instead of 8
+    segs8 = (1, 1, 1, 1, 1, 1, 1) #x instead of 8
     segs9 = (1, 1, 1, 1, 0, 1, 1)
     dash = (0, 0, 0, 0, 0, 0, 1)
     segMasks = [segs0,segs1,segs2,segs3,segs4,segs5,segs6,segs7,segs8,segs9,dash]

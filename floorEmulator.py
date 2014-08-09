@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog,
 from PyQt5.QtWidgets import (QSpinBox, QPlainTextEdit)
 from PyQt5.QtCore import (QTimer)
 from LSEmulateFloor import LSEmulateFloor
+import Colors
+
 
 class Dialog(QDialog):
     NumRows =  6
@@ -105,14 +107,14 @@ class Dialog(QDialog):
         self.colorBox = QGroupBox("Color Selection")
         layout = QVBoxLayout()
         self.colorSelect = QComboBox()
-        self.colorSelect.addItem("red", "red")
-        self.colorSelect.addItem("orange", "orange")
-        self.colorSelect.addItem("yellow", "yellow")
-        self.colorSelect.addItem("green", "green")
-        self.colorSelect.addItem("blue", "blue")
-        self.colorSelect.addItem("violet", "violet")
-        self.colorSelect.addItem("white", "white")
-        self.colorSelect.addItem("black", "black")
+        self.colorSelect.addItem("red", 1)
+        self.colorSelect.addItem("orange", 8)
+        self.colorSelect.addItem("yellow", 3)
+        self.colorSelect.addItem("green", 2)
+        self.colorSelect.addItem("blue", 4)
+        self.colorSelect.addItem("violet", 5)
+        self.colorSelect.addItem("white", 7)
+        self.colorSelect.addItem("black", 0)
         layout.addWidget(self.colorSelect)
         # button to immediately set this color
         colorButton = QPushButton("Set this color")
@@ -127,7 +129,7 @@ class Dialog(QDialog):
     def setColor(self):
         row = self.rowSelect.value()
         column = self.colSelect.value()
-        color = self.colorSelect.currentText()
+        color = self.colorSelect.itemData(self.colorSelect.currentIndex())
         self.floor.setColor(row, column, color)
         #self.myTextOut.appendPlainText("setColor") 
 
