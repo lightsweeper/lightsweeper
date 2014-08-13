@@ -286,6 +286,11 @@ class LSRealTile(LSTileAPI):
         print("eepromWrite computed sum = %d, checksum = %d" % (sum, chk))
         self.__tileWrite([EEPROM_WRITE, EEPROM_WRITE2, eeAddr, datum, chk])
 
+    # eeAddr and datum from 0 to 255
+    def eepromWriteObsolete(self,eeAddr,datum):
+        # old EEPROM write is command byte, address byte, data byte, and is horrible dangerous
+        self.__tileWrite([EEPROM_WRITE, eeAddr, datum])
+
     # eeAddr from 0 to 255
     def eepromRead(self,eeAddr):
         # send read command
@@ -671,31 +676,34 @@ def eepromTasks(myTile):
                     writeVal = int(writeStr)
                     print("OK - write " + repr(writeVal) + " to address " + repr(addr))
                     myTile.eepromWrite(addr, writeVal)
+                    #myTile.eepromWriteObsolete(addr, writeVal) # use for Critical-era EEPROM
                     print("Check errorRead:")
                     myTile.errorRead()
 
 
 def addressWalk(myTile, mySerial):
+    liveAddresses = []
     for address in range(1,32):
-        myTile.assignAddress(address * 8)
+        tileAddr = address * 8
+        myTile.assignAddress(tileAddr)
         result = myTile.getAddress()
         myTile.setDebug(0)  # minimize visual clutter
         #print("Tile address = " + result)
-        strRes = ""
+        strAddr = ""
         #strRes = ''.join( [ "0x%02X " %  x for x in result ] ).strip()
-        strRes = repr(result)
-        #for i in result:
-        #    strRes  += "0x%s " % (i.encode('hex'))
-        print("\nReading EEPROM 0 at tile address = " + strRes)
+        strAddr = repr(result)
+        print("\nReading EEPROM 0 at tile address = " + strAddr)
         testSleep()
         #eepromRead(myTile, 0, 1)
         addr = 0
         thisRead = myTile.eepromRead(addr)
         if len(thisRead) > 0:
+            liveAddresses.append(tileAddr)
             print ("Address " + repr(addr) + " = "  + ' '.join(format(x, '#02x') for x in thisRead))
         else:
-            #print("No response for EEPROM read at address " + repr(addr))
+            #print("No response for EEPROM read at tile address " + strAddr)
             pass
+    print("\nTile addresses that responded = " + repr(liveAddresses))
 
 def setSegmentsTest(myTile):
         myTile.setDebug(1)
@@ -759,7 +767,7 @@ def setSegmentsTest(myTile):
                 testSleep(2)
                 
         print("\nTesting multiple setSegments calls with latch")
-        for loop in range(3):
+        for loop in range(1):
             seg = 1
             for i in range(7):
                 print("\nThree writes plus latch for white seg=" + repr(seg))
@@ -791,6 +799,9 @@ def setSegmentsTest(myTile):
                 blue = green * 2 # blue is one segment CCW from green
                 if blue == 128:
                     blue = 2
+                if blue == 32:
+                    red += 32
+                    green += 32
                 rgb = [red, green, blue]
                 myTile.setSegments(rgb, conditionLatch = True)
                 myTile.latch()
@@ -874,36 +885,37 @@ def main():
         myTile.reset()
         testSleep(2)
 
-        print("Test choices:")
-        print("    0 - full test suite")
-        print("    1 - communications test")
-        print("    2 - sensor test")
-        print("    3 - sensorStatus test")
-        print("    4 - run single digit mode")
-        print("    5 - EEPROM tasks")
-        print("    6 - discovery walk thru the address space")
-        print("    7 - test setSegments API")
-        testChoice = int(input("What test do you want to run? "))
-        if testChoice == 0:
-            fullSuite(myTile)
-        elif testChoice == 1:
-            commTest(myTile, theSerial)
-        elif testChoice == 2:
-            sensorTest(myTile)
-            input("Enter to exit")
-        elif testChoice == 3:
-            sensorStatusTest(myTile)
-        elif testChoice == 4:
-            singleModeTest(theSerial)
-        elif testChoice == 5:
-            eepromTasks(myTile)
-        elif testChoice == 6:
-            addressWalk(myTile, theSerial)
-        elif testChoice == 7:
-            setSegmentsTest(myTile)
-        else:
-            print("You did not enter a valid test choice")
-        
+        print("Ctrl-C to exit")
+        myTile.setDebug(0)
+        for loop in range(1000000):
+            print("\nTest choices:")
+            print("    0 - full test suite")
+            print("    1 - communications test")
+            print("    2 - sensor test")
+            print("    3 - sensorStatus test")
+            print("    4 - run single digit mode")
+            print("    5 - EEPROM tasks")
+            print("    6 - discovery walk thru the address space")
+            print("    7 - test setSegments API")
+            testChoice = int(input("What test do you want to run? "))
+            if testChoice == 0:
+                fullSuite(myTile)
+            elif testChoice == 1:
+                commTest(myTile, theSerial)
+            elif testChoice == 2:
+                sensorTest(myTile)
+            elif testChoice == 3:
+                sensorStatusTest(myTile)
+            elif testChoice == 4:
+                singleModeTest(theSerial)
+            elif testChoice == 5:
+                eepromTasks(myTile)
+            elif testChoice == 6:
+                addressWalk(myTile, theSerial)
+            elif testChoice == 7:
+                setSegmentsTest(myTile)
+            else:
+                print("You did not enter a valid test choice")
         
         theSerial.close()
        
