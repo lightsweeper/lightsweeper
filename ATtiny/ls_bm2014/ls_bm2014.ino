@@ -134,6 +134,16 @@ void setup()
     MCUSR = 0;
     wdt_disable();
 
+    // Wait and hope the power is done glitching, may make setup more robust
+    // There was correlation between experimental power glitches and
+    // trashing of tile address in EEPROM
+    // Once saw an apparent 1/8 clock rate error
+    // Maybe more robust serial rate setup
+    int delayMs = 200;
+    delay(delayMs);
+    // TODO - maybe 200 code bytes for first delay()?
+    // TODO - use alternate delay with updateLedMs and millis()
+
 // http://embeddedgurus.com/stack-overflow/2009/05/checking-the-fuse-bits-in-an-atmel-avr-at-run-time/
     //char fuse_low = _SPM_GET_LOW_FUSEBITS();
 
@@ -254,7 +264,7 @@ void loop()
         {
             processSegmentCmd(mode);
         }
-        modeChanged = false;
+        modeChanged = false; // TODO - looks redundant
     }
 
     // end processing this command with a display update if needed
@@ -504,12 +514,14 @@ bool cmdRead()
                     if (((firstByte & 0xf8) == busAddress) || ((firstByte & 0xf8) == 0))
                     {
                         done = true; // command parser picks up next
+                        dbgBlip(1); // blip SEGDIN
                         logChar = 0xCC; // complete command acquired
                     }
                     // this tile was not addressed 
                     else
                     {
                         done = false; // throw out this command
+                        dbgBlip(2); // blip SEGDIN
                         //logChar = 0xCE; // not good to send in a system
                         //mySerial.write(commandBytes, 3); // HACK TEMP - want to see errors on scope
                     }
@@ -1619,6 +1631,19 @@ bool timerExpired(unsigned char * initVal, unsigned char timerMs)
     bool timeout = (now - *initVal) > timerMs;
 
     return timeout;
+}
+
+// debug output on SEGDIN line to MAX - use only when not using SPI to MAX
+void dbgBlip(int count)
+{
+    // looks like MAX driver leaves SEGDIN usually low
+    for (int i=0; i<count; i++)
+    {
+#if false
+        digitalWrite(SEGDIN, HIGH);
+        digitalWrite(SEGDIN, LOW);
+#endif
+    }
 }
 
 // use this write for debug output
