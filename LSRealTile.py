@@ -405,7 +405,6 @@ class LSRealTile(LSTileAPI):
 
     def read(self):
         raise NotImplementedError()
-        return self._getButtonState()
 
     def flushQueue(self):
         raise NotImplementedError()
@@ -456,23 +455,6 @@ class LSRealTile(LSTileAPI):
         #    print("Received nothing")
         return thisRead
 
-
-    ############################################
-    # REMOVEME - old stuff for reference only
-
-    # return a list of two-tuples
-    # row or column = 0 returns the whole column or row, respectively
-    # single tile returns list of itself
-    def getTileList (self, row, column):
-        raise NotImplementedError()
-
-    # return a list of active pressure sensors
-    def getSensors (self):
-        raise NotImplementedError()
-
-    # TODO - not yet used perhaps useful if target slot can be passed in
-    def pollSensors(self):
-        raise NotImplementedError()
 
 
     ############################################
@@ -709,6 +691,7 @@ def addressWalk(myTile, mySerial):
             pass
     print("\nTile addresses that responded = " + repr(liveAddresses))
     myTile.assignAddress(keepAddr)
+    return liveAddresses
 
 def setSegmentsTest(myTile):
         myTile.setDebug(1)
@@ -827,12 +810,46 @@ def sensorTest(myTile):
  
 def sensorStatusTest(myTile):
     print("looping while reading sensorStatus")
-    myTile.setDebug(1)
+    myTile.setDebug(0)
     for i in range(200):
         val = myTile.sensorStatus()
         print("sensorStatus for " + repr(myTile.getAddress()) + " returned " + repr(val))
         testSleep(1)
     print("")
+
+def writeAndPoll(myTile):
+    print("Setting segments and polling sensor")
+    blue = 1
+    count = 100
+    changes = 0
+    val = myTile.sensorStatus()
+    print("initial sensor status for tile " + repr(myTile.getAddress()) + " is " + repr(val))
+    startSecs = time.time()
+    for i in range(count):
+        # set the segments
+        red = blue
+        blue = blue * 2
+        if blue > 128:
+            blue = 1
+        rgb = [red, 0, blue] # queue red segment
+        myTile.setSegments(rgb, conditionLatch = False)
+
+        # read the sensor
+        newVal = myTile.sensorStatus()
+        if newVal != val:
+            val = newVal
+            changes = changes + 1
+            print("sensor status for tile " + repr(myTile.getAddress()) + " is now " + repr(val))
+        #testSleep(0.1) # REMOVEME for any real speed testing
+
+    if changes > 0:
+        print("final sensor status for tile " + repr(myTile.getAddress()) + " is " + repr(val))
+        print("sensor status changed " + repr(changes) + " times")
+    endSecs = time.time()
+    deltaSecs = endSecs - startSecs
+    perSecs = deltaSecs / count
+    print("writes and polls took " + repr(deltaSecs) + " s, for " + repr(perSecs) + " s per loop")
+    # the timing is just longer than 3 read timeouts per loop
 
 def singleModeTest(mySerial):
     print("\nStandalone modes:")
@@ -846,9 +863,6 @@ def singleModeTest(mySerial):
     intMode = int(mode)
     # TODO - why force address 0 global?
     mySerial.write([0, intMode])
-    # TODO - why need this?
-    input("Press enter to exit")
-
 
 # simple testing function for LSRealTile
 def main():
@@ -863,10 +877,12 @@ def main():
     comPort = "/dev/ttyUSB3"
     #portNum = input("Enter the number to append to /dev/ttyUSB:")
     #comPort = "/dev/ttyUSB" + portNum
-    comPort = input("Enter the port:")
+    comPort = input("Enter the port: ")
     print("Attempting to open port " + comPort)
     theSerial = None
     try:
+        # timeout = 0.003 misses a lot of sensor reads in writeAndPoll
+        # timeout = 0.004 seems fine
         theSerial = serial.Serial(comPort, 19200, timeout=0.005) # was 0.01
         print(comPort + " opened")
 
@@ -881,22 +897,21 @@ def main():
         # start with tile address survey
         address = 8 # default address
         myTile.assignAddress(address)
-        addressWalk(myTile, theSerial)
+        tiles = addressWalk(myTile, theSerial)
         testChoice = 6 # initialize for repeat
 
-        address = input("What is the tile address? (0 is global): ")
-        address = int(address)
-        #address = 96 #80
+        reply = input("What is the tile address? (0 is global, <Enter> for default): ")
+        if reply == "":  # try the first tile in the list
+            address = tiles[0] # 64
+        else:
+            address = int(address)
         
         myTile.assignAddress(address)
-        #myTile.assignAddress(b'\x50')
         result = myTile.getAddress()
         #print("Tile address = " + result)
         strRes = ""
         #strRes = ''.join( [ "0x%02X " %  x for x in result ] ).strip()
         strRes = repr(result)
-        #for i in result:
-        #    strRes  += "0x%s " % (i.encode('hex'))
         print("Tile address = " + strRes)
         testSleep()
 
@@ -915,6 +930,7 @@ def main():
             print("    5 - EEPROM tasks")
             print("    6 - discovery walk thru the address space")
             print("    7 - test setSegments API")
+            print("    8 - set segments and poll sensor")
             reply = input("\nWhat test do you want to run? <Enter> to repeat: ")
             if reply != "":
                 testChoice = int(reply)
@@ -934,6 +950,8 @@ def main():
                 addressWalk(myTile, theSerial)
             elif testChoice == 7:
                 setSegmentsTest(myTile)
+            elif testChoice == 8:
+                writeAndPoll(myTile)
             else:
                 print("You did not enter a valid test choice")
         
