@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2a48dfdd-34ee-41a2-8e51-f2595a517952" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/LSAudio.py" afterPath="$PROJECT_DIR$/LSAudio.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/LSGameEngine.py" afterPath="$PROJECT_DIR$/LSGameEngine.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/minesweeper.py" afterPath="$PROJECT_DIR$/minesweeper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/LSCalibrate.py" />
     </list>
     <ignored path="lightsweeper.iws" />
     <ignored path=".idea/workspace.xml" />
