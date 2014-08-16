@@ -19,18 +19,21 @@ class Minesweeper():
         self.cols = cols
         self.ended = False
         self.animatingEnd = False
-        self.audio.loadSong('sounds/BetweenGames1.wav', 'between1')
-        self.audio.loadSong('sounds/BetweenGames2.wav', 'between2')
-        self.audio.loadSong('sounds/BetweenGames3.wav', 'between3')
-        self.audio.loadSong('sounds/BetweenGames4.wav', 'between4')
-        self.audio.shuffleSongs()
+        self.audio.loadSong('BetweenGames1.wav', 'between1')
+        self.audio.loadSong('BetweenGames2.wav', 'between2')
+        self.audio.loadSong('BetweenGames3.wav', 'between3')
+        self.audio.loadSong('BetweenGames4.wav', 'between4')
+        #self.audio.shuffleSongs()
+        self.songsQuiet = False
         self.updateBoard(self.board)
-        self.audio.playSong('StartUp.wav')
+        #self.audio.playSound('StartUp.wav')
 
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:
             for move in sensorsChanged:
-                print("got move at", move.row, move.col, "value:", move.val)
+                if self.songsQuiet:
+                    self.songsQuiet = True
+                self.audio.playSound("Blop.wav")
                 self.board.show(move.row, move.col)
             self.updateBoard(self.board)
         elif not self.board.is_playing and not self.animatingEnd:
@@ -39,7 +42,7 @@ class Minesweeper():
                 self.endAnim = EndAnimation(True)
                 self.animatingEnd = True
             else:
-                print("Uh oh! You blew up!")
+                self.audio.playSound("Explosion.wav")
                 self.board.show_all()
                 self.endAnim = EndAnimation(False)
                 self.animatingEnd = True

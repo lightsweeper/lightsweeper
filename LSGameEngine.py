@@ -29,6 +29,7 @@ class GameEngine():
             sensorsChanged = self.pollSensors()
             self.game.heartbeat(sensorsChanged)
             self.display.heartbeat()
+            self.audio.heartbeat()
         else:
             print("~New game~")
             self.game = Minesweeper(self.display, self.audio, 3, 3)

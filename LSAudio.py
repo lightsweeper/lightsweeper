@@ -1,14 +1,23 @@
 import pygame
+import random
 
 #this class serves as a common controller for audio
 class Audio():
+    SONG_END = pygame.USEREVENT + 1
+
     def __init__(self):
-        # .mixer.init()
         pygame.mixer.init()
-        pass
+        pygame.init()
+        self.loadedSongs = []
+
+    def heartbeat(self):
+        for event in pygame.event.get():
+            if event.type == self.SONG_END:
+                self.shuffleSongs()
 
     def loadSong(self, filename, name):
-        # pygame.mixer.music.load("sounds/" + filename)
+        #pygame.mixer.music.load("sounds/" + filename)
+        self.loadedSongs.append(filename)
         pass
 
     def playSong(self, filename, loops=0):
@@ -25,13 +34,16 @@ class Audio():
 
     #plays loaded songs in a random order
     def shuffleSongs(self):
-        pass
+        song = random.randint(0, len(self.loadedSongs) - 1)
+        self.playSong(self.loadedSongs[song], 1)
+        pygame.mixer.music.set_endevent(self.SONG_END)
 
-    def loadSound(self, filename, name):
-        pass
-
-    def playSound(self, name):
-        pass
+    def playSound(self, filename):
+        print("playing sound", filename)
+        sound = pygame.mixer.Sound("sounds/" + filename)
+        pygame.mixer.Sound.play(sound)
+        #pygame.mixer.music.load("sounds/" + filename)
+        #pygame.mixer.music.play(1)
 
     def stopSounds(self):
         pass
