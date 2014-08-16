@@ -343,10 +343,10 @@ class LSRealTile(LSTileAPI):
         
     def sensorStatus(self):
         #self.__tileWrite([SENSOR_NOW], True)  # do not eat output
-        #self.__tileWrite([EEPROM_READ, 0], True)  # do not eat output
+        #self.__tileWrite([EEPROM_READ, 0], True)  # REMOVEME - may use for testing with no sensor
         self.__tileWrite([ADC_NOW], True)  # do not eat output
         # return response
-        thisRead = self.__tileRead()
+        thisRead = self.__tileRead(1) # request more than 1 byte means waiting for timeout
         #print ("Sensor status = " + ' '.join(format(x, '#02x') for x in thisRead))
         #if thisRead != None:
         if thisRead:
@@ -432,7 +432,8 @@ class LSRealTile(LSTileAPI):
             print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
 
         # if no response is expected, read anyway to flush tile debug output
-        if(not(expectResponse)):
+        # do not slow down to flush if not in debug mode
+        if(self.Debug and not(expectResponse)):
             thisRead = self.mySerial.read(8)
             if len(thisRead) > 0:
                 #if self.Debug:
@@ -441,16 +442,13 @@ class LSRealTile(LSTileAPI):
                     print ("Debug response: " + ' '.join(format(x, '#02x') for x in thisRead))
 
     # read from the tile
-    def __tileRead(self):
+    def __tileRead(self, count=8):
         if self.mySerial == None:
             return
-        thisRead = self.mySerial.read(8)
+        thisRead = self.mySerial.read(count)
         if len(thisRead) > 0:
-            #print("Received " + thisRead.ToHex())
             if self.Debug:
                 print ("Received: " + ' '.join(format(x, '#02x') for x in thisRead))
-            #thisHex = ByteToHex(thisRead)
-            #print("Received " + thisHex)
         #else:
         #    print("Received nothing")
         return thisRead
@@ -781,9 +779,9 @@ def setSegmentsTest(myTile):
                 #if i%64 == 50:
                 #if i%8 == 4:
                 myTile.syncComm()
-                myTile.errorRead()
+                thisRead = myTile.errorRead()
+                print ("errorRead response = "  + ' '.join(format(x, '#02x') for x in thisRead))
                 thisRead = myTile.eepromRead(0)
-                #if len(thisRead) > 0:
                 print ("EEPROM Tile Address = "  + ' '.join(format(x, '#02x') for x in thisRead))
 
             for i in range(6):  # six segment chase
@@ -820,8 +818,11 @@ def sensorStatusTest(myTile):
 def writeAndPoll(myTile):
     print("Setting segments and polling sensor")
     blue = 1
-    count = 100
+    count = 1000
     changes = 0
+    myTile.setDebug(0)
+    errors = myTile.errorRead()
+    print ("errorRead response = "  + ' '.join(format(x, '#02x') for x in errors))
     val = myTile.sensorStatus()
     print("initial sensor status for tile " + repr(myTile.getAddress()) + " is " + repr(val))
     startSecs = time.time()
@@ -849,7 +850,12 @@ def writeAndPoll(myTile):
     deltaSecs = endSecs - startSecs
     perSecs = deltaSecs / count
     print("writes and polls took " + repr(deltaSecs) + " s, for " + repr(perSecs) + " s per loop")
-    # the timing is just longer than 3 read timeouts per loop
+    # the timing was just longer than 3 read timeouts per loop
+    # with changes to sensorStatus the timing is now over 1 read timeout per loop
+    myTile.setDebug(0)
+    errors = myTile.errorRead()
+    print ("errorRead response = "  + ' '.join(format(x, '#02x') for x in errors))
+
 
 def singleModeTest(mySerial):
     print("\nStandalone modes:")
@@ -881,9 +887,13 @@ def main():
     print("Attempting to open port " + comPort)
     theSerial = None
     try:
+        # The serial read timeout may need to vary on different hosts.
+        # On Acer netbook:
         # timeout = 0.003 misses a lot of sensor reads in writeAndPoll
-        # timeout = 0.004 seems fine
-        theSerial = serial.Serial(comPort, 19200, timeout=0.005) # was 0.01
+        # timeout = 0.004 misses a few reads
+        # timeout = 0.005 rarely misses a read
+        # timeout = 0.006 never seen to miss a read
+        theSerial = serial.Serial(comPort, 19200, timeout=0.006)
         print(comPort + " opened")
 
     except serial.SerialException:
