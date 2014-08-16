@@ -2,7 +2,7 @@
 
 import random
 
-from minesweeper.board import Board
+from board import Board
 import Colors
 import Shapes
 from Frame import Frame
@@ -25,6 +25,7 @@ class Minesweeper():
         self.audio.loadSong('sounds/BetweenGames4.wav', 'between4')
         self.audio.shuffleSongs()
         self.updateBoard(self.board)
+        self.audio.playSong('StartUp.wav')
 
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:

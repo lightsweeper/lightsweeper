@@ -1,12 +1,12 @@
 import time
-from minesweeper.minesweeper import Minesweeper
+from minesweeper import Minesweeper
 from LSDisplay import Display
 from LSAudio import Audio
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FRAME_GAP = 1 / 30
-    REAL_FLOOR = True
+    REAL_FLOOR = False
     EMULATOR_FLOOR = False
     CONSOLE = True
 

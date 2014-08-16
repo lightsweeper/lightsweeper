@@ -1,7 +1,4 @@
-from PyQt5.QtWidgets import (QPushButton, QVBoxLayout)
-
 # Lightsweeper additions
-from PyQt5.QtWidgets import (QFrame)
 from LSApi import LSApi
 from LSEmulateSevenSegment import LSEmulateSevenSegment
 
