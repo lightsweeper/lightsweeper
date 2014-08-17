@@ -1,16 +1,13 @@
 from LSRealFloor import LSRealFloor
 import Shapes
-from PyQt5.QtWidgets import (QApplication, QDialog, QHBoxLayout, QWidget)
-from PyQt5.QtCore import (QEvent)
-from LSEmulateFloor import LSEmulateFloor
 import sys
-import Move
+from Move import Move
 
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
-    def __init__(self, row, col, realFloor = False, simulator = False, console = False):
+    def __init__(self, row, col, realFloor = False, console = False):
         self.row = row
         self.col = col
         if realFloor:
@@ -18,14 +15,6 @@ class Display():
             self.realFloor = LSRealFloor(row, col)
         else:
             self.realFloor = None
-        if simulator:
-            print("simulator true")
-            self.simulator = True
-            self.app = QApplication(sys.argv)
-            self.emulateFloor = LSEmulateFloor(row, col)
-            self.dialog = LSDialog(None, self.emulateFloor)
-        else:
-            self.simulator = None
         self.floor = []
         for r in range(row):
             self.floor.append([])
@@ -58,9 +47,7 @@ class Display():
         sensorsChanged = []
         if self.realFloor:
             sensorsChanged = self.realFloor.pollSensors()
-        if self.simulator:
-            sensorsChanged = self.emulateFloor.pollSensors()
-        if self.console and not self.realFloor and not self.simulator:
+        if self.console and not self.realFloor:
             self.printFloor()
             consoleIn = input("Type in the next move")
             consoleIn = consoleIn.split(',')
@@ -77,21 +64,14 @@ class Display():
         #    print("set", row, col, bin(shape))
         if self.console:
             self.floor[row][col] = Shapes.hexToDigit(shape)
-        if self.simulator:
-            self.emulateFloor.setColor(row, col, color, True)
-            self.emulateFloor.setSegments(row, col, shape)
         if self.realFloor:
             self.realFloor.set(row, col, shape, color)
 
     def setColor(self, row, col, color):
-        if self.simulator:
-            self.emulateFloor.setColor(row, col, color)
         if self.realFloor:
             self.realFloor.setColor(row, col, color)
 
     def setShape(self, row, col, shape):
-        if self.simulator:
-            self.emulateFloor.setColor(row, col, shape)
         if self.realFloor:
             self.realFloor.setShape(row, col, shape)
 
@@ -118,19 +98,3 @@ class Display():
 
     def clear(self):
         pass
-
-#handles timer events from the emulated floor dialog
-class LSDialog(QDialog):
-    def __init__(self, parent, floor):
-        wid = QWidget()
-        super(LSDialog, self).__init__()
-        self.mainLayout = QHBoxLayout()
-        self.setContentsMargins(0,0,0,0)
-        self.setLayout(self.mainLayout)
-        self.setWindowTitle("Lightsweeper")
-        self.setVisible(True)
-        self.mainLayout.addWidget(floor)
-
-    def timerEvent(self, *args, **kwargs):
-        #print("got timer event", *args, **kwargs)
-        self.enterFrame()

@@ -1,14 +1,14 @@
 
 class LSApi():
-    # segments to light for digits, in abcdefg order
+    # segments to light for digits, in 0..6 order
 	#
-	#  aa
-	# f  b
-	# f  b
-	#  gg
-	# e  c
-	# e  c
-	#  dd
+	#  00
+	# 5  1
+	# 5  1
+	#  66
+	# 4  2
+	# 4  2
+	#  33
 	#
     segs0 = (1, 1, 1, 1, 1, 1, 0)
     segs1 = (0, 1, 1, 0, 0, 0, 0)

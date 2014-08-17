@@ -3,7 +3,6 @@ from LSRealTile import LSRealTile
 from serial import Serial
 from serial import SerialException
 import time
-import winsound
 import os
 import Colors
 import Shapes
@@ -172,12 +171,12 @@ class LSRealFloor():
 
     def handleTileSensed(self, address, comNumber):
         rowCol = self.addressToRowColumn[(address, comNumber)]
-        if not self.board.board[rowCol[0]][rowCol[1]].is_visible:
-            winsound.PlaySound('sounds/BetweenGames1.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
-            winsound.PlaySound('sounds/Blop.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
+        # if not self.board.board[rowCol[0]][rowCol[1]].is_visible:
+            # winsound.PlaySound('sounds/BetweenGames1.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
+            # winsound.PlaySound('sounds/Blop.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
         self.board.show(rowCol[0], rowCol[1])
-        if self.board.showingMultiple:
-            winsound.PlaySound('sounds/Reveal.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
+        # if self.board.showingMultiple:
+            # winsound.PlaySound('sounds/Reveal.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
         pass
 
     def _getTileList(self,row,column):
@@ -249,6 +248,7 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except SerialException:
                 pass
+    # TODO: Linux
 
 def wait(seconds):
     # self.pollSensors()

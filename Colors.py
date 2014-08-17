@@ -6,24 +6,8 @@ BLUE = 4
 VIOLET = 5  # Really more pink than violet
 CYAN = 6
 WHITE = 7
-ORANGE = 8
+
+colorArray = ["black", "red", "green", "yellow", "blue", "violet", "cyan", "white"]
 
 def intToName(i):
-    if i is BLACK:
-        return "black"
-    if i is RED:
-        return "red"
-    if i is GREEN:
-        return "green"
-    if i is YELLOW:
-        return "yellow"
-    if i is BLUE:
-        return "blue"
-    if i is VIOLET:
-        return "violet"
-    if i is CYAN:
-        return "cyan"
-    if i is WHITE:
-        return "white"
-    if i is ORANGE:
-        return "orange"
+    return colorArray[i]
