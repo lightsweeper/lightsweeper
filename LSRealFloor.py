@@ -249,6 +249,7 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except SerialException:
                 pass
+    # TODO: Linux
 
 def wait(seconds):
     # self.pollSensors()
