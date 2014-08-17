@@ -42,6 +42,11 @@ LS_CALIBRATE_OFF =(LS_LATCH+5) # ends calibration, writes ADC stats to EEPROM
 FLIP_ON  =    (LS_LATCH+8)   # temporary command to flip display upside down
 FLIP_OFF =    (LS_LATCH+9)   # restore display rightside up
 
+# last ditch command to set random, but valid address, if all else fails
+# for robustness - two byte command and checksum
+LS_RANDOM_ADDRESS  = (LS_LATCH+0xF)
+LS_RANDOM_ADDRESS2 = (0xD4)
+
 # seven segment display commands with one data byte
 SET_COLOR      = 0x20          # set the tile color - format TBD
 SET_SHAPE      = (SET_COLOR+1) # set which segments are "on" - abcdefg-
@@ -409,6 +414,14 @@ class LSRealTile(LSTileAPI):
     def flushQueue(self):
         raise NotImplementedError()
 
+    def setRandomAddress(self):
+        # random address set is two byte command and checksum
+        sum = LS_RANDOM_ADDRESS + LS_RANDOM_ADDRESS2
+        chk = (65536 - sum) % 256;
+        #chk = chk + 1 # TEST REMOVEME - this breaks checksum
+        print("setRandomAddress computed sum = %d, checksum = %d" % (sum, chk))
+        self.__tileWrite([LS_RANDOM_ADDRESS, LS_RANDOM_ADDRESS2, chk])
+
     # write a command to the tile
     # minimum args is command by itself
     def __tileWrite(self, args, expectResponse=False):
@@ -691,6 +704,62 @@ def addressWalk(myTile, mySerial):
     myTile.assignAddress(keepAddr)
     return liveAddresses
 
+def setRandomTileAddress(mySerial,myTile):
+    print("\nThis function will attempt to set random addresses for all tiles at the current address")
+    print("All tiles currently at address " + repr(myTile.getAddress()) + " will be randomized")
+    print("<Ctrl-C> at any time to quit")
+    print("These are the steps:")
+    print("    do an address survey")
+    print("    run the random address command to set temporary addresses")
+    print("    loop that allows you to set a permanent address in an individual tile")
+    reply = input("Next step is to do address survey, <Enter> to continue, <Ctrl-C> at any time to quit: ")
+    addressWalk(myTile, mySerial)
+
+    reply = input("Next step is to set random addresses, <Enter> to continue: ")
+    myTile.setRandomAddress()
+
+    for loop in range(3):
+        print("\nCurrent address survey:")
+        addressWalk(myTile, mySerial)
+
+        print("Next step is to set an(other) address in EEPROM.")
+        reply = input("Enter a tile address from survey above (<Enter if finished): ")
+        if reply == "":
+            return
+        newAddr = int(reply)
+        myTile.assignAddress(newAddr)
+        result = myTile.getAddress()
+        myTile.setDebug(0)  # minimize visual clutter
+        strAddr = repr(result)
+        print("Reading EEPROM 0 at tile address = " + strAddr)
+        eepromAddr = 0
+        thisRead = myTile.eepromRead(eepromAddr)
+        if len(thisRead) > 0:
+            print ("Address " + repr(eepromAddr) + " = "  + ' '.join(format(x, '#02x') for x in thisRead))
+        else:
+            print("Oops - no response for EEPROM read at tile address " + strAddr)
+            pass
+
+        reply = input("Enter value to write for new tile address in EEPROM (<Enter> to skip this tile): ")
+        if reply == "":
+            continue
+        writeVal = int(reply)
+        print("OK - write " + repr(writeVal) + " for tile address in EEPROM")
+        myTile.eepromWrite(eepromAddr, writeVal)
+        print("Re-reading EEPROM after write:")
+        thisRead = myTile.eepromRead(eepromAddr)
+        if len(thisRead) > 0:
+            print ("Address " + repr(eepromAddr) + " = "  + ' '.join(format(x, '#02x') for x in thisRead))
+        else:
+            print("Oops - no response for EEPROM read at tile address " + strAddr)
+
+        reply = input("Next step is to reset this tile to start using its new address, <Enter> to continue: ")
+        print("Resetting this tile...")
+        myTile.reset()
+        testSleep(2)
+        myTile.assignAddress(writeVal)  # sync up to tile address change
+
+
 def setSegmentsTest(myTile):
         myTile.setDebug(1)
         print("\nInitial errorRead to clear errors")
@@ -914,7 +983,7 @@ def main():
         if reply == "":  # try the first tile in the list
             address = tiles[0] # 64
         else:
-            address = int(address)
+            address = int(reply)
         
         myTile.assignAddress(address)
         result = myTile.getAddress()
@@ -941,6 +1010,7 @@ def main():
             print("    6 - discovery walk thru the address space")
             print("    7 - test setSegments API")
             print("    8 - set segments and poll sensor")
+            print("    9 - random tile address procedure")
             reply = input("\nWhat test do you want to run? <Enter> to repeat: ")
             if reply != "":
                 testChoice = int(reply)
@@ -962,6 +1032,8 @@ def main():
                 setSegmentsTest(myTile)
             elif testChoice == 8:
                 writeAndPoll(myTile)
+            elif testChoice == 9:
+                setRandomTileAddress(theSerial, myTile)
             else:
                 print("You did not enter a valid test choice")
         
