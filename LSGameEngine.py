@@ -7,11 +7,10 @@ from LSAudio import Audio
 class GameEngine():
     FRAME_GAP = 1 / 30
     REAL_FLOOR = False
-    EMULATOR_FLOOR = False
     CONSOLE = True
 
     def __init__(self):
-        self.display = Display(3, 3, self.REAL_FLOOR, self.EMULATOR_FLOOR, self.CONSOLE)
+        self.display = Display(3, 3, self.REAL_FLOOR, self.CONSOLE)
         self.audio = Audio()
         self.game = Minesweeper(self.display, self.audio, 3, 3)
 
@@ -46,10 +45,7 @@ class GameEngine():
 
 def main():
     gameEngine = GameEngine()
-    if not gameEngine.EMULATOR_FLOOR:
-        gameEngine.beginLoop()
-    else:
-        gameEngine.beginEmulatorLoop()
+    gameEngine.beginLoop()
 
 if __name__ == '__main__':
     main()

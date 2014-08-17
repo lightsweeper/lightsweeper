@@ -30,7 +30,7 @@ class Audio():
         pass
 
     def setSongVolume(self, vol):
-        pass
+        pygame.mixer.music.set_volume(vol)
 
     #plays loaded songs in a random order
     def shuffleSongs(self):
@@ -49,4 +49,4 @@ class Audio():
         pass
 
     def setSoundVolume(self, vol):
-        pass
+        pygame.mixer.Sound.set_volume(1.0)

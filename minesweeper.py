@@ -23,7 +23,8 @@ class Minesweeper():
         self.audio.loadSong('BetweenGames2.wav', 'between2')
         self.audio.loadSong('BetweenGames3.wav', 'between3')
         self.audio.loadSong('BetweenGames4.wav', 'between4')
-        #self.audio.shuffleSongs()
+        self.audio.shuffleSongs()
+        self.audio.setSongVolume(0.3)
         self.songsQuiet = False
         self.updateBoard(self.board)
         #self.audio.playSound('StartUp.wav')
@@ -41,6 +42,7 @@ class Minesweeper():
                 print("Well done! You solved the board!")
                 self.endAnim = EndAnimation(True)
                 self.animatingEnd = True
+                self.audio.playSound("Success.wav")
             else:
                 self.audio.playSound("Explosion.wav")
                 self.board.show_all()

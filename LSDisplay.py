@@ -7,7 +7,7 @@ from Move import Move
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
-    def __init__(self, row, col, realFloor = False, simulator = False, console = False):
+    def __init__(self, row, col, realFloor = False, console = False):
         self.row = row
         self.col = col
         if realFloor:
@@ -68,14 +68,10 @@ class Display():
             self.realFloor.set(row, col, shape, color)
 
     def setColor(self, row, col, color):
-        if self.simulator:
-            self.emulateFloor.setColor(row, col, color)
         if self.realFloor:
             self.realFloor.setColor(row, col, color)
 
     def setShape(self, row, col, shape):
-        if self.simulator:
-            self.emulateFloor.setColor(row, col, shape)
         if self.realFloor:
             self.realFloor.setShape(row, col, shape)
 
