@@ -1,18 +1,25 @@
 import time
 from minesweeper import Minesweeper
+from EightbitSoundboard import Soundboard
 from LSDisplay import Display
 from LSAudio import Audio
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FRAME_GAP = 1 / 30
-    REAL_FLOOR = False
-    CONSOLE = True
+    REAL_FLOOR = True
+    CONSOLE = False
+    ROWS = 6
+    COLUMNS = 7
 
     def __init__(self):
-        self.display = Display(3, 3, self.REAL_FLOOR, self.CONSOLE)
+        self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.CONSOLE)
         self.audio = Audio()
-        self.game = Minesweeper(self.display, self.audio, 3, 3)
+        self.newGame()
+
+    def newGame(self):
+        #self.game = Minesweeper(self.display, self.audio, 3, 3)
+        self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
 
     def beginLoop(self):
         while True:
@@ -30,8 +37,7 @@ class GameEngine():
             self.display.heartbeat()
             self.audio.heartbeat()
         else:
-            print("~New game~")
-            self.game = Minesweeper(self.display, self.audio, 3, 3)
+            self.newGame()
 
     def wait(self, seconds):
         # self.pollSensors()

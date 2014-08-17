@@ -34,7 +34,9 @@ class Audio():
 
     #plays loaded songs in a random order
     def shuffleSongs(self):
-        song = random.randint(0, len(self.loadedSongs) - 1)
+        songCount = len(self.loadedSongs)
+        song = random.randint(0, songCount - 1)
+        print("songs", songCount)
         self.playSong(self.loadedSongs[song], 1)
         pygame.mixer.music.set_endevent(self.SONG_END)
 
