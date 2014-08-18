@@ -15,7 +15,7 @@ class LSRealFloor():
     COLS = 8
     ROWS = 6
     SENSOR_THRESHOLD = 15
-    
+
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
         self.rows = rows
         self.cols = cols
