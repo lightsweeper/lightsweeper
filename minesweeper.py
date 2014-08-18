@@ -27,7 +27,10 @@ class Minesweeper():
         self.audio.setSongVolume(0.3)
         self.songsQuiet = False
         self.updateBoard(self.board)
-        #self.audio.playSound('StartUp.wav')
+
+        # Confirmed that both sounsd play simultaneously
+        # self.audio.playSound('StartUp.wav')
+        # self.audio.playSound('Explosion.wav')
 
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:

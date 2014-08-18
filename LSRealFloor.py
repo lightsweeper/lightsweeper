@@ -3,7 +3,6 @@ from LSRealTile import LSRealTile
 from serial import Serial
 from serial import SerialException
 import time
-import winsound
 import os
 import Colors
 import Shapes
@@ -15,8 +14,8 @@ from Move import Move
 class LSRealFloor():
     COLS = 8
     ROWS = 6
-    MINES = 9
-
+    SENSOR_THRESHOLD = 15
+    
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
         self.rows = rows
         self.cols = cols
@@ -69,7 +68,9 @@ class LSRealFloor():
             tiles = []
             self.tileAddresses = []
             for col in range(cols):
-                line = (pickle.readline()).strip('()\n').replace('\'','')
+                line = ""
+                while line is "":
+                    line = (pickle.readline()).strip('()\n').replace('\'','')
                 line = tuple(line.split(','))
                 # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
                 # 1 being top-left, 4 bottom-right
@@ -162,23 +163,11 @@ class LSRealFloor():
         tiles = self._getTileList(0,0)
         for tile in tiles:
             val = tile.sensorStatus()
-            if val < 15:
-                #self.handleTileSensed(tile.address, tile.comNumber)
+            if val < self.SENSOR_THRESHOLD:
                 rowCol = self.addressToRowColumn[(tile.address, tile.comNumber)]
                 move = Move(rowCol[0], rowCol[1], val)
                 sensorsChanged.append(move)
-                #print("tile sensed: ", tile.address, tile.comNumber, "min=",min, "val=", val, "max=", max)
         return sensorsChanged
-
-    def handleTileSensed(self, address, comNumber):
-        rowCol = self.addressToRowColumn[(address, comNumber)]
-        if not self.board.board[rowCol[0]][rowCol[1]].is_visible:
-            winsound.PlaySound('sounds/BetweenGames1.wav', winsound.SND_FILENAME and winsound.SND_LOOP and winsound.SND_ASYNC)
-            winsound.PlaySound('sounds/Blop.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
-        self.board.show(rowCol[0], rowCol[1])
-        if self.board.showingMultiple:
-            winsound.PlaySound('sounds/Reveal.wav', winsound.SND_FILENAME and winsound.SND_ASYNC)
-        pass
 
     def _getTileList(self,row,column):
         tileList = []
@@ -249,6 +238,7 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except SerialException:
                 pass
+    # TODO: Linux
 
 def wait(seconds):
     # self.pollSensors()
