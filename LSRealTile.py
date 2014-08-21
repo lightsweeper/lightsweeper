@@ -394,9 +394,15 @@ class LSRealTile(LSTileAPI):
         self.__tileWrite([cmd, debugFlag])
 
     # write any queued colors or segments to the display
-    def latch(self):
+    def latch(self, wholePort = False):
+        if wholePort:
+            keepAddress = self.address
+            self.address = 0
         latchCmd = LS_LATCH
         self.__tileWrite([latchCmd])
+        if wholePort:
+            self.address = keepAddress
+
 
     def unregister(self):
         raise NotImplementedError()
