@@ -475,7 +475,7 @@ class LSRealTile(LSTileAPI):
 
 
     ############################################
-    # test code
+    # Serial code
 
 def serial_ports():
     """
@@ -492,9 +492,73 @@ def serial_ports():
                 pass
     else:
         # unix
- #      yield '/dev/ttyUSB1'
         for port in list_ports.comports():
             yield port[0]
+            
+def lsOpen(com):
+    try:
+        return serial.Serial(com, 19200, timeout=0.01)
+    except serial.SerialException:
+        return None
+
+# Checks if supplied port has any lightsweeper objects listening
+def testport(port):
+    testTile=LSRealTile(lsOpen(port))
+    testTile.assignAddress(0)   # 0 is the global address
+    if testTile.version():      # If any tile responds to a version command
+        return True
+    return False
+    
+# By hook or by crook, returns a valid com port
+def selectport():
+    availPorts = list(serial_ports())
+    validPorts = list(filter(testport,availPorts))
+
+    if args['-p']:
+        com = args['-p']
+    else:
+        if numOpts is 0:
+            numOpts = len(validPorts)
+            print("No valid ports were found, try plugging in a lightsweeper tile!")
+            exit()
+        elif numOpts is 1:
+            com = validPorts[0]
+        else:
+            print("Available serial ports: ")
+            for port in validPorts:
+                print(port)
+            com = input("Enter desired com port:")
+   
+    if com not in availPorts:
+        print(com + " does not exist.")
+        exit()
+    if com not in validPorts:
+        print (com + " does not have any lightsweepers attached to it.")
+        exit()
+        
+    print("Using communications port: " + com + "...")
+    return com
+
+
+# Attempts to return the address of a valid lightsweeper tile
+def selectaddr():
+    if args['-a']:
+        address = int(args['-a']) # Again with the sanity checking...
+        print("Connecting to tile at address: " + str(address) + "...")
+    else:
+        if args['-p']:
+            print("No address specified, using address 0 (all tiles).")
+            address = 0
+            print("To target a tile at a specific address use the -a option...")
+        else:
+            address = 0
+            inaddr = input("What tile address would you like to control [0]: ")
+            if inaddr:
+                address = int(inaddr)
+    return address
+
+    ############################################
+    # test code
 
 # simple delay between test statements with default delay
 def testSleep(secs=0.3):

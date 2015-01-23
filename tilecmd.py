@@ -24,23 +24,6 @@ Tile commands:
 '''
 from docopt import docopt
 from LSRealTile import *
-import serial
-from serial.tools import list_ports
-
-
-def lsOpen(com):
-    try:
-        return serial.Serial(com, 19200, timeout=0.01)
-    except serial.SerialException:
-        return None
-
-def testport(port):
-    testTile=LSRealTile(lsOpen(port))
-    testTile.assignAddress(0)
-    if testTile.version():
-        return True
-    return False
-
 
 if __name__ == '__main__':
     args = docopt(__doc__)
@@ -73,53 +56,19 @@ if __name__ == '__main__':
         tile_command = 'reset'
 
 
-# Select com port
-    availPorts = list(serial_ports())
-    validPorts = list(filter(testport,availPorts))
-
-    if args['-p']:
-        com = args['-p']
-    else:
-        numOpts = len(validPorts)
-        if numOpts is 0:
-            print("No valid ports were found, try plugging in a lightsweeper tile!")
-            exit()
-        elif numOpts is 1:
-            com = validPorts[0]
-        else:
-            print("Available serial ports: ")
-            for port in validPorts:
-                print(port)
-            com = input("Enter desired com port:")
-   
-    if com not in availPorts:
-        print(com + " does not exist.")
-        exit()
-    if com not in validPorts:
-        print (com + " does not have any lightsweepers attached to it.")
-        exit()
+  # Select com port
+    com = LSRealTile.selectport()
         
-    print("Using communications port: " + com + "...")
-        
-# Select address
-    if args['-a']:
-        address = int(args['-a']) # Again with the sanity checking...
-        print("Connecting to tile at address: " + str(address) + "...")
-    else:
-        if args['-p']:
-            print("No address specified, using address 0 (all tiles).")
-            address = 0
-            print("To target a tile at a specific address use the -a option...")
-        else:
-            address = 0
-            inaddr = input("What tile address would you like to control [0]: ")
-            if inaddr:
-                address = int(inaddr)
-            
-            
-    theSerial=lsOpen(com)
+  # Select address
+    address = LSRealTile.selectaddr()
 
-    myTile = LSRealTile(theSerial)    
+  # Create serial object
+    theSerial=LSRealTile.lsOpen(com)
+
+  # Bind tile object to serial object
+    myTile = LSRealTile(theSerial)
+
+  # Set the current tile's address
     myTile.assignAddress(address)
 
     if theSerial != None:
