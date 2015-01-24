@@ -477,12 +477,100 @@ class LSRealTile(LSTileAPI):
     ############################################
     # Serial code
 
+class lsOpen:
+    
+    def __init__(self):
+        self.lsMatrix = self.portmap()
+        if len(self.lsMatrix) is 0:
+            print("Cannot find any lightsweeper tiles")
+        if len(self.lsMatrix) is 1:
+            print("Only one serial port->" + repr([key for key in self.lsMatrix.keys()]))
+        print("There are " + repr(len(self.lsMatrix)) + " valid serial ports.")
+
+
+    def lsSerial(self, port, baud=19200):
+        try:
+            return serial.Serial(port, baud, timeout=0.01)
+        except serial.SerialException:
+            return None
+
+
+    def testport(self, port):
+        testTile=LSRealTile(self.lsSerial(port))
+        testTile.assignAddress(0)
+        if testTile.version():
+            return True
+        return False
+
+
+    def availPorts(self):
+        # Returns a generator for all available serial ports
+        if os.name == 'nt': # windows
+            for i in range(256):
+                try:
+                    s = serial.Serial(i)
+                    s.close()
+                    yield 'COM' + str(i + 1)
+                except serial.SerialException:
+                    pass
+        else:               # unix
+            for port in list_ports.comports():
+                yield port[0]
+
+
+    def validPorts(self):
+        # Returns a generator for ports that have lightsweeper tiles attached
+        for validPort in list(filter(self.testport,self.availPorts())):
+            yield validPort
+        
+    def validAddrs(self, port):
+        # Returns a generator for valid lightsweeper addresses on provided port
+        testTile = LSRealTile(self.lsSerial(port))
+        for address in range(1,32):
+            tileAddr = address * 8
+            testTile.assignAddress(tileAddr)
+            if testTile.version():
+                yield tileAddr
+
+
+    def portmap(self):
+        # Returns a map of responding lightsweeper tiles and serial ports
+        return({port:set(self.validAddrs(port)) for port in self.validPorts()})
+        
+    def selectPort(self, portList = None):
+            
+        posPorts = enumerate(sorted(self.lsMatrix.keys()))
+      
+        # you can tell when the sleep deprivation starts to kick in
+        def checkinput(foo):
+            bar = dict(enumerate(sorted(self.lsMatrix.keys())))
+            if int(foo) in bar.keys():
+                return bar.get(int(foo))
+            if foo in self.lsMatrix.keys():
+                return foo
+            return False
+            
+        # TODO: Sanity check that portList consists of valid ports
+        if portList is not None:
+            posPorts = enumerate(sorted(portList))
+        
+        # Prompts the user to select a valid serial port then returns it
+        print("The following serial ports are available:")
+        for key,val in posPorts:
+            print("     [" + repr(key) + "]    " + repr(val) + "  (" + repr(len(self.lsMatrix.get(val))) + " attached tiles)")
+        userPort = input("Which one do you want? ")
+        while checkinput(userPort) is False:
+            print("Invalid selection.")
+            userPort = input("Which one do you want? ")
+        return checkinput(userPort)
+
+# TODO replace with lsOpen.availPorts()
 def serial_ports():
     """
-    Returns a generator for all available serial ports
+        Returns a generator for all available serial ports
     """
-    if os.name == 'nt':
-        # windows
+
+    if os.name == 'nt':   # windows
         for i in range(256):
             try:
                 s = serial.Serial(i)
@@ -490,72 +578,9 @@ def serial_ports():
                 yield 'COM' + str(i + 1)
             except serial.SerialException:
                 pass
-    else:
-        # unix
-        for port in list_ports.comports():
-            yield port[0]
-            
-def lsOpen(com):
-    try:
-        return serial.Serial(com, 19200, timeout=0.01)
-    except serial.SerialException:
-        return None
-
-# Checks if supplied port has any lightsweeper objects listening
-def testport(port):
-    testTile=LSRealTile(lsOpen(port))
-    testTile.assignAddress(0)   # 0 is the global address
-    if testTile.version():      # If any tile responds to a version command
-        return True
-    return False
-    
-# By hook or by crook, returns a valid com port
-def selectport():
-    availPorts = list(serial_ports())
-    validPorts = list(filter(testport,availPorts))
-
-    if args['-p']:
-        com = args['-p']
-    else:
-        if numOpts is 0:
-            numOpts = len(validPorts)
-            print("No valid ports were found, try plugging in a lightsweeper tile!")
-            exit()
-        elif numOpts is 1:
-            com = validPorts[0]
-        else:
-            print("Available serial ports: ")
-            for port in validPorts:
-                print(port)
-            com = input("Enter desired com port:")
-   
-    if com not in availPorts:
-        print(com + " does not exist.")
-        exit()
-    if com not in validPorts:
-        print (com + " does not have any lightsweepers attached to it.")
-        exit()
-        
-    print("Using communications port: " + com + "...")
-    return com
-
-
-# Attempts to return the address of a valid lightsweeper tile
-def selectaddr():
-    if args['-a']:
-        address = int(args['-a']) # Again with the sanity checking...
-        print("Connecting to tile at address: " + str(address) + "...")
-    else:
-        if args['-p']:
-            print("No address specified, using address 0 (all tiles).")
-            address = 0
-            print("To target a tile at a specific address use the -a option...")
-        else:
-            address = 0
-            inaddr = input("What tile address would you like to control [0]: ")
-            if inaddr:
-                address = int(inaddr)
-    return address
+            else:                  # unix
+                for port in list_ports.comports():
+                    yield port[0]
 
     ############################################
     # test code
