@@ -58,3 +58,7 @@ docs/_build/
 .*
 # Except this one...
 !/.gitignore
+
+# Ignore gedit's auto backup files
+*~
+
