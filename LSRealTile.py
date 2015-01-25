@@ -1038,16 +1038,10 @@ def singleModeTest(mySerial):
 def main():
     print("\nTesting LSRealTile")
 
-    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    availPorts = list(serial_ports())
-    print("Available serial ports:" + str(availPorts))
-    #comPort = "COM8"
-    if len(availPorts) > 0:  # try the first port in the list
-        comPort = availPorts[0]
-    #comPort = "/dev/ttyUSB3"
-    #portNum = input("Enter the number to append to /dev/ttyUSB:")
-    #comPort = "/dev/ttyUSB" + portNum
-    comPort = input("Enter the port: ")
+    tilepile = lsOpen()
+    
+    comPort = tilepile.selectPort()
+    
     print("Attempting to open port " + comPort)
     theSerial = None
     try:
