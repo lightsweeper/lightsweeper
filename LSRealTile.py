@@ -488,9 +488,9 @@ class lsOpen:
         print("There are " + repr(len(self.lsMatrix)) + " valid serial ports.")
 
 
-    def lsSerial(self, port, baud=19200):
+    def lsSerial(self, port, baud=19200, timeout=0.01):
         try:
-            return serial.Serial(port, baud, timeout=0.01)
+            return serial.Serial(port, baud, timeout)
         except serial.SerialException:
             return None
 
