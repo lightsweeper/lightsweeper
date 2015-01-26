@@ -502,7 +502,7 @@ class lsOpen:
         try:
             return serial.Serial(port, baud, timeout)
         except serial.SerialException:
-            return None
+            raise serial.SerialException
 
 
     def testport(self, port):
@@ -598,23 +598,23 @@ class lsOpen:
         return checkinput(userPort)
 
 
-# TODO replace with lsOpen.availPorts()
-def serial_ports():
-    """
-        Returns a generator for all available serial ports
-    """
-
-    if os.name == 'nt':   # windows
-        for i in range(256):
-            try:
-                s = serial.Serial(i)
-                s.close()
-                yield 'COM' + str(i + 1)
-            except serial.SerialException:
-                pass
-            else:                  # unix
-                for port in list_ports.comports():
-                    yield port[0]
+# Old code
+#def serial_ports():
+#    """
+#        Returns a generator for all available serial ports
+#    """
+#
+#    if os.name == 'nt':   # windows
+#        for i in range(256):
+#            try:
+#                s = serial.Serial(i)
+#                s.close()
+#                yield 'COM' + str(i + 1)
+#            except serial.SerialException:
+#                pass
+#            else:                  # unix
+#                for port in list_ports.comports():
+#                    yield port[0]
 
     ############################################
     # test code
@@ -1085,7 +1085,7 @@ def main():
         # timeout = 0.004 misses a few reads
         # timeout = 0.005 rarely misses a read
         # timeout = 0.006 never seen to miss a read
-        theSerial = serial.Serial(comPort, 19200, timeout=0.006)
+        theSerial = tilepile.lsSerial(comPort, 19200, timeout=0.006)
         print(comPort + " opened")
 
     except serial.SerialException:
