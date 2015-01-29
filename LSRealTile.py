@@ -483,7 +483,7 @@ class lsOpen:
         for discovering and making use of valid lightsweeper serial objects
     """
     
-    def __init__(self):
+    def __init__(self):        
         self.lsMatrix = self.portmap()
         if len(self.lsMatrix) is 0:
             print("Cannot find any lightsweeper tiles")
@@ -500,9 +500,9 @@ class lsOpen:
 
         # TODO: check if the supplied port is in lsMatrix
         try:
-            return serial.Serial(port, baud, timeout)
+            return serial.Serial(port, baud, timeout=timeout)
         except serial.SerialException:
-            raise serial.SerialException
+            raise serial.SerialException  # WATCH OUT!
 
 
     def testport(self, port):
@@ -510,7 +510,11 @@ class lsOpen:
             Returns true if port has any lightsweeper objects listening
         """
 
-        testTile=LSRealTile(self.lsSerial(port))
+        try:
+            testTile = LSRealTile(self.lsSerial(port))
+        except serial.SerialException:
+            print("Serial Exception on port: " + str(port))
+            return False
         testTile.assignAddress(0)
         if testTile.version():
             return True
