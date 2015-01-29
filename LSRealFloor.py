@@ -1,10 +1,12 @@
 ### Implementation of the Lightsweeper floor
 from LSRealTile import LSRealTile
 from LSRealTile import lsOpen
+
 import time
 import os
 import Colors
 import Shapes
+import pickle
 from Move import Move
 
 #handles all communications with RealTile objects, serving as the interface to the
@@ -69,8 +71,10 @@ class LSRealFloor():
         # make all the rows
         self.tileRows = []
         print("Using Jay-Daddy's pickling system")
-        pickle = open('Bfloor', 'r')
+        picklefile = open('Bfloor', 'r')
         #print(pickle)
+        config = pickle.Unpickler(picklefile)
+        print(config.load())
         i = 0
         for row in range(rows):
             tiles = []

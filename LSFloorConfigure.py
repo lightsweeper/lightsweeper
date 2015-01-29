@@ -3,7 +3,7 @@
 
 import os
 import serial
-import pickle
+import json
 from LSRealTile import lsOpen
 from LSRealTile import LSRealTile
 
@@ -38,8 +38,8 @@ def main():
         else:
             return True
         
-    pickleName = input("\nIf you have an existing configuration to edit, enter the name here: ")
-    if "" == pickleName:
+    fileName = input("\nIf you have an existing configuration to edit, enter the name here: ")
+    if "" == fileName:
         print("\nStarting a new configuration from scratch.")
         rows = int(input("\nHow many rows do you want?: "))
         while pickgeom(totaltiles, rows) is False:
@@ -92,23 +92,20 @@ def main():
         #print(repr(config))
         printConfig(config)
         
-        pickleName = input("\nPlease enter a filename for this pickled configuration (or blank to not save): ")
-        if pickleName == "":
+        fileName = input("\nPlease enter a filename for this configuration (or blank to not save): ")
+        if fileName == "":
             print("OK, not saving this configuration")
         else:
-            configFile = open(pickleName, 'wb')
-            pickle.dump(config, configFile)
-            configFile.close()
-            print("\nYour configuration was saved in " + pickleName)
+            with open(fileName, 'w') as configFile:
+                json.dump(config, configFile, sort_keys = True, indent = 4,)
+            print("\nYour configuration was saved in " + fileName)
                 
 
     else:
-        configFile = open(pickleName, 'rb')
-        config = pickle.load(configFile)
-        configFile.close()
 
-        print("\nThis is the configuration saved in " + pickleName + ":\n")
-        #print(repr(config))
+        print("\nThis is the configuration saved in " + fileName + ":\n")
+        with open(fileName) as configFile:    
+            config = json.load(configFile)
         printConfig(config)
 
 
