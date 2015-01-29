@@ -1,8 +1,6 @@
 ### Implementation of the Lightsweeper floor
 from LSRealTile import LSRealTile
 from LSRealTile import lsOpen
-from serial import Serial
-from serial import SerialException
 import time
 import os
 import Colors
@@ -71,7 +69,7 @@ class LSRealFloor():
         # make all the rows
         self.tileRows = []
         print("Using Jay-Daddy's pickling system")
-        pickle = open('floor_small_config', 'r')
+        pickle = open('Bfloor', 'r')
         #print(pickle)
         i = 0
         for row in range(rows):
@@ -234,21 +232,6 @@ class LSRealFloor():
 
     def clock(self):
         return
-
-def serial_ports():
-    """
-    Returns a generator for all available serial ports
-    """
-    if os.name == 'nt':
-        # windows
-        for i in range(256):
-            try:
-                s = Serial(i)
-                s.close()
-                yield 'COM' + str(i + 1)
-            except SerialException:
-                pass
-    # TODO: Linux
 
 def wait(seconds):
     # self.pollSensors()
