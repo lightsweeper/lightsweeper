@@ -7,6 +7,7 @@ import os
 import Colors
 import Shapes
 import json
+from collections import defaultdict
 from Move import Move
 
 #handles all communications with RealTile objects, serving as the interface to the
@@ -71,16 +72,26 @@ class LSRealFloor():
         self.addressToRowColumn = {}
         # make all the rows
         self.tileRows = []
-        print("Using Jay-Daddy's pickling system")
-        with open(fileName) as configFile:    
-            config = json.load(configFile)
-        for (row, col, port, addr) in config:
-            tile = LSRealTile(tilepile.lsSerial(port))
-            tile.assignAddress(addr)
-            tile.setColor(Colors.WHITE) # Debugging
-            tile.setShape(Shapes.ZERO)  # Debugging
-            print ("Address assigned: " + str(tile.getAddress())) # Debugging
-            input() # debugging
+        conf = lsConfig(fileName)
+        print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
+        
+        for row in conf.board:
+            tiles = []
+            self.tileAddresses = []
+            for col in conf.board[row]:
+                (port, address) = conf.board[row][col]
+                tile = LSRealTile(tilepile.lsSerial(port, timeout=0.05))
+                tile.comNumber = port
+
+                tile.assignAddress(address)
+                self.addressToRowColumn[(address,port)] = (row, col)
+                tile.setColor(Colors.WHITE)
+                tile.setShape(Shapes.ZERO)
+                print("address assigned:", tile.getAddress())
+                tiles.append(tile)
+                wait(1)
+            self.tileRows.append(tiles)
+
         
         
  # Old code:        
@@ -245,6 +256,36 @@ class LSRealFloor():
 
     def clock(self):
         return
+        
+class lsConfig:
+
+    def __init__(self, configFile):
+        
+        config = self.loadConfig(configFile)
+        self._parseConfig(config)
+        
+    def loadConfig(self, fileName):
+        print("Loading board mappings from " + fileName)
+        with open(fileName) as configFile:    
+            return json.load(configFile)
+
+    def _parseConfig(self, config):
+        def defdict():
+            return defaultdict(int)
+        self.cells = 0
+        self.rows = 0
+        self.cols = 0
+        self.board = defaultdict(defdict)
+        for (row, col, port, addr) in config:
+            self.cells += 1
+            if row >= self.rows:
+                self.rows = row + 1
+            if col >= self.cols:
+                self.cols = col + 1
+            self.board[row][col] = (port, addr)
+        
+            
+        
 
 def wait(seconds):
     # self.pollSensors()
