@@ -1,5 +1,6 @@
 ### Implementation of the Lightsweeper floor
 from LSRealTile import LSRealTile
+from LSRealTile import lsOpen
 from serial import Serial
 from serial import SerialException
 import time
@@ -15,47 +16,56 @@ class LSRealFloor():
     COLS = 8
     ROWS = 6
     SENSOR_THRESHOLD = 15
+    sharedSerials = list()
 
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
         self.rows = rows
         self.cols = cols
         print("RealFloor init", rows, cols)
-        if serials is None:
-            # top-left, A1,2,3
-            comPort1 = "COM5"
-            # top-right, A4,5,6
-            comPort2 = "COM12"
-            # bottom-left, B1,2,3
-            comPort3 = "COM13"
-            # bottom-right, B4,5,6
-            comPort4 = "COM15"
-            availPorts = list(serial_ports())
-            print("Available serial ports:" + str(availPorts))
-            print("connecting to ", comPort1, comPort2, comPort3, comPort4)
-            serial1 = None
-            serial2 = None
-            serial3 = None
-            serial4 = None
-            try:
-                serial1 = Serial(comPort1, 19200, timeout=0.005)
-            except IOError:
-                print("Could not open", comPort1)
-            try:
-                serial2 = Serial(comPort2, 19200, timeout=0.005)
-            except IOError:
-               print("Could not open", comPort2)
-            try:
-                serial3 = Serial(comPort3, 19200, timeout=0.005)
-            except IOError:
-                print("Could not open", comPort3)
-            try:
-                serial4 = Serial(comPort4, 19200, timeout=0.005)
-            except IOError:
-                print("Could not open", comPort4)
-            self.sharedSerials = [serial1, serial2, serial3, serial4]
-            print("finished with COM ports")
-        else:
-            self.sharedSerials = serials
+
+        tilepile = lsOpen()
+
+        for port in tilepile.lsMatrix:
+            self.sharedSerials.append(port)
+        print(repr(self.sharedSerials))  #debugging
+        
+  # Old code:
+#        if serials is None:
+#            # top-left, A1,2,3
+#            comPort1 = "COM5"
+#            # top-right, A4,5,6
+#            comPort2 = "COM12"
+#            # bottom-left, B1,2,3
+#            comPort3 = "COM13"
+#            # bottom-right, B4,5,6
+#            comPort4 = "COM15"
+#            availPorts = list(serial_ports())
+#            print("Available serial ports:" + str(availPorts))
+#            print("connecting to ", comPort1, comPort2, comPort3, comPort4)
+#            serial1 = None
+#            serial2 = None
+#            serial3 = None
+#            serial4 = None
+#            try:
+#                serial1 = Serial(comPort1, 19200, timeout=0.005)
+#            except IOError:
+#                print("Could not open", comPort1)
+#            try:
+#                serial2 = Serial(comPort2, 19200, timeout=0.005)
+#            except IOError:
+#               print("Could not open", comPort2)
+#            try:
+#                serial3 = Serial(comPort3, 19200, timeout=0.005)
+#            except IOError:
+#                print("Could not open", comPort3)
+#            try:
+#                serial4 = Serial(comPort4, 19200, timeout=0.005)
+#            except IOError:
+#                print("Could not open", comPort4)
+#            self.sharedSerials = [serial1, serial2, serial3, serial4]
+#            print("finished with COM ports")
+#        else:
+#            self.sharedSerials = serials
 
         self.addressToRowColumn = {}
         # make all the rows
