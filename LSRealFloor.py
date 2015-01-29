@@ -6,7 +6,7 @@ import time
 import os
 import Colors
 import Shapes
-import pickle
+import json
 from Move import Move
 
 #handles all communications with RealTile objects, serving as the interface to the
@@ -19,6 +19,7 @@ class LSRealFloor():
     sharedSerials = list()
 
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
+        fileName = 'Bfloor' # Testing
         self.rows = rows
         self.cols = cols
         print("RealFloor init", rows, cols)
@@ -71,35 +72,43 @@ class LSRealFloor():
         # make all the rows
         self.tileRows = []
         print("Using Jay-Daddy's pickling system")
-        picklefile = open('Bfloor', 'r')
-        #print(pickle)
-        config = pickle.Unpickler(picklefile)
-        print(config.load())
-        i = 0
-        for row in range(rows):
-            tiles = []
-            self.tileAddresses = []
-            for col in range(cols):
-                line = ""
-                while line is "":
-                    line = (pickle.readline()).strip('()\n').replace('\'','')
-                line = tuple(line.split(','))
-                # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
-                # 1 being top-left, 4 bottom-right
-                comNumber = int(line[2]) - 1
-                tile = LSRealTile(self.sharedSerials[comNumber])
-                tile.comNumber = comNumber
-                address = int(line[3])
-                tile.assignAddress(address)
-                self.addressToRowColumn[(address,comNumber)] = (row, col)
-                tile.setColor(Colors.WHITE)
-                tile.setShape(Shapes.ZERO)
-                #print("address assigned:", tile.getAddress())
-                #print("test getAddress", tile.getAddress())
-                i += 1
-                #assign address
-                tiles.append(tile)
-            self.tileRows.append(tiles)
+        with open(fileName) as configFile:    
+            config = json.load(configFile)
+        for (row, col, port, addr) in config:
+            tile = LSRealTile(tilepile.lsSerial(port))
+            tile.assignAddress(addr)
+            tile.setColor(Colors.WHITE) # Debugging
+            tile.setShape(Shapes.ZERO)  # Debugging
+            print ("Address assigned: " + str(tile.getAddress())) # Debugging
+            input() # debugging
+        
+        
+ # Old code:        
+#        for row in range(rows):
+#            tiles = []
+#            self.tileAddresses = []
+#            for col in range(cols):
+#                line = ""
+#                while line is "":
+#                    line = (pickle.readline()).strip('()\n').replace('\'','')
+#                line = tuple(line.split(','))
+#                # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
+#                # 1 being top-left, 4 bottom-right
+#                comNumber = int(line[2]) - 1
+#                tile = LSRealTile(self.sharedSerials[comNumber])
+#                tile.comNumber = comNumber
+#                address = int(line[3])
+#                tile.assignAddress(address)
+#                self.addressToRowColumn[(address,comNumber)] = (row, col)
+#                tile.setColor(Colors.WHITE)
+#                tile.setShape(Shapes.ZERO)
+#                #print("address assigned:", tile.getAddress())
+#                #print("test getAddress", tile.getAddress())
+#                i += 1
+#                #assign address
+#                tiles.append(tile)
+#            self.tileRows.append(tiles)
+
         return
 
     def setAllColor(self, color):
