@@ -4,24 +4,7 @@
 import os
 import serial
 import pickle
-
-def serial_ports():
-    """
-    Returns a generator for all available serial ports
-    """
-    if os.name == 'nt':
-        # windows
-        for i in range(256):
-            try:
-                s = serial.Serial(i)
-                s.close()
-                yield 'COM' + str(i + 1)
-            except serial.SerialException:
-                pass
-    else:
-        # unix
-        for port in list_ports.comports():
-            yield port[0]
+from LSRealTile import lsOpen
 
 # prints the list of 4-tuples
 def printConfig(config):
@@ -30,10 +13,14 @@ def printConfig(config):
         print(repr(cell))
 
 def main():
+    
+    tilepile = lsOpen()
+    
     print("\nLightsweeper Configuration utility")
 
     # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    availPorts = list(serial_ports())
+    availPorts = list(tilepile.lsMatrix)
+    print(repr(availPorts))
     print("Available serial ports:" + str(availPorts))
     defaultPort = "COM8"
     if len(availPorts) > 0:  # default to the first port in the list
