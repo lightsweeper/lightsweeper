@@ -602,25 +602,6 @@ class lsOpen:
         return checkinput(userPort)
 
 
-# Old code
-#def serial_ports():
-#    """
-#        Returns a generator for all available serial ports
-#    """
-#
-#    if os.name == 'nt':   # windows
-#        for i in range(256):
-#            try:
-#                s = serial.Serial(i)
-#                s.close()
-#                yield 'COM' + str(i + 1)
-#            except serial.SerialException:
-#                pass
-#            else:                  # unix
-#                for port in list_ports.comports():
-#                    yield port[0]
-
-    ############################################
     # test code
 
 # simple delay between test statements with default delay

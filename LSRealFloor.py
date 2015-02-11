@@ -23,6 +23,7 @@ class LSRealFloor():
     SENSOR_THRESHOLD = 230
     sharedSerials = list()
 
+
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
         fileName = 'Bfloor' # Testing
         self.rows = rows
@@ -34,52 +35,13 @@ class LSRealFloor():
         for port in tilepile.lsMatrix:
             self.sharedSerials.append(port)
         print(repr(self.sharedSerials))  #debugging
-        
-  # Old code:
-#        if serials is None:
-#            # top-left, A1,2,3
-#            comPort1 = "COM5"
-#            # top-right, A4,5,6
-#            comPort2 = "COM12"
-#            # bottom-left, B1,2,3
-#            comPort3 = "COM13"
-#            # bottom-right, B4,5,6
-#            comPort4 = "COM15"
-#            availPorts = list(serial_ports())
-#            print("Available serial ports:" + str(availPorts))
-#            print("connecting to ", comPort1, comPort2, comPort3, comPort4)
-#            serial1 = None
-#            serial2 = None
-#            serial3 = None
-#            serial4 = None
-#            try:
-#                serial1 = Serial(comPort1, 19200, timeout=0.005)
-#            except IOError:
-#                print("Could not open", comPort1)
-#            try:
-#                serial2 = Serial(comPort2, 19200, timeout=0.005)
-#            except IOError:
-#               print("Could not open", comPort2)
-#            try:
-#                serial3 = Serial(comPort3, 19200, timeout=0.005)
-#            except IOError:
-#                print("Could not open", comPort3)
-#            try:
-#                serial4 = Serial(comPort4, 19200, timeout=0.005)
-#            except IOError:
-#                print("Could not open", comPort4)
-#            self.sharedSerials = [serial1, serial2, serial3, serial4]
-#            print("finished with COM ports")
-#        else:
-#            self.sharedSerials = serials
 
         self.addressToRowColumn = {}
         # make all the rows
         self.tileRows = []
         conf = lsConfig(fileName)
         print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
-        
-        
+                
         for row in conf.board:
             tiles = []
             self.tileAddresses = []
@@ -96,82 +58,40 @@ class LSRealFloor():
                 tiles.append(tile)
                 wait(.1)
             self.tileRows.append(tiles)
-        
-        
-        
-        # Deprecated
-        #for row in conf.board:
-            #for j in range(cols):
-            #    self.tileRows[j].append(None)
-            #for col in conf.board[row]:
-            #    (port, address) = conf.board[row][col]
-            #    tile = LSRealTile(tilepile.lsSerial(port))
-            #    tile.comNumber = port
-
-         #   tile.assignAddress(address)
-         #   self.addressToRowColumn[(address,port)] = (row, col)
-         #   col = int(line[1])
-         #   tile.setColor(Colors.WHITE)
-         #   tile.setShape(Shapes.ZERO)
-         #   print("address assigned:", tile.getAddress())
-         #   s = ""
-         #   wait(.1)
-         #   tile = self.tileRows[i][j]
-
-        
-        
- # Old code:        
-#        for row in range(rows):
-#            tiles = []
-#            self.tileAddresses = []
-#            for col in range(cols):
-#                line = ""
-#                while line is "":
-#                    line = (pickle.readline()).strip('()\n').replace('\'','')
-#                line = tuple(line.split(','))
-#                # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
-#                # 1 being top-left, 4 bottom-right
-#                comNumber = int(line[2]) - 1
-#                tile = LSRealTile(self.sharedSerials[comNumber])
-#                tile.comNumber = comNumber
-#                address = int(line[3])
-#                tile.assignAddress(address)
-#                self.addressToRowColumn[(address,comNumber)] = (row, col)
-#                tile.setColor(Colors.WHITE)
-#                tile.setShape(Shapes.ZERO)
-#                #print("address assigned:", tile.getAddress())
-#                #print("test getAddress", tile.getAddress())
-#                i += 1
-#                #assign address
-#                tiles.append(tile)
-#            self.tileRows.append(tiles)
-
+            
         return
+
 
     def heartbeat(self):
         pass
+
 
     def setAllColor(self, color):
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(color)
 
+
     def set(self, row, col, shape, color):
         tile = self.tileRows[row][col];
         tile.setColor(color)
         tile.setShape(shape)
 
+
     def setColor(self, row, col, color):
         tile = self.tileRows[row][col]
         tile.setColor(color)
+
 
     def setShape(self, row, col, shape):
         tile = self.tileRows[row][col]
         tile.setShape(shape)
 
+
     def setSegmentsCustom(self, row, col, segments):
         tile = self.tileRows[row][col]
         tile.setSegmentsCustom(segments)
+
 
     def RAINBOWMODE(self, updateFrequency = 0.4):
         for row in self.tileRows:
@@ -217,6 +137,7 @@ class LSRealFloor():
                 wait(OURWAIT)
         wait(updateFrequency)
 
+
     def printAddresses(self):
         s = ""
         for row in range(0,self.rows):
@@ -224,6 +145,7 @@ class LSRealFloor():
                 s += str(self.tileRows[row][col].getAddress()) + " "
             #print(s)
             s = ""
+
 
     def pollSensors(self):
         sensorsChanged = []
@@ -235,6 +157,7 @@ class LSRealFloor():
                 move = Move(rowCol[0], rowCol[1], val)
                 sensorsChanged.append(move)
         return sensorsChanged
+
 
     def _getTileList(self,row,column):
         tileList = []
@@ -263,6 +186,7 @@ class LSRealFloor():
             tileList = [tileRow[column-1]]
         return tileList
 
+
     def clearboard(self):
         zeroTile = LSRealTile(self.sharedSerials[0])
         zeroTile.assignAddress(0)
@@ -277,6 +201,7 @@ class LSRealFloor():
         zeroTile.assignAddress(0)
         zeroTile.blank()
 
+
     def RAINBOWMODE_NoAddress(self, interval):
         #print("RAINBOWMODE: BLIND EDITION")
         for ii in range(10):
@@ -284,6 +209,7 @@ class LSRealFloor():
             randTile.assignAddress(random.randint(0, 200))
             randTile.setColor(Colors.RANDOM())
             randTile.setShape(random.randint(0, 127))
+
 
     def pollSensors_NoAddress(self, limit):
         sensorsChanged = []
@@ -301,20 +227,28 @@ class LSRealFloor():
                     return sensorsChanged
         return sensorsChanged
 
+
     def showboard(self):
         return
+
 
     def refreshboard(self):
         return
 
+
     def resetboard(self):
         return
+
 
     def purgetile(self,tile):
         return False
 
+
     def clock(self):
         return
+
+
+
         
 class lsConfig:
 
@@ -322,11 +256,13 @@ class lsConfig:
         
         config = self.loadConfig(configFile)
         self._parseConfig(config)
+
         
     def loadConfig(self, fileName):
         print("Loading board mappings from " + fileName)
         with open(fileName) as configFile:    
             return json.load(configFile)
+
 
     def _parseConfig(self, config):
         def defdict():
@@ -351,6 +287,7 @@ def wait(seconds):
     currentTime = time.time()
     while time.time() - currentTime < seconds:
         pass
+
 
 def playRandom8bitSound(audio):
     val = random.randint(0, 10)
@@ -377,6 +314,7 @@ def playRandom8bitSound(audio):
     if val is 10:
         audio.playSound("8bit/Reveal_G_2.wav")
 
+
 def playRandomCasioSound(audio):
     val = random.randint(0, 7)
     if val is 0:
@@ -395,6 +333,7 @@ def playRandomCasioSound(audio):
         audio.playSound("8bit/casio_E.wav")
     if val is 7:
         audio.playSound("8bit/casio_G.wav")
+
 
 if __name__ == "__main__":
     print("todo: testing RealFloor")
