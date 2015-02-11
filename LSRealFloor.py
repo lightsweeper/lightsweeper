@@ -12,6 +12,8 @@ from collections import defaultdict
 from Move import Move
 from LSAudio import Audio
 
+OURWAIT = 0.005
+
 #handles all communications with RealTile objects, serving as the interface to the
 #actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
 #(sensor changes)
@@ -82,7 +84,7 @@ class LSRealFloor():
                 self.tileRows[i].append(None)
             for col in conf.board[row]:
                 (port, address) = conf.board[row][col]
-                tile = LSRealTile(tilepile.lsSerial(port, timeout=0.05))
+                tile = LSRealTile(tilepile.lsSerial(port))
                 tile.comNumber = port
 
             tile.assignAddress(address)
@@ -92,7 +94,7 @@ class LSRealFloor():
             tile.setShape(Shapes.ZERO)
                 print("address assigned:", tile.getAddress())
             s = ""
-                wait(1)
+                wait(.1)
                 tile = self.tileRows[i][j]
 
         
@@ -156,36 +158,43 @@ class LSRealFloor():
             for tile in row:
                 tile.setColor(Colors.RED)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.YELLOW)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.GREEN)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.CYAN)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.BLUE)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.VIOLET)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.WHITE)
                 tile.setShape(126)
+                wait(OURWAIT)
         wait(updateFrequency)
 
     def printAddresses(self):
@@ -376,9 +385,8 @@ if __name__ == "__main__":
     print("Clearing floor")
     #call not implemented yet
     #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])
-    floor.clearboard()
     while True:
-        print("RAINBOWMODE: BLIND EDITION")
+        floor.RAINBOWMODE()
         floor.RAINBOWMODE_NoAddress(0.01)
         print("detecting changes")
         shitChanged = floor.pollSensors_NoAddress(60)
