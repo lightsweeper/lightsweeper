@@ -4,9 +4,11 @@ from serial import Serial
 from serial import SerialException
 import time
 import os
+import random
 import Colors
 import Shapes
 from Move import Move
+from LSAudio import Audio
 
 #handles all communications with RealTile objects, serving as the interface to the
 #actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
@@ -14,7 +16,7 @@ from Move import Move
 class LSRealFloor():
     COLS = 8
     ROWS = 6
-    SENSOR_THRESHOLD = 15
+    SENSOR_THRESHOLD = 230
 
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
         self.rows = rows
@@ -24,11 +26,11 @@ class LSRealFloor():
             # top-left, A1,2,3
             comPort1 = "COM5"
             # top-right, A4,5,6
-            comPort2 = "COM12"
+            comPort2 = "COM6"
             # bottom-left, B1,2,3
-            comPort3 = "COM13"
+            comPort3 = "COM7"
             # bottom-right, B4,5,6
-            comPort4 = "COM15"
+            comPort4 = "COM8"
             availPorts = list(serial_ports())
             print("Available serial ports:" + str(availPorts))
             print("connecting to ", comPort1, comPort2, comPort3, comPort4)
@@ -61,34 +63,44 @@ class LSRealFloor():
         # make all the rows
         self.tileRows = []
         print("Using Jay-Daddy's pickling system")
-        pickle = open('floor_small_config', 'r')
-        #print(pickle)
-        i = 0
-        for row in range(rows):
-            tiles = []
-            self.tileAddresses = []
-            for col in range(cols):
-                line = ""
-                while line is "":
-                    line = (pickle.readline()).strip('()\n').replace('\'','')
-                line = tuple(line.split(','))
-                # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
-                # 1 being top-left, 4 bottom-right
-                comNumber = int(line[2]) - 1
-                tile = LSRealTile(self.sharedSerials[comNumber])
-                tile.comNumber = comNumber
-                address = int(line[3])
-                tile.assignAddress(address)
-                self.addressToRowColumn[(address,comNumber)] = (row, col)
-                tile.setColor(Colors.WHITE)
-                tile.setShape(Shapes.ZERO)
-                #print("address assigned:", tile.getAddress())
-                #print("test getAddress", tile.getAddress())
-                i += 1
-                #assign address
-                tiles.append(tile)
-            self.tileRows.append(tiles)
+        pickle = open('floor_config', 'r')
+        self.tileRows = []
+        for i in range(rows):
+            self.tileRows.append([])
+            for j in range(cols):
+                self.tileRows[i].append(None)
+
+        for line in pickle:
+            line = (line).strip('()\n').replace('\'', '')
+            line = tuple(line.split(','))
+            comNumber = int(line[2]) - 1
+            tile = LSRealTile(self.sharedSerials[comNumber])
+            tile.comNumber = comNumber
+            address = int(line[3])
+            tile.assignAddress(address)
+            row = int(line[0])
+            col = int(line[1])
+            self.addressToRowColumn[(address, comNumber)] = (row, col)
+            tile.setColor(Colors.WHITE)
+            tile.setShape(Shapes.ZERO)
+            print("storing tile:", row, col)
+            self.tileRows[row][col] = tile
+
+        for i in range(rows):
+            s = ""
+            for j in range(cols):
+                tile = self.tileRows[i][j]
+                if tile is None:
+                    s += "No" + '\t'
+                else:
+                    s += str(tile.getAddress()) + "\t"
+            print(s)
+
+        print("Real floor done instantiating")
         return
+
+    def heartbeat(self):
+        pass
 
     def setAllColor(self, color):
         for row in self.tileRows:
@@ -210,6 +222,30 @@ class LSRealFloor():
         zeroTile.assignAddress(0)
         zeroTile.blank()
 
+    def RAINBOWMODE_NoAddress(self, interval):
+        #print("RAINBOWMODE: BLIND EDITION")
+        for ii in range(10):
+            randTile = LSRealTile(self.sharedSerials[random.randint(0, 3)])
+            randTile.assignAddress(random.randint(0, 200))
+            randTile.setColor(Colors.RANDOM())
+            randTile.setShape(random.randint(0, 127))
+
+    def pollSensors_NoAddress(self, limit):
+        sensorsChanged = []
+        polled = 0
+        for com in range(len(self.sharedSerials)):
+            for addy in range(1, 25):
+                tile = LSRealTile(self.sharedSerials[com])
+                tile.assignAddress(addy * 8)
+                val = tile.sensorStatus()
+                if val < self.SENSOR_THRESHOLD:
+                    print("sensor sensed", val)
+                    sensorsChanged.append((addy * 8, com))
+                polled += 1
+                if polled >= limit:
+                    return sensorsChanged
+        return sensorsChanged
+
     def showboard(self):
         return
 
@@ -246,14 +282,76 @@ def wait(seconds):
     while time.time() - currentTime < seconds:
         pass
 
+def playRandom8bitSound(audio):
+    val = random.randint(0, 10)
+    if val is 0:
+        audio.playSound("8bit/10.wav")
+    if val is 1:
+        audio.playSound("8bit/12.wav")
+    if val is 2:
+        audio.playSound("8bit/13.wav")
+    if val is 3:
+        audio.playSound("8bit/15.wav")
+    if val is 4:
+        audio.playSound("8bit/16.wav")
+    if val is 5:
+        audio.playSound("8bit/23.wav")
+    if val is 6:
+        audio.playSound("8bit/34.wav")
+    if val is 7:
+        audio.playSound("8bit/38.wav")
+    if val is 8:
+        audio.playSound("8bit/46.wav")
+    if val is 9:
+        audio.playSound("8bit/Reveal_G_4.wav")
+    if val is 10:
+        audio.playSound("8bit/Reveal_G_2.wav")
+
+def playRandomCasioSound(audio):
+    val = random.randint(0, 7)
+    if val is 0:
+        audio.playSound("8bit/casio_C_2.wav")
+    if val is 1:
+        audio.playSound("8bit/casio_C_3.wav")
+    if val is 2:
+        audio.playSound("8bit/casio_C_4.wav")
+    if val is 3:
+        audio.playSound("8bit/casio_C_5.wav")
+    if val is 4:
+        audio.playSound("8bit/casio_C_6.wav")
+    if val is 5:
+        audio.playSound("8bit/casio_D.wav")
+    if val is 6:
+        audio.playSound("8bit/casio_E.wav")
+    if val is 7:
+        audio.playSound("8bit/casio_G.wav")
+
 if __name__ == "__main__":
     print("todo: testing RealFloor")
+    audio = Audio()
     floor = LSRealFloor(3, 3)
+    #audio.playSound("8bit/46.wav")
+    #wait(5)
+    print("Clearing floor")
     #call not implemented yet
     #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])
-    floor.RAINBOWMODE(0.1)
-    print("Floor should be displaying things now")
-    floor.RAINBOWMODE(0.1)
-    floor.RAINBOWMODE(0.1)
+    floor.clearboard()
     while True:
-        floor.RAINBOWMODE(1)
+        print("RAINBOWMODE: BLIND EDITION")
+        floor.RAINBOWMODE_NoAddress(0.01)
+        print("detecting changes")
+        shitChanged = floor.pollSensors_NoAddress(60)
+        playCasio = random.randint(0, 3)
+        if playCasio is 0:
+            playRandomCasioSound(audio)
+        #shitChanged = []
+        for change in shitChanged:
+            tile = LSRealTile(floor.sharedSerials[change[1]])
+            tile.assignAddress(change[0])
+            tile.setColor(Colors.RANDOM())
+            #playRandom8bitSound(audio)
+            val = random.randint(0, 2)
+            if val is 0:
+                audio.playSound("8bit/46.wav")
+            else:
+                playRandom8bitSound(audio)

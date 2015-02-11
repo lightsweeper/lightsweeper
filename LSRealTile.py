@@ -492,9 +492,9 @@ def serial_ports():
                 pass
     else:
         # unix
-        yield '/dev/ttyUSB1'
- #       for port in list_ports.comports():
- #           yield port[0]
+ #      yield '/dev/ttyUSB1'
+        for port in list_ports.comports():
+            yield port[0]
 
 # simple delay between test statements with default delay
 def testSleep(secs=0.3):
@@ -952,10 +952,10 @@ def main():
     # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
     availPorts = list(serial_ports())
     print("Available serial ports:" + str(availPorts))
-    comPort = "COM8"
+    #comPort = "COM8"
     if len(availPorts) > 0:  # try the first port in the list
         comPort = availPorts[0]
-    comPort = "/dev/ttyUSB3"
+    #comPort = "/dev/ttyUSB3"
     #portNum = input("Enter the number to append to /dev/ttyUSB:")
     #comPort = "/dev/ttyUSB" + portNum
     comPort = input("Enter the port: ")

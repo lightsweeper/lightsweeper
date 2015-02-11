@@ -1,3 +1,5 @@
+import random
+
 ZERO = 0x7E
 ONE = 0x30
 TWO = 0x6D
@@ -32,6 +34,9 @@ def digitToHex(digit):
         return EIGHT
     if digit is 9:
         return NINE
+
+def randomDigitInHex():
+    return digitToHex(random.randint(0, 9))
 
 def hexToDigit(hex):
     if hex is ZERO:

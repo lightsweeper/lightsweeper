@@ -1,66 +1,39 @@
-from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout,QVBoxLayout, QFrame, QApplication, QWidget, QDialog)
 import sys
-
 # Lightsweeper additions
 from LSApi import LSApi
-from LSEmulateTile import LSEmulateTile
+from LSEmulateTile import EmulateTile
 from Move import Move
 import Colors
+import pygame
 
+class EmulateFloor(LSApi):
 
-class LSEmulateFloor(QGroupBox, LSApi):
-    COLS = 8
-    ROWS = 6
-    MINES = 9
-
-    def __init__(self, rows=ROWS, cols=COLS):
-        super(QGroupBox, self).__init__("Lightsweeper Floor Emulator")
+    def __init__(self, rows, cols):
+        print("Making the screen")
+        self.screen = pygame.display.set_mode((800, 800))
         self.rows = rows
         self.cols = cols
-        self.sensorsChanged = []
-        # Initialize board
-        # self.board.set_display(self)
-        self.setContentsMargins(0,0,0,0)
-        self.floorLayout = QVBoxLayout()
-        self.floorLayout.setContentsMargins(0,0,0,0)
+        self.tiles = []
+        for r in range(0,rows):
+            self.tiles.append([])
+            for c in range(0, cols):
+                self.tiles[r].append(EmulateTile(self, r, c))
 
-        # make all the rows
-        self.tileRows = []
-        for row in range(rows):
-            self.thisRow = QFrame()
-            #thisRow.setContentsMargins(0,0,0,0)
-            self.layout = QHBoxLayout()
-            self.layout.setContentsMargins(0,0,0,0) # collapses space between rows
-            tiles = []
-            self.tileAddresses = []
-            # make the LSEmulateTile in each row
-            for col in range(cols):
-                tile = LSEmulateTile(self, row, col)
-                #tile.setContentsMargins(0,0,0,0)
-                tile.assignAddress(row*cols+col)
-                tile.blank()
-                
-                self.tileAddresses.append((row, col))
-                #tile.setMinimumSize(60, 80)
-                #tile.display(col+1)
-                # tile.show()
-                tiles.append(tile)
-                count = len(tiles)
-                self.layout.addWidget(tile)
-                tile.setColor("black")
-                self.thisRow.setLayout(self.layout)
-
-            self.tileRows.append(tiles)
-            self.floorLayout.addWidget(self.thisRow)
-
-        print("tiles in window:", self.floorLayout.count())
-        self.setLayout(self.floorLayout)
-        # is that all ?
+    def heartbeat(self):
+        #gets the images from the individual tiles, blits them in succession
+        #print("heartbeat drawing floor")
+        background = pygame.Surface((800, 800))
+        background.fill(Colors.BLACK)
+        self.screen.blit(background, (0,0))
+        for r in range(0, self.rows):
+            for c in range(0, self.cols):
+                tile = self.tiles[r][c]
+                image = tile.loadImage()
+                self.screen.blit(image, (100 * r, 100 * c))
+        pygame.display.update()
 
     def _flushQueue(self):
-        for row in self.tileRows:
-            for tile in row:
-                tile.flushQueue()
+        pass
 
     def _getTileList (self, row, column):
         tileList = []
@@ -95,22 +68,20 @@ class LSEmulateFloor(QGroupBox, LSApi):
         return self.rows
 
     def pollSensors(self):
-        result = []
-        for change in self.sensorsChanged:
-            result.append(change)
-        self.sensorsChanged = []
-        return result
+        pass
 
     def handleTileSensed(self, row, col):
-        print("got move", row, col)
-        move = Move(row, col, 0)
-        self.sensorsChanged.append(move)
+        pass
 
     def setColor(self, row, column, color, setItNow = True):
-        tileList = self._getTileList(row, column)
-        print("Setting color to", color)
-        for tile in tileList:
-            tile.setColor(Colors.intToName(color), setItNow)
+        #tileList = self._getTileList(row, column)
+        #for tile in tileList:
+        tile = self.tiles[row][column]
+        tile.setColor(color, setItNow)
+
+    def setShape(self, row, col, shape):
+        tile = self.tiles[row][col]
+        tile.setShape(shape)
 
     # set immediately or queue these segments in addressed tiles
     # segments is a byte
@@ -175,23 +146,7 @@ class LSEmulateFloor(QGroupBox, LSApi):
         self.refreshboard()
         return True
 
-#handles timer events from the emulated floor dialog
-class LSDialog(QDialog):
-    def __init__(self, parent, floor):
-        wid = QWidget()
-        super(LSDialog, self).__init__()
-        self.mainLayout = QHBoxLayout()
-        self.setContentsMargins(0,0,0,0)
-        self.setLayout(self.mainLayout)
-        self.setWindowTitle("Lightsweeper")
-        self.setVisible(True)
-        self.mainLayout.addWidget(floor)
-
 if __name__ == "__main__":
     print("testing EmulateFloor")
-    app = QApplication(sys.argv)
-    floor = LSEmulateFloor(3, 3)
-    floor.setSegmentsCustom(0,0,["red", "yellow", "green", "cyan", "blue", "violet", "white"])
-    dialog = LSDialog(None, floor)
-    dialog.exec()
-    print("dialog exited")
+    floor = EmulateFloor(3, 3)
+    #floor.setDigit(0, 0, 0)

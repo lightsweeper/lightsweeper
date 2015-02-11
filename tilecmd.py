@@ -156,13 +156,16 @@ if __name__ == '__main__':
             if set_command[0] == 'color':
                 myTile.setColor(set_command[1])
             if set_command[0] == 'address':
-                # Set the tile's physical address plz
                 newaddr = set_command[1]
-                if (newaddr < 1 or newaddr > 254):
-                    print ("Supplied address(%s) is out of bounds!"%newaddr)
+                if (newaddr < 0 or newaddr > 254):
+                    print("Supplied address (" + str(newaddr) + ") is out of bounds!")
                     exit()
-                print("Setting new tile address: " + str(newaddr))
-                myTile.eepromWrite(EE_ADDR, newaddr)
-                myTile.reset()
+                if (newaddr == 0):
+                    print("Setting tile address to random value")
+                    myTile.setRandomAddress()
+                else:
+                    print("Setting new tile address: " + str(newaddr))
+                    myTile.eepromWrite(EE_ADDR, newaddr)
+                    myTile.reset()
         else:
             raise NotImplementedError()
