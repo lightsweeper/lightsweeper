@@ -147,7 +147,6 @@ class LSRealFloor():
         tile.setSegmentsCustom(segments)
 
     def RAINBOWMODE(self, updateFrequency = 0.4):
-        self.pollSensors()
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(Colors.RED)
