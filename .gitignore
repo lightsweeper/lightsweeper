@@ -53,3 +53,12 @@ coverage.xml
 docs/_build/
 
 .idea/workspace.xml
+
+# Ignore all dotfiles
+.*
+# Except this one...
+!/.gitignore
+
+# Ignore gedit's auto backup files
+*~
+

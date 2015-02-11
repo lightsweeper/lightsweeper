@@ -475,26 +475,153 @@ class LSRealTile(LSTileAPI):
 
 
     ############################################
-    # test code
+    # Serial code
 
-def serial_ports():
+class lsOpen:
     """
-    Returns a generator for all available serial ports
+        This class probes the LS address space and provides methods for
+        for discovering and making use of valid lightsweeper serial objects
     """
-    if os.name == 'nt':
-        # windows
-        for i in range(256):
-            try:
-                s = serial.Serial(i)
-                s.close()
-                yield 'COM' + str(i + 1)
-            except serial.SerialException:
-                pass
-    else:
-        # unix
- #      yield '/dev/ttyUSB1'
-        for port in list_ports.comports():
-            yield port[0]
+    
+    def __init__(self):        
+        self.lsMatrix = self.portmap()
+        if len(self.lsMatrix) is 0:
+            print("Cannot find any lightsweeper tiles")
+        if len(self.lsMatrix) is 1:
+            print("Only one serial port->" + repr([key for key in self.lsMatrix.keys()]))
+        print("There are " + repr(len(self.lsMatrix)) + " valid serial ports.")
+
+
+    def lsSerial(self, port, baud=19200, timeout=0.01):
+        """
+            Attempts to open the specified com port, returning a pySerial object
+            if succesful.
+        """
+
+        # TODO: check if the supplied port is in lsMatrix
+        try:
+            return serial.Serial(port, baud, timeout=timeout)
+        except serial.SerialException:
+            raise serial.SerialException  # WATCH OUT!
+
+
+    def testport(self, port):
+        """
+            Returns true if port has any lightsweeper objects listening
+        """
+
+        try:
+            testTile = LSRealTile(self.lsSerial(port))
+        except serial.SerialException:
+            print("Serial Exception on port: " + str(port))
+            return False
+        testTile.assignAddress(0)
+        if testTile.version():
+            return True
+        return False
+
+
+    def availPorts(self):
+        """
+            Returns a generator for all available serial ports
+        """
+
+        if os.name == 'nt': # windows
+            for i in range(256):
+                try:
+                    s = serial.Serial(i)
+                    s.close()
+                    yield 'COM' + str(i + 1)
+                except serial.SerialException:
+                    pass
+        else:               # unix
+            for port in list_ports.comports():
+                yield port[0]
+
+
+    def validPorts(self):
+        """
+            Returns a generator for all serial ports with lightsweeper tiles attached
+        """
+
+        for validPort in list(filter(self.testport,self.availPorts())):
+            yield validPort
+        
+
+    def validAddrs(self, port):
+        """
+            Returns a generator for valid lightsweeper addresses on provided port
+        """
+
+        testTile = LSRealTile(self.lsSerial(port))
+        for address in range(1,32):
+            tileAddr = address * 8
+            testTile.assignAddress(tileAddr)
+            if testTile.version():
+                yield tileAddr
+
+
+    def portmap(self):
+        """
+            Returns a map of responding lightsweeper tiles and serial ports.
+            
+        """
+        return({port:set(self.validAddrs(port)) for port in self.validPorts()})
+
+
+    def selectPort(self, portList = None):
+        """
+            Prompts the user to select a valid com port then returns it.
+            If you provide this function with a list of serial ports it
+            will limit the prompt to those ports.
+        """
+            
+        posPorts = enumerate(sorted(self.lsMatrix.keys()))
+      
+        # you can tell when the sleep deprivation starts to kick in
+        def checkinput(foo):
+            bar = dict(enumerate(sorted(self.lsMatrix.keys())))
+            if int(foo) in bar.keys():
+                return bar.get(int(foo))
+            if foo in self.lsMatrix.keys():
+                return foo
+            return False
+            
+        # TODO: Sanity check that portList consists of valid ports
+        if portList is not None:
+            posPorts = enumerate(sorted(portList))
+        
+        # Prompts the user to select a valid serial port then returns it
+        print("The following serial ports are available:")
+        for key,val in posPorts:
+            print("     [" + repr(key) + "]    " + repr(val) + "  (" + repr(len(self.lsMatrix.get(val))) + " attached tiles)")
+        userPort = input("Which one do you want? ")
+        while checkinput(userPort) is False:
+            print("Invalid selection.")
+            userPort = input("Which one do you want? ")
+        return checkinput(userPort)
+
+
+# Old code
+#def serial_ports():
+#    """
+#        Returns a generator for all available serial ports
+#    """
+#
+#    if os.name == 'nt':   # windows
+#        for i in range(256):
+#            try:
+#                s = serial.Serial(i)
+#                s.close()
+#                yield 'COM' + str(i + 1)
+#            except serial.SerialException:
+#                pass
+#            else:                  # unix
+#                for port in list_ports.comports():
+#                    yield port[0]
+
+    ############################################
+    # test code
 
 # simple delay between test statements with default delay
 def testSleep(secs=0.3):
@@ -949,16 +1076,10 @@ def singleModeTest(mySerial):
 def main():
     print("\nTesting LSRealTile")
 
-    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    availPorts = list(serial_ports())
-    print("Available serial ports:" + str(availPorts))
-    #comPort = "COM8"
-    if len(availPorts) > 0:  # try the first port in the list
-        comPort = availPorts[0]
-    #comPort = "/dev/ttyUSB3"
-    #portNum = input("Enter the number to append to /dev/ttyUSB:")
-    #comPort = "/dev/ttyUSB" + portNum
-    comPort = input("Enter the port: ")
+    tilepile = lsOpen()
+    
+    comPort = tilepile.selectPort()
+    
     print("Attempting to open port " + comPort)
     theSerial = None
     try:
@@ -968,7 +1089,7 @@ def main():
         # timeout = 0.004 misses a few reads
         # timeout = 0.005 rarely misses a read
         # timeout = 0.006 never seen to miss a read
-        theSerial = serial.Serial(comPort, 19200, timeout=0.006)
+        theSerial = tilepile.lsSerial(comPort, 19200, timeout=0.006)
         print(comPort + " opened")
 
     except serial.SerialException:

@@ -24,23 +24,6 @@ Tile commands:
 '''
 from docopt import docopt
 from LSRealTile import *
-import serial
-from serial.tools import list_ports
-
-
-def lsOpen(com):
-    try:
-        return serial.Serial(com, 19200, timeout=0.01)
-    except serial.SerialException:
-        return None
-
-def testport(port):
-    testTile=LSRealTile(lsOpen(port))
-    testTile.assignAddress(0)
-    if testTile.version():
-        return True
-    return False
-
 
 if __name__ == '__main__':
     args = docopt(__doc__)
@@ -73,37 +56,43 @@ if __name__ == '__main__':
         tile_command = 'reset'
 
 
+
 # Select com port
-    availPorts = list(serial_ports())
-    validPorts = list(filter(testport,availPorts))
+
+    lsls = lsOpen()
+   # print(lsls.lsMatrix) # Debugging
 
     if args['-p']:
+        if args['-p'] not in lsls.availPorts():
+            print(args['-p'] + " does not exist!")
+            exit()
+        if args['-p'] not in lsls.lsMatrix.keys():
+            print(args['-p'] + " does not appear to have any lightsweepers attached to it.")
+            exit()
         com = args['-p']
     else:
-        numOpts = len(validPorts)
-        if numOpts is 0:
-            print("No valid ports were found, try plugging in a lightsweeper tile!")
-            exit()
-        elif numOpts is 1:
-            com = validPorts[0]
+        if args['-a']:
+            pass
         else:
-            print("Available serial ports: ")
-            for port in validPorts:
-                print(port)
-            com = input("Enter desired com port:")
-   
-    if com not in availPorts:
-        print(com + " does not exist.")
-        exit()
-    if com not in validPorts:
-        print (com + " does not have any lightsweepers attached to it.")
-        exit()
-        
-    print("Using communications port: " + com + "...")
+            com = lsls.selectPort()
         
 # Select address
     if args['-a']:
-        address = int(args['-a']) # Again with the sanity checking...
+        address = int(args['-a'])
+        if address is 0:    # 0 is the global address
+            comList = list(lsls.validPorts())
+        else:
+            comList = list()
+        for key, val in lsls.lsMatrix.items():
+            if address in val:
+                comList.append(key)
+        if len(comList) is 0:
+            print("There is no tile with address " + repr(address) + ".")
+            exit()
+        if len(comList) is 1:
+            com = comList[0]
+        if len(comList) > 1:
+            com = lsls.selectPort(comList)
         print("Connecting to tile at address: " + str(address) + "...")
     else:
         if args['-p']:
@@ -111,13 +100,15 @@ if __name__ == '__main__':
             address = 0
             print("To target a tile at a specific address use the -a option...")
         else:
+            print("Available addresses: " + repr(lsls.lsMatrix.get(com)))
             address = 0
             inaddr = input("What tile address would you like to control [0]: ")
             if inaddr:
                 address = int(inaddr)
             
+    print("Using communications port: " + repr(com) + "...")
             
-    theSerial=lsOpen(com)
+    theSerial=lsls.lsSerial(com)
 
     myTile = LSRealTile(theSerial)    
     myTile.assignAddress(address)

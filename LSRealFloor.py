@@ -1,12 +1,14 @@
 ### Implementation of the Lightsweeper floor
 from LSRealTile import LSRealTile
-from serial import Serial
-from serial import SerialException
+from LSRealTile import lsOpen
+
 import time
 import os
 import random
 import Colors
 import Shapes
+import json
+from collections import defaultdict
 from Move import Move
 from LSAudio import Audio
 
@@ -17,86 +19,110 @@ class LSRealFloor():
     COLS = 8
     ROWS = 6
     SENSOR_THRESHOLD = 230
+    sharedSerials = list()
 
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
+        fileName = 'Bfloor' # Testing
         self.rows = rows
         self.cols = cols
         print("RealFloor init", rows, cols)
-        if serials is None:
-            # top-left, A1,2,3
-            comPort1 = "COM5"
-            # top-right, A4,5,6
-            comPort2 = "COM6"
-            # bottom-left, B1,2,3
-            comPort3 = "COM7"
-            # bottom-right, B4,5,6
-            comPort4 = "COM8"
-            availPorts = list(serial_ports())
-            print("Available serial ports:" + str(availPorts))
-            print("connecting to ", comPort1, comPort2, comPort3, comPort4)
-            serial1 = None
-            serial2 = None
-            serial3 = None
-            serial4 = None
-            try:
-                serial1 = Serial(comPort1, 19200, timeout=0.005)
-            except IOError:
-                print("Could not open", comPort1)
-            try:
-                serial2 = Serial(comPort2, 19200, timeout=0.005)
-            except IOError:
-               print("Could not open", comPort2)
-            try:
-                serial3 = Serial(comPort3, 19200, timeout=0.005)
-            except IOError:
-                print("Could not open", comPort3)
-            try:
-                serial4 = Serial(comPort4, 19200, timeout=0.005)
-            except IOError:
-                print("Could not open", comPort4)
-            self.sharedSerials = [serial1, serial2, serial3, serial4]
-            print("finished with COM ports")
-        else:
-            self.sharedSerials = serials
+
+        tilepile = lsOpen()
+
+        for port in tilepile.lsMatrix:
+            self.sharedSerials.append(port)
+        print(repr(self.sharedSerials))  #debugging
+        
+  # Old code:
+#        if serials is None:
+#            # top-left, A1,2,3
+#            comPort1 = "COM5"
+#            # top-right, A4,5,6
+#            comPort2 = "COM12"
+#            # bottom-left, B1,2,3
+#            comPort3 = "COM13"
+#            # bottom-right, B4,5,6
+#            comPort4 = "COM15"
+#            availPorts = list(serial_ports())
+#            print("Available serial ports:" + str(availPorts))
+#            print("connecting to ", comPort1, comPort2, comPort3, comPort4)
+#            serial1 = None
+#            serial2 = None
+#            serial3 = None
+#            serial4 = None
+#            try:
+#                serial1 = Serial(comPort1, 19200, timeout=0.005)
+#            except IOError:
+#                print("Could not open", comPort1)
+#            try:
+#                serial2 = Serial(comPort2, 19200, timeout=0.005)
+#            except IOError:
+#               print("Could not open", comPort2)
+#            try:
+#                serial3 = Serial(comPort3, 19200, timeout=0.005)
+#            except IOError:
+#                print("Could not open", comPort3)
+#            try:
+#                serial4 = Serial(comPort4, 19200, timeout=0.005)
+#            except IOError:
+#                print("Could not open", comPort4)
+#            self.sharedSerials = [serial1, serial2, serial3, serial4]
+#            print("finished with COM ports")
+#        else:
+#            self.sharedSerials = serials
 
         self.addressToRowColumn = {}
         # make all the rows
         self.tileRows = []
-        print("Using Jay-Daddy's pickling system")
-        pickle = open('floor_config', 'r')
-        self.tileRows = []
-        for i in range(rows):
-            self.tileRows.append([])
+        conf = lsConfig(fileName)
+        print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
+        
+        for row in conf.board:
             for j in range(cols):
                 self.tileRows[i].append(None)
+            for col in conf.board[row]:
+                (port, address) = conf.board[row][col]
+                tile = LSRealTile(tilepile.lsSerial(port, timeout=0.05))
+                tile.comNumber = port
 
-        for line in pickle:
-            line = (line).strip('()\n').replace('\'', '')
-            line = tuple(line.split(','))
-            comNumber = int(line[2]) - 1
-            tile = LSRealTile(self.sharedSerials[comNumber])
-            tile.comNumber = comNumber
-            address = int(line[3])
             tile.assignAddress(address)
-            row = int(line[0])
+                self.addressToRowColumn[(address,port)] = (row, col)
             col = int(line[1])
-            self.addressToRowColumn[(address, comNumber)] = (row, col)
             tile.setColor(Colors.WHITE)
             tile.setShape(Shapes.ZERO)
-            print("storing tile:", row, col)
-            self.tileRows[row][col] = tile
-
-        for i in range(rows):
+                print("address assigned:", tile.getAddress())
             s = ""
-            for j in range(cols):
+                wait(1)
                 tile = self.tileRows[i][j]
-                if tile is None:
-                    s += "No" + '\t'
-                else:
-                    s += str(tile.getAddress()) + "\t"
-            print(s)
 
-        print("Real floor done instantiating")
+        
+        
+ # Old code:        
+#        for row in range(rows):
+#            tiles = []
+#            self.tileAddresses = []
+#            for col in range(cols):
+#                line = ""
+#                while line is "":
+#                    line = (pickle.readline()).strip('()\n').replace('\'','')
+#                line = tuple(line.split(','))
+#                # the COM entry should just be the number 1, 2, 3, or 4 instead of the COM port.
+#                # 1 being top-left, 4 bottom-right
+#                comNumber = int(line[2]) - 1
+#                tile = LSRealTile(self.sharedSerials[comNumber])
+#                tile.comNumber = comNumber
+#                address = int(line[3])
+#                tile.assignAddress(address)
+#                self.addressToRowColumn[(address,comNumber)] = (row, col)
+#                tile.setColor(Colors.WHITE)
+#                tile.setShape(Shapes.ZERO)
+#                #print("address assigned:", tile.getAddress())
+#                #print("test getAddress", tile.getAddress())
+#                i += 1
+#                #assign address
+#                tiles.append(tile)
+#            self.tileRows.append(tiles)
+
         return
 
     def heartbeat(self):
@@ -260,21 +286,36 @@ class LSRealFloor():
 
     def clock(self):
         return
+        
+class lsConfig:
 
-def serial_ports():
-    """
-    Returns a generator for all available serial ports
-    """
-    if os.name == 'nt':
-        # windows
-        for i in range(256):
-            try:
-                s = Serial(i)
-                s.close()
-                yield 'COM' + str(i + 1)
-            except SerialException:
-                pass
-    # TODO: Linux
+    def __init__(self, configFile):
+        
+        config = self.loadConfig(configFile)
+        self._parseConfig(config)
+        
+    def loadConfig(self, fileName):
+        print("Loading board mappings from " + fileName)
+        with open(fileName) as configFile:    
+            return json.load(configFile)
+
+    def _parseConfig(self, config):
+        def defdict():
+            return defaultdict(int)
+        self.cells = 0
+        self.rows = 0
+        self.cols = 0
+        self.board = defaultdict(defdict)
+        for (row, col, port, addr) in config:
+            self.cells += 1
+            if row >= self.rows:
+                self.rows = row + 1
+            if col >= self.cols:
+                self.cols = col + 1
+            self.board[row][col] = (port, addr)
+        
+            
+        
 
 def wait(seconds):
     # self.pollSensors()
