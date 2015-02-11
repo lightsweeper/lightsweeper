@@ -13,12 +13,28 @@ class Soundboard():
         self.audio.shuffleSongs()
         self.audio.setSongVolume(0)
         self.board = None
-        self.updateBoard(self.board)
+        #we want the tile to change back to the untouched color after some number of heartbeats
+        self.moveColorChange = []
+        self.moveColorChangeTimer = []
         #self.audio.playSound('StartUp.wav')
 
     def heartbeat(self, sensorsChanged):
+        removeItems = []
+        for i in range(len(self.moveColorChangeTimer)):
+            if self.moveColorChangeTimer[i] < 10:
+                self.moveColorChangeTimer[i] += 1
+            else:
+                move = self.moveColorChange[i]
+                self.display.setColor(move.row, move.col, Colors.WHITE)
+                removeItems.push(i)
+        for i in removeItems:
+            self.moveColorChange.remove(self.moveColorChange[i])
+            self.moveColorChangeTimer.remove(self.moveColorChangeTimer[i])
         for move in sensorsChanged:
             self.playTileSound(move.row, move.col)
+            self.moveColorChangeTimer.append(0)
+            self.moveColorChange.append(move)
+            self.display.setColor(move.row, move.col, Colors.RANDOM)
 
     def playTileSound(self, row, col):
         if row is 0:
@@ -79,28 +95,6 @@ class Soundboard():
                 self.audio.playSound("8bit/38.wav")
             if col is 7:
                 self.audio.playSound("8bit/46.wav")
-    # currently this is just iterating across all the cells in the internal game state and pushing
-    # the corresponding shape/color to the display for the given tile's position. a slightly better design would
-    # be to only need to push info for the tiles that have actually changed
-
-    def updateBoard(self, board):
-        for row in range(0,self.rows):
-            for col in range(0,self.cols):
-                if board != None:
-                    cell = board.getCellState(row, col)
-                    if cell == "D":
-                        self.display.set(row, col, Shapes.DASH, Colors.VIOLET)
-                    elif cell == '.':
-                        self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
-                    elif cell == ' ' or cell == '':
-                        self.display.set(row, col, Shapes.DASH, Colors.BLACK)
-                    elif cell == 'M':
-                        self.display.set(row, col, Shapes.DASH, Colors.RED)
-                    elif cell == 'F':
-                        break
-                    else:
-                        self.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
-        return
 
     def ended(self):
         return self.ended

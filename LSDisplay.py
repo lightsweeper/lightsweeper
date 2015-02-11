@@ -1,38 +1,44 @@
 from LSRealFloor import LSRealFloor
+from LSEmulateFloor import EmulateFloor
 import Shapes
+import Colors
+import random
 import sys
 from Move import Move
+import pygame
 
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
-    def __init__(self, row, col, realFloor = False, console = False):
+    def __init__(self, row, cols, realFloor = False, simulatedFloor = False, console = False):
         self.row = row
-        self.col = col
+        self.cols = cols
         if realFloor:
-            print("realfloor true")
-            self.realFloor = LSRealFloor(row, col)
+            print("Display instantiating real floor")
+            self.realFloor = LSRealFloor(row, cols)
         else:
             self.realFloor = None
         self.floor = []
         for r in range(row):
             self.floor.append([])
-            for c in range(col):
+            for c in range(cols):
                 self.floor[r].append('-')
         self.console = console
+        if simulatedFloor:
+            print("Display instantiating simulated floor")
+            self.simulatedFloor = EmulateFloor(row, cols)
+
 
     #this is to handle display functions only
     def heartbeat(self):
+        #print("Display heartbeat")
+        if self.simulatedFloor:
+            self.simulatedFloor.heartbeat()
+        if self.realFloor:
+            self.realFloor.heartbeat()
+        #check pygame for position and click ness of mouse
         pass
-
-    def beginQtLoop(self, enterFrame, frameGap):
-        print("setting up Qt timer event based loop")
-        #setup timer
-        self.dialog.startTimer(frameGap)
-        #setup callback for timer
-        self.dialog.enterFrame = enterFrame
-        self.dialog.exec()
 
     def printFloor(self):
         print("printing floor")
@@ -70,10 +76,14 @@ class Display():
     def setColor(self, row, col, color):
         if self.realFloor:
             self.realFloor.setColor(row, col, color)
+        if self.simulatedFloor:
+            self.simulatedFloor.setColor(row, col, color)
 
     def setShape(self, row, col, shape):
         if self.realFloor:
             self.realFloor.setShape(row, col, shape)
+        if self.simulatedFloor:
+            self.simulatedFloor.setShape(row, col, shape)
 
     def setFrame(self, frame):
         for row in range(self.row):
@@ -98,3 +108,20 @@ class Display():
 
     def clear(self):
         pass
+
+def main():
+    print("Testing LSDisplay")
+    display = Display(6, 8, True, True, False)
+    for i in range(6):
+        for j in range(8):
+            display.setColor(i, j, Colors.WHITE)
+            display.setShape(i, j, Shapes.ZERO)
+
+    for i in range(0, 100):
+        display.heartbeat()
+        display.setColor(random.randint(0, display.row-1), random.randint(0, display.cols-1), Colors.RANDOM())
+        display.setShape(random.randint(0, display.row-1), random.randint(0, display.cols-1), Shapes.randomDigitInHex())
+
+
+if __name__ == '__main__':
+    main()

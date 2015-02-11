@@ -7,8 +7,8 @@ from LSAudio import Audio
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FRAME_GAP = 1 / 30
-    REAL_FLOOR = False
-    CONSOLE = True
+    REAL_FLOOR = True
+    CONSOLE = False
     ROWS = 6
     COLUMNS = 7
 
@@ -22,13 +22,13 @@ class GameEngine():
         self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
 
     def beginLoop(self):
-        while True:
+        #while True:
+        for i in range(0, 100):
             self.wait(self.FRAME_GAP)
             self.enterFrame()
 
     def beginEmulatorLoop(self):
-        #this is necessary because Qt is event driven, and so must drive the game loop instead of GameEngine doing it
-        self.display.beginQtLoop(self.enterFrame, self.FRAME_GAP)
+        pass
 
     def enterFrame(self):
         if not self.game.ended:
