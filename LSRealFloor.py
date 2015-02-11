@@ -79,23 +79,44 @@ class LSRealFloor():
         conf = lsConfig(fileName)
         print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
         
+        
         for row in conf.board:
-            for j in range(cols):
-                self.tileRows[i].append(None)
+            tiles = []
+            self.tileAddresses = []
             for col in conf.board[row]:
                 (port, address) = conf.board[row][col]
                 tile = LSRealTile(tilepile.lsSerial(port))
                 tile.comNumber = port
 
-            tile.assignAddress(address)
+                tile.assignAddress(address)
                 self.addressToRowColumn[(address,port)] = (row, col)
-            col = int(line[1])
-            tile.setColor(Colors.WHITE)
-            tile.setShape(Shapes.ZERO)
+                tile.setColor(Colors.WHITE)
+                tile.setShape(Shapes.ZERO)
                 print("address assigned:", tile.getAddress())
-            s = ""
+                tiles.append(tile)
                 wait(.1)
-                tile = self.tileRows[i][j]
+            self.tileRows.append(tiles)
+        
+        
+        
+        # Deprecated
+        #for row in conf.board:
+            #for j in range(cols):
+            #    self.tileRows[j].append(None)
+            #for col in conf.board[row]:
+            #    (port, address) = conf.board[row][col]
+            #    tile = LSRealTile(tilepile.lsSerial(port))
+            #    tile.comNumber = port
+
+         #   tile.assignAddress(address)
+         #   self.addressToRowColumn[(address,port)] = (row, col)
+         #   col = int(line[1])
+         #   tile.setColor(Colors.WHITE)
+         #   tile.setShape(Shapes.ZERO)
+         #   print("address assigned:", tile.getAddress())
+         #   s = ""
+         #   wait(.1)
+         #   tile = self.tileRows[i][j]
 
         
         
