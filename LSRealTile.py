@@ -440,7 +440,7 @@ class LSRealTile(LSTileAPI):
             if len(thisRead) > 0:
                 # debug or not, if tile sends something, we want to see it
                 if True or self.Debug:
-                    print ("Stale response: " + ' '.join(format(x, '#02x') for x in thisRead))
+                    print ("Stale response (" + self.mySerial.port + "->" + repr(self.getAddress()) + "): " + ' '.join(format(x, '#02x') for x in thisRead))
 
         # insert address byte plus optional arg count
         addr = self.address + len(args) - 1  # command is not counted
