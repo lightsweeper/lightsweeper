@@ -62,3 +62,10 @@ docs/_build/
 # Ignore gedit's auto backup files
 *~
 
+# Don't clutter up repository with temporary backups
+*.orig
+*.old
+*.bak
+A
+A
+
