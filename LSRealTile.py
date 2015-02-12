@@ -1115,7 +1115,7 @@ def main():
             print("    3 - sensorStatus test")
             print("    4 - run single digit mode")
             print("    5 - EEPROM tasks")
-            print("    6 - discovery walk thru the address space")
+#            print("    6 - discovery walk thru the address space")
             print("    7 - test setSegments API")
             print("    8 - set segments and poll sensor")
             print("    9 - random tile address procedure")
@@ -1134,13 +1134,13 @@ def main():
                 singleModeTest(theSerial)
             elif testChoice == 5:
                 eepromTasks(myTile)
+#            elif testChoice == 6:
+#                addressWalk(myTile, theSerial)
             elif testChoice == 6:
-                addressWalk(myTile, theSerial)
-            elif testChoice == 7:
                 setSegmentsTest(myTile)
-            elif testChoice == 8:
+            elif testChoice == 7:
                 writeAndPoll(myTile)
-            elif testChoice == 9:
+            elif testChoice == 8:
                 setRandomTileAddress(theSerial, myTile)
             else:
                 print("You did not enter a valid test choice")
