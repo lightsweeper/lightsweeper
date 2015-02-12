@@ -8,18 +8,19 @@ from LSAudio import Audio
 class GameEngine():
     FRAME_GAP = 1 / 30
     REAL_FLOOR = True
+    SIMULATED_FLOOR = True
     CONSOLE = False
-    ROWS = 6
-    COLUMNS = 7
+    ROWS = 3
+    COLUMNS = 8
 
     def __init__(self):
-        self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.CONSOLE)
+        self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE)
         self.audio = Audio()
         self.newGame()
 
     def newGame(self):
-        #self.game = Minesweeper(self.display, self.audio, 3, 3)
-        self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
+        #self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
 
     def beginLoop(self):
         #while True:

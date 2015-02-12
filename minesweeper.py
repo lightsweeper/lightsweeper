@@ -6,6 +6,7 @@ from board import Board
 import Colors
 import Shapes
 from Frame import Frame
+import time
 
 class Minesweeper():
     def __init__(self, display, audio, rows, cols):
@@ -24,7 +25,7 @@ class Minesweeper():
         self.audio.loadSong('BetweenGames3.wav', 'between3')
         self.audio.loadSong('BetweenGames4.wav', 'between4')
         self.audio.shuffleSongs()
-        self.audio.setSongVolume(0.3)
+        self.audio.setSongVolume(0.2)
         self.songsQuiet = False
         self.updateBoard(self.board)
 
@@ -43,13 +44,13 @@ class Minesweeper():
         elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
-                self.endAnim = EndAnimation(True)
+                self.endAnim = EndAnimation(True, self.rows, self.cols)
                 self.animatingEnd = True
                 self.audio.playSound("Success.wav")
             else:
                 self.audio.playSound("Explosion.wav")
                 self.board.show_all()
-                self.endAnim = EndAnimation(False)
+                self.endAnim = EndAnimation(False, self.rows, self.cols)
                 self.animatingEnd = True
         elif self.animatingEnd:
             frame = self.endAnim.getFrame()
@@ -65,8 +66,8 @@ class Minesweeper():
     # the corresponding shape/color to the display for the given tile's position. a slightly better design would
     # be to only need to push info for the tiles that have actually changed
     def updateBoard(self, board):
-        for row in range(0,self.rows):
-            for col in range(0,self.cols):
+        for row in range(0, self.rows):
+            for col in range(0, self.cols):
                 if board != None:
                     cell = board.getCellState(row, col)
                     if cell == "D":
@@ -90,73 +91,63 @@ class Minesweeper():
         print("Test code goes here")
 
 class EndAnimation:
-    def __init__(self, win):
+    def __init__(self, win, rows, cols):
+        self.rows = rows
+        self.cols = cols
         self.ended = False
         self.currentFrame = None
         self.frames = []
         if win:
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.CYAN)
             self.frames.append(frame)
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.BLUE)
             self.frames.append(frame)
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.GREEN)
             self.frames.append(frame)
         else:
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.RED)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 30
+            frame.heartbeats = 3
             self.frames.append(frame)
 
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.BLACK)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
+            frame.heartbeats = 2
             self.frames.append(frame)
 
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.RED)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
+            frame.heartbeats = 2
             self.frames.append(frame)
 
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.BLACK)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
+            frame.heartbeats = 2
             self.frames.append(frame)
 
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.RED)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
+            frame.heartbeats = 2
             self.frames.append(frame)
 
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.BLACK)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
+            frame.heartbeats = 2
             self.frames.append(frame)
 
-            frame = Frame(3, 3)
+            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.RED)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
-            self.frames.append(frame)
-
-            frame = Frame(3, 3)
-            frame.setAllColor(Colors.BLACK)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
-            self.frames.append(frame)
-
-            frame = Frame(3, 3)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 10
+            frame.heartbeats = 2
             self.frames.append(frame)
 
     def getFrame(self):
@@ -168,3 +159,9 @@ class EndAnimation:
         else:
             self.currentFrame = self.frames.pop()
         return self.currentFrame
+
+def wait(seconds):
+    # self.pollSensors()
+    currentTime = time.time()
+    while time.time() - currentTime < seconds:
+        pass

@@ -167,6 +167,8 @@ class LSRealTile(LSTileAPI):
         self.mySerial = sharedSerial
         # cmdNargs is address + command + N optional bytes
         self.Debug = False
+        self.shape = None
+        self.color = None
         if sharedSerial is None:
             print("Shared serial is None")
             
@@ -178,16 +180,24 @@ class LSRealTile(LSTileAPI):
         
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
+        if self.color is color:
+            return
         cmd = SET_COLOR
         self.__tileWrite([cmd, color])
+        self.color = color
 
     def setShape(self, shape):
+        if self.shape is shape:
+            return
         cmd = SET_SHAPE
         self.__tileWrite([cmd, shape])
         self.shape = shape
 
     def getShape(self):
         return self.shape
+
+    def getColor(self):
+        return self.color
 
     def setTransition(self, transition):
         cmd = SET_TRANSITION
@@ -491,7 +501,11 @@ class lsOpen:
         if len(self.lsMatrix) is 1:
             print("Only one serial port->" + repr([key for key in self.lsMatrix.keys()]))
         print("There are " + repr(len(self.lsMatrix)) + " valid serial ports.")
-
+        self.sharedSerials = {}
+        for port in self.lsMatrix:
+            newSerial = self.lsSerial(port)
+            self.sharedSerials[newSerial.name] = (newSerial)
+        print("Shared serials are: " + repr(self.sharedSerials.keys()))  #debugging
 
     def lsSerial(self, port, baud=19200, timeout=0.01):
         """

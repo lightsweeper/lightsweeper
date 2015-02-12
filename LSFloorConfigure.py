@@ -45,16 +45,14 @@ def main():
         while pickgeom(totaltiles, rows) is False:
             rows = int(input("\nHow many rows do you want?: "))
         cols = int(totaltiles/rows)
-            
-        
 
         print("OK, you have a floor with " + repr(rows) + " by " + repr(cols)  + " columns")
 
         config = []
-        
+
         print("Blanking all tiles.")
         for port in tilepile.lsMatrix:
-            myTile = LSRealTile(tilepile.lsSerial(port))
+            myTile = LSRealTile(tilepile.sharedSerials[port])
             myTile.assignAddress(0)
         #   myTile.blank()     # Not implemented in LSRealTile
             myTile.setColor(0)  # A TEMPORARY hack
@@ -62,7 +60,7 @@ def main():
         for port in tilepile.lsMatrix:
             for addr in tilepile.lsMatrix[port]:
                 print("Port is: " + repr(port) + " Address is: " + repr(addr))
-                myTile = LSRealTile(tilepile.lsSerial(port))
+                myTile = LSRealTile(tilepile.sharedSerials[port])
                 myTile.assignAddress(addr)
                 myTile.demo(1)
                 row=int(input("Which row?: "))

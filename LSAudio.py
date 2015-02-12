@@ -37,6 +37,7 @@ class Audio():
         songCount = len(self.loadedSongs)
         song = random.randint(0, songCount - 1)
         print("songs", songCount)
+        print("playing song", self.loadedSongs[song])
         self.playSong(self.loadedSongs[song], 1)
         pygame.mixer.music.set_endevent(self.SONG_END)
 
