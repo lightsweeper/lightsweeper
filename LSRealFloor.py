@@ -12,6 +12,7 @@ from collections import defaultdict
 from Move import Move
 from LSAudio import Audio
 
+# Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
 OURWAIT = 0.005
 
 #handles all communications with RealTile objects, serving as the interface to the
@@ -21,7 +22,7 @@ class LSRealFloor():
     COLS = 8
     ROWS = 6
     SENSOR_THRESHOLD = 230
-    sharedSerials = list()
+    sharedSerials = dict()
 
 
     def __init__(self, rows=ROWS, cols=COLS, serials=None):
@@ -33,8 +34,9 @@ class LSRealFloor():
         tilepile = lsOpen()
 
         for port in tilepile.lsMatrix:
-            self.sharedSerials.append(port)
-        print(repr(self.sharedSerials))  #debugging
+            newSerial = tilepile.lsSerial(port)
+            self.sharedSerials[newSerial.name] = (newSerial)
+        print("Shared serials are: " + repr(self.sharedSerials.keys()))  #debugging
 
         self.addressToRowColumn = {}
         # make all the rows
@@ -47,7 +49,7 @@ class LSRealFloor():
             self.tileAddresses = []
             for col in conf.board[row]:
                 (port, address) = conf.board[row][col]
-                tile = LSRealTile(tilepile.lsSerial(port))
+                tile = LSRealTile(self.sharedSerials[port])
                 tile.comNumber = port
 
                 tile.assignAddress(address)

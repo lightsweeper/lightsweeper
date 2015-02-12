@@ -169,6 +169,7 @@ class LSRealTile(LSTileAPI):
         self.Debug = False
         if sharedSerial is None:
             print("Shared serial is None")
+            
     def destroy(self):
         return
 
@@ -497,13 +498,28 @@ class lsOpen:
             Attempts to open the specified com port, returning a pySerial object
             if succesful.
         """
-
+        
+       # lolwut? 
+       # serialObject = serial.Serial()
+       # serialObject.port = port
+       # serialObject.baud = baud
+       # serialObject.timeout = timeout
+        
+         # A silly hack for windows compat
+       # if serialObject.isOpen() is True:
+       #     serialObject.close()
+            
         # TODO: check if the supplied port is in lsMatrix
         try:
             return serial.Serial(port, baud, timeout=timeout)
         except serial.SerialException:
             raise serial.SerialException  # WATCH OUT!
+            
+       # return serialObject
 
+
+
+            
 
     def testport(self, port):
         """
