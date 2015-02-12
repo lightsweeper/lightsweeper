@@ -7,6 +7,37 @@ import json
 from LSRealTile import lsOpen
 from LSRealTile import LSRealTile
 
+
+class lsConfig:
+
+    def __init__(self, configFile):
+        
+        config = self.loadConfig(configFile)
+        self._parseConfig(config)
+
+        
+    def loadConfig(self, fileName):
+        print("Loading board mappings from " + fileName)
+        with open(fileName) as configFile:    
+            return json.load(configFile)
+
+
+    def _parseConfig(self, config):
+        def defdict():
+            return defaultdict(int)
+        self.cells = 0
+        self.rows = 0
+        self.cols = 0
+        self.board = defaultdict(defdict)
+        for (row, col, port, addr) in config:
+            self.cells += 1
+            if row >= self.rows:
+                self.rows = row + 1
+            if col >= self.cols:
+                self.cols = col + 1
+            self.board[row][col] = (port, addr)
+
+
 # prints the list of 4-tuples
 def printConfig(config):
     print("The configuration has " + repr(len(config)) + " entries:")

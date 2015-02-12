@@ -11,6 +11,7 @@ import json
 from collections import defaultdict
 from Move import Move
 from LSAudio import Audio
+from LSFloorConfigure import lsConfig
 
 # Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
 OURWAIT = 0.005
@@ -237,37 +238,6 @@ class LSRealFloor():
     def clock(self):
         return
 
-
-
-        
-class lsConfig:
-
-    def __init__(self, configFile):
-        
-        config = self.loadConfig(configFile)
-        self._parseConfig(config)
-
-        
-    def loadConfig(self, fileName):
-        print("Loading board mappings from " + fileName)
-        with open(fileName) as configFile:    
-            return json.load(configFile)
-
-
-    def _parseConfig(self, config):
-        def defdict():
-            return defaultdict(int)
-        self.cells = 0
-        self.rows = 0
-        self.cols = 0
-        self.board = defaultdict(defdict)
-        for (row, col, port, addr) in config:
-            self.cells += 1
-            if row >= self.rows:
-                self.rows = row + 1
-            if col >= self.cols:
-                self.cols = col + 1
-            self.board[row][col] = (port, addr)
 
 def wait(seconds):
     # self.pollSensors()
