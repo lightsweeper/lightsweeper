@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import os
-import serial
 import json
+import numbers
 from collections import defaultdict
 from LSRealTile import lsOpen
 from LSRealTile import LSRealTile
@@ -18,9 +18,9 @@ class lsFloorConfig:
             cells (int):    The number of cells in the lightsweeper matrix.
             rows (int):     The number of rows in the lightsweeper matrix.
             cols (int):     The number of columns in the lightsweeper matrix.
+            config (list):  A list of 4-tuples of the form (row, col, port, address)
             board (dict):   A dictionary of dictionaries sorted by row and column, each
                             containing a tuple of the corresponding tile's port and address
-            config (list):  A list of tuples of the form (row, col, port, address)
     """
 
     class FileDoesNotExistError(IOError):
@@ -41,15 +41,20 @@ class lsFloorConfig:
             try:
                 self.config = self.loadConfig(configFile)
             except self.FileDoesNotExistError as message:
+                if rows is not None and cols is not None:
+                    self.config = self._createVirtualConfig(rows, cols)
+                else:
+                    print(message)
+                    raise
+            except self.CannotParseError:
+                print("Could not parse {:s}".format(configFile))
                 print(message)
                 raise
             except IOError as message:
                 print(message)
                 raise
-            except self.CannotParseError:
-                print(message)
-                raise
-            self._parseConfig(self.config)
+            finally:
+                self._parseConfig(self.config)
 
 
 
@@ -62,9 +67,34 @@ class lsFloorConfig:
         try:
             with open(fileName) as configFile:
                 return json.load(configFile)
-        except:
+        except Exception as message:
+            print(message)
             raise self.CannotParseError("Could not parse " + fileName + "!")
         print("Board mapping loaded from " + fileName)
+
+
+    # prints the list of 4-tuples
+    def printConfig(self):
+        print("The configuration has " + repr(len(self.config)) + " entries:")
+        for cell in self.config:
+            print(repr(cell))
+
+
+    def _createVirtualConfig(self, rows, cols):
+        assert isinstance(rows, numbers.Integral), "Rows must be a whole number."
+        assert isinstance(cols, numbers.Integral), "Cols must be a whole number."
+        print("Creating virtual configuration with {:d} rows and {:d} columns.".format(rows,cols))
+        virtualConfig = list()
+        row = 0
+        col = 0
+        for i in range(1,rows*cols+1):
+            virtualConfig.append((row, col, "virtual", i))
+            if col < cols-1:
+                col += 1
+            else:
+                row += 1
+                col = 0
+        return(virtualConfig)
 
 
     def _parseConfig(self, config):
@@ -83,62 +113,43 @@ class lsFloorConfig:
             self.board[row][col] = (port, addr)
 
 
-# prints the list of 4-tuples
-def printConfig(config):
-    print("The configuration has " + repr(len(config)) + " entries:")
-    for cell in config:
-        print(repr(cell))
-
 def main():
-    
-    tilepile = lsOpen()
-    
-    print("\nLightsweeper Configuration utility")
 
-    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    availPorts = list(tilepile.lsMatrix)
-
-    print("Available serial ports:" + str(availPorts))
-    
-    totaltiles = 0
-    for port in tilepile.lsMatrix:
-        totaltiles += len(tilepile.lsMatrix[port])
-
-    if len(availPorts) > 0:  # default to the first port in the list
-        defaultPort = availPorts[0]
-        
-    def pickgeom(numTiles, rows):
+    def validateRows(numTiles, rows):
+        try:
+            rows = int(rows)
+        except:
+            print("You must enter a whole number!")
+            return False
         if rows > numTiles:
             print("There are only " + repr(numTiles) + " tiles!")
             return False
-        else:
-            return True
+        return True
 
-    def tryforfile():
-        fileName = input("\nEnter the name of the configuration you would like to edit [NEW]: ")
+    def pickRows(message):
+        rows = input(message)
+        while validateRows(totaltiles, rows) is False:
+            rows = input(message)
+        return rows
+
+    def pickFile(message):
+        fileName = input(message)
         if fileName == "" or fileName == "NEW":
             return None
         else:
             try:
                 return lsFloorConfig(fileName)
             except:
-                return tryforfile()
+                return pickFile(message)
 
-    try:   
-        config = tryforfile()
-    except:
-        print("Could not read " + config.fileName)
-        exit()
-    if config is None:
-        print("\nStarting a new configuration from scratch.")
-        rows = int(input("\nHow many rows do you want?: "))
-        while pickgeom(totaltiles, rows) is False:
-            rows = int(input("\nHow many rows do you want?: "))
-        cols = int(totaltiles/rows)
-
-        print("OK, you have a floor with " + repr(rows) + " by " + repr(cols)  + " columns")
+    def interactiveConfig ():
 
         config = []
+
+        rows = pickRows("\nHow many rows do you want?: ")
+
+        cols = int(totaltiles/rows)
+        print("OK, you have a floor with " + repr(rows) + " by " + repr(cols)  + " columns")
 
         print("Blanking all tiles.")
         for port in tilepile.lsMatrix:
@@ -162,6 +173,29 @@ def main():
                 config.append(thisTile)
                 myTile.setColor(0)
 
+        return config
+    
+    tilepile = lsOpen()
+    
+    print("\nLightsweeper Configuration utility")
+
+    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
+    availPorts = list(tilepile.lsMatrix)
+
+    print("Available serial ports:" + str(availPorts))
+    
+    totaltiles = 0
+    for port in tilepile.lsMatrix:
+        totaltiles += len(tilepile.lsMatrix[port])
+
+    if len(availPorts) > 0:  # default to the first port in the list
+        defaultPort = availPorts[0]
+
+    config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
+
+    if config is None:
+        print("\nStarting a new configuration from scratch.")
+        interactiveConfig()
         print("\nThis is the configuration: ")
         #print(repr(config))
         printConfig(config)
@@ -178,7 +212,7 @@ def main():
     else:
 
         print("\nThis is the configuration saved in " + config.fileName + ":\n")
-        printConfig(config.config)
+        config.printConfig()
 
 
         print("\nBut the editing code is not here yet. Sorry.")
