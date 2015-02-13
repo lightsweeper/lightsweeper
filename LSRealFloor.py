@@ -8,10 +8,9 @@ import random
 import Colors
 import Shapes
 import json
-from collections import defaultdict
 from Move import Move
 from LSAudio import Audio
-from LSFloorConfigure import lsConfig
+from LSFloorConfigure import lsFloorConfig as lsConfig
 
 # Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
 OURWAIT = 0.005
