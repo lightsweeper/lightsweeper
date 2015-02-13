@@ -7,6 +7,14 @@ from collections import defaultdict
 from LSRealTile import lsOpen
 from LSRealTile import LSRealTile
 
+class FileDoesNotExistError(IOError):
+    """ Custom exception returned when the config file is non-existant. """
+    pass
+
+class CannotParseError(IOError):
+    """ Custom exception returned when the config file is present but cannot be parsed. """
+    pass
+
 
 class lsFloorConfig:
     """
@@ -23,14 +31,6 @@ class lsFloorConfig:
                             containing a tuple of the corresponding tile's port and address
     """
 
-    class FileDoesNotExistError(IOError):
-        """ Custom exception returned when the config file is non-existant. """
-        pass
-
-    class CannotParseError(IOError):
-        """ Custom exception returned when the config file is present but cannot be parsed. """
-        pass
-
 
     def __init__(self, configFile=None, rows=None, cols=None):
 
@@ -40,13 +40,13 @@ class lsFloorConfig:
             self.fileName = configFile
             try:
                 self.config = self.loadConfig(configFile)
-            except self.FileDoesNotExistError as message:
+            except FileDoesNotExistError as message:
                 if rows is not None and cols is not None:
                     self.config = self._createVirtualConfig(rows, cols)
                 else:
                     print(message)
                     raise
-            except self.CannotParseError:
+            except CannotParseError:
                 print("Could not parse {:s}".format(configFile))
                 print(message)
                 raise
@@ -63,13 +63,13 @@ class lsFloorConfig:
             if os.path.isfile(fileName) is not True:
                 raise IOError(fileName + " is not a valid floor config file!")
         else:
-            raise self.FileDoesNotExistError(fileName + " does not exist!")
+            raise FileDoesNotExistError(fileName + " does not exist!")
         try:
             with open(fileName) as configFile:
                 return json.load(configFile)
         except Exception as message:
             print(message)
-            raise self.CannotParseError("Could not parse " + fileName + "!")
+            raise CannotParseError("Could not parse " + fileName + "!")
         print("Board mapping loaded from " + fileName)
 
 
