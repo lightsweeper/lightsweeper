@@ -31,6 +31,9 @@ class lsFloorConfig:
                             containing a tuple of the corresponding tile's port and address
     """
 
+    cells = 0
+    rows = 0
+    cols = 0
 
     def __init__(self, configFile=None, rows=None, cols=None):
 
@@ -114,6 +117,8 @@ class lsFloorConfig:
 
 
 def main():
+# Warning: spaghetti code ahead
+
 
     def validateRows(numTiles, rows):
         try:
@@ -132,19 +137,44 @@ def main():
             rows = input(message)
         return rows
 
+    def YESno(message):
+        answer = input("{:s} [Y/n]: ".format(message))
+        if answer in ("yes", "Yes", "YES", "y", "Y"):
+            return True
+        elif answer in ("no", "No", "NO", "n", "N"):
+            return False
+        else:
+            print("Please answer Yes or No.")
+            return YESno(message)
+
+
     def pickFile(message):
         fileName = input(message)
         if fileName == "" or fileName == "NEW":
             return None
         else:
+            if fileName.endswith(".floor") is False:
+                fileName += ".floor"
+            if os.path.exists(fileName) is False:
+                if YESno(fileName + " does not exist, would you like to create it?") is True:
+                    print("Creating {:s}.".format(fileName))
+                    floorConfig = lsFloorConfig()
+                    floorConfig.fileName = fileName
+                    return floorConfig
+                else:
+                    return pickFile(message)
             try:
                 return lsFloorConfig(fileName)
             except:
                 return pickFile(message)
 
-    def interactiveConfig ():
+    def interactiveConfig (config = None):
 
-        config = []
+        if config is None:
+            print("Starting a new configuration from scratch.")
+            config = []
+        else:
+            print("Configuring {:s}".format(config.fileName))
 
         rows = pickRows("\nHow many rows do you want?: ")
 
@@ -193,29 +223,30 @@ def main():
 
     config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
 
-    if config is None:
-        print("\nStarting a new configuration from scratch.")
-        interactiveConfig()
-        print("\nThis is the configuration: ")
-        #print(repr(config))
-        printConfig(config)
-        
-        fileName = input("\nPlease enter a filename for this configuration (or blank to not save): ")
-        if fileName == "":
-            print("OK, not saving this configuration")
-        else:
-            with open(fileName, 'w') as configFile:
-                json.dump(config, configFile, sort_keys = True, indent = 4,)
-            print("\nYour configuration was saved in " + fileName)
-                
+    if config is None:                              # Start a new configuration
+        config = interactiveConfig()
 
-    else:
+    elif config.cells is 0:     # Start a new configuration with a pre-existing filename
+        config = interactiveConfig(config)
 
+    else:                       # Load an existing configuration for editing
         print("\nThis is the configuration saved in " + config.fileName + ":\n")
         config.printConfig()
 
-
         print("\nBut the editing code is not here yet. Sorry.")
+
+
+    print("\nThis is the configuration: ")
+    config.printConfig()
+        
+
+    fileName = input("\nPlease enter a filename for this configuration (or blank to not save): ")
+    if fileName == "":
+        print("OK, not saving this configuration")
+    else:
+        with open(fileName, 'w') as configFile:
+            json.dump(config, configFile, sort_keys = True, indent = 4,)
+        print("\nYour configuration was saved in " + fileName)
 
     input("\nDone - Press the Enter key to exit") # keeps double-click window open
 
