@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/python3
 import os
 import json
 import numbers
@@ -11,10 +10,20 @@ class FileDoesNotExistError(IOError):
     """ Custom exception returned when the config file is non-existant. """
     pass
 
+class FileExistsError(IOError):
+    """
+        Custom exception returned by writeConfig() when the config file is already present
+        and overwrite=False
+    """
+    pass
+
 class CannotParseError(IOError):
     """ Custom exception returned when the config file is present but cannot be parsed. """
     pass
 
+class InvalidConfigError(Exception):
+    """ Custom exception returned when the configuration is not valid. """
+    pass
 
 class lsFloorConfig:
     """
@@ -31,37 +40,65 @@ class lsFloorConfig:
                             containing a tuple of the corresponding tile's port and address
     """
 
+    fileName = None
     cells = 0
     rows = 0
     cols = 0
+    config = list()
+    board = defaultdict(lambda: defaultdict(int))
 
     def __init__(self, configFile=None, rows=None, cols=None):
 
         if configFile is not None:
-            if configFile.endswith(".floor") is False:
-                configFile += ".floor"
-            self.fileName = configFile
+            self.fileName = self._formatFileName(configFile)
             try:
-                self.config = self.loadConfig(configFile)
-            except FileDoesNotExistError as message:
+                self.loadConfig(self.fileName)
+            except FileDoesNotExistError as e:
                 if rows is not None and cols is not None:
                     self.config = self._createVirtualConfig(rows, cols)
                 else:
-                    print(message)
+                    print(e)
                     raise
-            except CannotParseError:
-                print("Could not parse {:s}".format(configFile))
-                print(message)
+            except CannotParseError as e:
+                print(e)
                 raise
-            except IOError as message:
-                print(message)
+            except IOError as e:
+                print(e)
+                raise
+            except InvalidConfigError as e:
+                print(e)
                 raise
             finally:
-                self._parseConfig(self.config)
-
-
+                self.makeFloor()
+        else:
+            self.rows = rows
+            self.cols = cols
+    
+    def makeFloor(self):
+        """
+            This function attempts to parse the data in config and populate the rest of the object
+        """
+        self._parseConfig(self.config)
+    
+    def makeVirtual(self):
+        """
+            This function turns the current lsFloorConfig object into a virtual floor
+        """
+        self.cells = self.rows * self.cols
+        self.config = self._createVirtualConfig(self.rows, self.cols)
 
     def loadConfig(self, fileName):
+        """
+            This function attempts to load the floor configuration at fileName
+
+            Returns:
+                True                    if the load was succesful
+
+            Raises:
+                IOError                 if fileName is a directory
+                FileDoesNotExistError   if fileName is non-existent
+                CannotParseError        if the file can not be parsed
+        """
         if os.path.exists(fileName) is True:
             if os.path.isfile(fileName) is not True:
                 raise IOError(fileName + " is not a valid floor config file!")
@@ -69,20 +106,54 @@ class lsFloorConfig:
             raise FileDoesNotExistError(fileName + " does not exist!")
         try:
             with open(fileName) as configFile:
-                return json.load(configFile)
-        except Exception as message:
-            print(message)
+                self.config = json.load(configFile)
+        except Exception as e:
+            print(e)
             raise CannotParseError("Could not parse " + fileName + "!")
+        finally:
+            return True
         print("Board mapping loaded from " + fileName)
 
 
     # prints the list of 4-tuples
     def printConfig(self):
-        print("The configuration has " + repr(len(self.config)) + " entries:")
+        """
+            This function prints the current configuration
+        """
+        self._validate()
+        print("The configuration has {:d} entries:".format(len(self.config)))
         for cell in self.config:
             print(repr(cell))
 
 
+    def writeConfig(self, fileName = None, overwrite=False):
+        """
+            This function attempts to write the current configuration to disk
+
+            Raises:
+                IOError                 if fileName is not set
+                FileExistsError         if fileName already exists and overwrite is False
+        """
+        if fileName is not None:
+            self.fileName = self._formatFileName(fileName)
+        elif self.fileName is None:
+            raise IOError("fileName must be set. Try writeConfig(fileName).")
+        if os.path.exists(self.fileName) is True:
+            if overwrite is not True:
+                raise FileExistsError("Cannot overwrite {:s} (try setting overwrite=True).".format(fileName))
+        with open(self.fileName, 'w') as configFile:
+            json.dump(self.config, configFile, sort_keys = True, indent = 4,)
+        if overwrite is True:
+            print("\nOverwriting {:s}...".format(fileName))
+        else:
+            print("\nYour configuration was saved in {:s}".format(self.fileName))
+
+
+    def _formatFileName(self, fileName):
+        if fileName.endswith(".floor") is False:
+            fileName += ".floor"
+        return fileName
+        
     def _createVirtualConfig(self, rows, cols):
         assert isinstance(rows, numbers.Integral), "Rows must be a whole number."
         assert isinstance(cols, numbers.Integral), "Cols must be a whole number."
@@ -101,12 +172,9 @@ class lsFloorConfig:
 
 
     def _parseConfig(self, config):
-        def defdict():
-            return defaultdict(int)
         self.cells = 0
         self.rows = 0
         self.cols = 0
-        self.board = defaultdict(defdict)
         for (row, col, port, addr) in config:
             self.cells += 1
             if row >= self.rows:
@@ -114,39 +182,57 @@ class lsFloorConfig:
             if col >= self.cols:
                 self.cols = col + 1
             self.board[row][col] = (port, addr)
+        self._validate()
+
+    def _validate(self):
+        if self.rows * self.cols is not self.cells:
+            raise InvalidConfigError("Configuration is not valid.")
 
 
 def main():
 # Warning: spaghetti code ahead
 
 
-    def validateRows(numTiles, rows):
+    def validateRowCol(numTiles, rowsOrCols):
         try:
-            rows = int(rows)
+            rowsOrCols = int(rowsOrCols)
         except:
             print("You must enter a whole number!")
             return False
-        if rows > numTiles:
+        if numTiles is 0:       # Virtual floor
+            return True
+        if rowsOrCols > numTiles:
             print("There are only " + repr(numTiles) + " tiles!")
             return False
         return True
 
-    def pickRows(message):
-        rows = input(message)
-        while validateRows(totaltiles, rows) is False:
-            rows = input(message)
-        return rows
+    def pickRowCol(cells, message):
+        x = input(message)
+        while validateRowCol(cells, x) is False:
+            x = input(message)
+        return x
 
-    def YESno(message):
-        answer = input("{:s} [Y/n]: ".format(message))
-        if answer in ("yes", "Yes", "YES", "y", "Y"):
+    def YESno(message, default="Y"):
+        yesses = ("yes", "Yes", "YES", "y", "Y")
+        nos = ("no", "No", "NO", "n", "N")
+        if default in yesses:
+            answer = input("{:s} [Y/n]: ".format(message))
+        elif default in nos:
+            answer = input("{:s} [y/N]: ".format(message))
+        else:
+            raise ValueError("Default must be some form of yes or no")
+        if answer is "":
+            answer = default
+        if answer in yesses:
             return True
-        elif answer in ("no", "No", "NO", "n", "N"):
+        elif answer in nos:
             return False
         else:
             print("Please answer Yes or No.")
             return YESno(message)
 
+    def yesNO(message, default="N"):
+        return YESno(message, default)
 
     def pickFile(message):
         fileName = input(message)
@@ -165,22 +251,11 @@ def main():
                     return pickFile(message)
             try:
                 return lsFloorConfig(fileName)
-            except:
+            except Exception as e:
+                print(e)
                 return pickFile(message)
 
-    def interactiveConfig (config = None):
-
-        if config is None:
-            print("Starting a new configuration from scratch.")
-            config = []
-        else:
-            print("Configuring {:s}".format(config.fileName))
-
-        rows = pickRows("\nHow many rows do you want?: ")
-
-        cols = int(totaltiles/rows)
-        print("OK, you have a floor with " + repr(rows) + " by " + repr(cols)  + " columns")
-
+    def configWithKeyboard(floorConfig, tilepile):
         print("Blanking all tiles.")
         for port in tilepile.lsMatrix:
             myTile = LSRealTile(tilepile.sharedSerials[port])
@@ -202,24 +277,67 @@ def main():
                 print("Added this tile: " + str(thisTile))
                 config.append(thisTile)
                 myTile.setColor(0)
+        floorConfig.config = config
+        return floorConfig
+
+
+
+    def interactiveConfig (config = None):
+
+        if config is None:
+            print("\nStarting a new configuration from scratch.")
+            config = []
+        else:
+            print("Configuring {:s}...".format(config.fileName))
+
+        tilepile = lsOpen()
+
+        # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
+        availPorts = list(tilepile.lsMatrix)
+
+        print("Available serial ports: " + str(availPorts))
+    
+        totaltiles = 0
+        for port in tilepile.lsMatrix:
+            totaltiles += len(tilepile.lsMatrix[port])
+
+        if len(availPorts) > 0:  # default to the first port in the list
+            defaultPort = availPorts[0]
+
+        # It's the little details that count
+        question = "Would you like this to be a virtual floor?"
+        if totaltiles is 0:
+            isVirtual = YESno(question)
+        else:
+            isVirtual = yesNO(question)
+
+        if isVirtual is True:
+            print("\nConfiguring virtual Lightsweeper floor...")
+        else:
+            print("\nConfiguring real floor...")
+
+
+        rows = int(pickRowCol(totaltiles, "\nHow many rows do you want?: "))
+        
+        if isVirtual is True or totaltiles is 0:
+            cols = int(pickRowCol(totaltiles, "How many columns do you want?: "))
+        else:
+            cols = int(totaltiles/rows)
+
+        print("OK, you have a floor with " + repr(rows) + " by " + repr(cols)  + " columns")
+
+        if isVirtual is True:
+            config = lsFloorConfig(rows=rows, cols=cols)
+            config.makeVirtual()
+
+        if totaltiles is not 0:
+            config = lsFloorConfig(rows=rows, cols=cols)
+            configWithKeyboard(config, tilepile)
 
         return config
-    
-    tilepile = lsOpen()
+
     
     print("\nLightsweeper Configuration utility")
-
-    # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-    availPorts = list(tilepile.lsMatrix)
-
-    print("Available serial ports:" + str(availPorts))
-    
-    totaltiles = 0
-    for port in tilepile.lsMatrix:
-        totaltiles += len(tilepile.lsMatrix[port])
-
-    if len(availPorts) > 0:  # default to the first port in the list
-        defaultPort = availPorts[0]
 
     config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
 
@@ -228,6 +346,7 @@ def main():
 
     elif config.cells is 0:     # Start a new configuration with a pre-existing filename
         config = interactiveConfig(config)
+        ourfile = config.fileName
 
     else:                       # Load an existing configuration for editing
         print("\nThis is the configuration saved in " + config.fileName + ":\n")
@@ -238,15 +357,12 @@ def main():
 
     print("\nThis is the configuration: ")
     config.printConfig()
-        
 
     fileName = input("\nPlease enter a filename for this configuration (or blank to not save): ")
     if fileName == "":
         print("OK, not saving this configuration")
     else:
-        with open(fileName, 'w') as configFile:
-            json.dump(config, configFile, sort_keys = True, indent = 4,)
-        print("\nYour configuration was saved in " + fileName)
+        config.writeConfig(fileName)
 
     input("\nDone - Press the Enter key to exit") # keeps double-click window open
 
