@@ -73,6 +73,7 @@ class lsFloorConfig:
         else:
             self.rows = rows
             self.cols = cols
+            self.cells = rows*cols
     
     def makeFloor(self):
         """
@@ -120,8 +121,9 @@ class lsFloorConfig:
         """
             This function prints the current configuration
         """
-        self._validate()
+      #  self._validate()
         print("The configuration has {:d} entries:".format(len(self.config)))
+      #  print(self.cells, self.rows, self.cols) # Debugging
         for cell in self.config:
             print(repr(cell))
 
@@ -256,6 +258,7 @@ def main():
                 return pickFile(message)
 
     def configWithKeyboard(floorConfig, tilepile):
+        config = list()
         print("Blanking all tiles.")
         for port in tilepile.lsMatrix:
             myTile = LSRealTile(tilepile.sharedSerials[port])
