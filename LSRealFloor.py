@@ -7,10 +7,10 @@ import os
 import random
 import Colors
 import Shapes
-import json
 from Move import Move
 from LSAudio import Audio
-from LSFloorConfigure import lsFloorConfig as lsConfig
+from LSFloorConfigure import lsFloorConfig
+from LSFloorConfigure import userSelect
 
 # Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
 OURWAIT = 0.005
@@ -22,18 +22,32 @@ class LSRealFloor():
     SENSOR_THRESHOLD = 100
     sharedSerials = dict()
 
-    def __init__(self, rows, cols, serials=None):
-        fileName = 'Bfloor' # Testing
-        self.rows = rows
-        self.cols = cols
-        print("RealFloor init", rows, cols)
+    def __init__(self, rows, cols, serials=None, configFile=None):
+        if configFile is None:
+            floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir()))
+            if len(floorFiles) is 0:
+                raise IOError("No floor configuration found.")
+            elif len(floorFiles) is 1:
+                fileName = floorFiles[0]
+            else:
+                print("\nFound multiple configurations: \n")
+                fileName = userSelect(floorFiles, "\nWhich floor configuration would you like to use? ")
+        else:
+            fileName = configFile
+            
 
+        # Load the configuration
+        conf = lsFloorConfig(fileName)
+        self.rows = conf.rows
+        self.cols = conf.cols
+        print("RealFloor init", self.rows, self.cols)
+
+        # Initialize the serial ports
         tilepile = lsOpen()
 
         self.addressToRowColumn = {}
         # make all the rows
         self.tileRows = []
-        conf = lsConfig(fileName)
         print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
                 
         for row in conf.board:

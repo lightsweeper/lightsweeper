@@ -513,15 +513,6 @@ class lsOpen:
             if succesful.
         """
         
-       # lolwut? 
-       # serialObject = serial.Serial()
-       # serialObject.port = port
-       # serialObject.baud = baud
-       # serialObject.timeout = timeout
-        
-         # A silly hack for windows compat
-       # if serialObject.isOpen() is True:
-       #     serialObject.close()
             
         # TODO: check if the supplied port is in lsMatrix
         try:
@@ -531,9 +522,6 @@ class lsOpen:
             
        # return serialObject
 
-
-
-            
 
     def testport(self, port):
         """
@@ -610,11 +598,15 @@ class lsOpen:
       
         # you can tell when the sleep deprivation starts to kick in
         def checkinput(foo):
+            if foo in self.lsMatrix.keys():
+                return foo
+            try:
+                foo = int(foo)
+            except:
+                return False
             bar = dict(enumerate(sorted(self.lsMatrix.keys())))
             if int(foo) in bar.keys():
                 return bar.get(int(foo))
-            if foo in self.lsMatrix.keys():
-                return foo
             return False
             
         # TODO: Sanity check that portList consists of valid ports

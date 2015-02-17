@@ -73,12 +73,12 @@ class lsFloorConfig:
         else:
             self.rows = rows
             self.cols = cols
-            self.cells = rows*cols
     
     def makeFloor(self):
         """
             This function attempts to parse the data in config and populate the rest of the object
         """
+        self.cells = self.rows*self.cols
         self._parseConfig(self.config)
     
     def makeVirtual(self):
@@ -112,8 +112,8 @@ class lsFloorConfig:
             print(e)
             raise CannotParseError("Could not parse " + fileName + "!")
         finally:
+            print("Board mapping loaded from " + fileName)
             return True
-        print("Board mapping loaded from " + fileName)
 
 
     # prints the list of 4-tuples
@@ -189,6 +189,31 @@ class lsFloorConfig:
     def _validate(self):
         if self.rows * self.cols is not self.cells:
             raise InvalidConfigError("Configuration is not valid.")
+
+def userSelect(selectionList, message="Select an option from the list: "):
+    def checkInput(selection):
+        options = dict(enumerate(selectionList))
+        if selection in options.values():
+            return selection
+        try:
+            selection = int(selection)
+        except:
+            return False
+        if selection in options.keys():
+            return options.get(selection)
+        return False
+        
+    def pick(msg):
+        x=str()
+        while checkInput(x) is False:
+            x = input(msg)
+        return checkInput(x)
+        
+    options = enumerate(selectionList)
+    for optNum, optName in options:
+        print("[{:d}] {:s}".format(optNum, optName))
+    return pick(message)
+    
 
 
 def main():
@@ -272,9 +297,9 @@ def main():
                 myTile = LSRealTile(tilepile.sharedSerials[port])
                 myTile.assignAddress(addr)
                 myTile.demo(1)
-                row=int(input("Which row?: "))
+                row=int(pickRowCol(floorConfig.cells, "Which row?: "))
                 row = row-1
-                col=int(input("Which col?: "))
+                col=int(pickRowCol(floorConfig.cells, "Which col?: "))
                 col = col-1
                 thisTile = (row, col, port, addr)
                 print("Added this tile: " + str(thisTile))
