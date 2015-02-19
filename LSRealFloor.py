@@ -13,7 +13,7 @@ from LSFloorConfigure import lsFloorConfig
 from LSFloorConfigure import userSelect
 
 # Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
-OURWAIT = 0.005
+OURWAIT = .005
 
 #handles all communications with RealTile objects, serving as the interface to the
 #actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
@@ -22,11 +22,11 @@ class LSRealFloor():
     SENSOR_THRESHOLD = 100
     sharedSerials = dict()
 
-    def __init__(self, rows, cols, serials=None, configFile=None):
+    def __init__(self, rows=0, cols=0, serials=None, configFile=None):
         if configFile is None:
             floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir()))
             if len(floorFiles) is 0:
-                raise IOError("No floor configuration found.")
+                raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
             elif len(floorFiles) is 1:
                 fileName = floorFiles[0]
             else:
@@ -306,7 +306,7 @@ def playRandomCasioSound(audio):
 
 if __name__ == "__main__":
     print("todo: testing RealFloor")
-    floor = LSRealFloor(3, 3)
+    floor = LSRealFloor()
     #audio.playSound("8bit/46.wav")
     #wait(5)
     print("Clearing floor")
