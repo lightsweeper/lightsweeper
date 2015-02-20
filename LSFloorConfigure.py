@@ -357,10 +357,10 @@ def main():
         if isVirtual is True:
             config = lsFloorConfig(rows=rows, cols=cols)
             config.makeVirtual()
-
-        if totaltiles is not 0:
-            config = lsFloorConfig(rows=rows, cols=cols)
-            configWithKeyboard(config, tilepile)
+        else:
+            if totaltiles is not 0:
+                config = lsFloorConfig(rows=rows, cols=cols)
+                configWithKeyboard(config, tilepile)
 
         return config
 
