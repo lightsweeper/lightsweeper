@@ -572,13 +572,14 @@ class lsOpen:
         """
             Returns a generator for valid lightsweeper addresses on provided port
         """
-
-        testTile = LSRealTile(self.lsSerial(port))
+        testSerial = self.lsSerial(port)
+        testTile = LSRealTile(testSerial)
         for address in range(1,32):
             tileAddr = address * 8
             testTile.assignAddress(tileAddr)
             if testTile.version():
                 yield tileAddr
+        testSerial.close()
 
 
     def portmap(self):
