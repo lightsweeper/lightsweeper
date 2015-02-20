@@ -24,8 +24,9 @@ class LSRealFloor():
 
     def __init__(self, rows=0, cols=0, serials=None, configFile=None):
         if configFile is None:
-            floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir()))
-            if len(floorFiles) is 0:
+            try:
+                floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir()))
+            except:
                 raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
             elif len(floorFiles) is 1:
                 fileName = floorFiles[0]
