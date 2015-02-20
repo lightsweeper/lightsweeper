@@ -364,7 +364,7 @@ def main():
 
         return config
 
-    
+
     print("\nLightsweeper Configuration utility")
 
     config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")

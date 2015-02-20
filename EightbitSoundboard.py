@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import Colors
 import Shapes
+import random
+from Move import Move
 
 class Soundboard():
     def __init__(self, display, audio, rows, cols):
@@ -13,27 +15,14 @@ class Soundboard():
         self.audio.shuffleSongs()
         self.audio.setSongVolume(0)
         self.board = None
-        #we want the tile to change back to the untouched color after some number of heartbeats
-        self.moveColorChange = []
-        self.moveColorChangeTimer = []
         #self.audio.playSound('StartUp.wav')
 
     def heartbeat(self, sensorsChanged):
-        removeItems = []
-        for i in range(len(self.moveColorChangeTimer)):
-            if self.moveColorChangeTimer[i] < 10:
-                self.moveColorChangeTimer[i] += 1
-            else:
-                move = self.moveColorChange[i]
-                self.display.setColor(move.row, move.col, Colors.WHITE)
-                removeItems.push(i)
-        for i in removeItems:
-            self.moveColorChange.remove(self.moveColorChange[i])
-            self.moveColorChangeTimer.remove(self.moveColorChangeTimer[i])
+        if random.randint(0, 10) > 8:
+            move = Move(random.randint(0, self.rows - 1), random.randint(0, self.cols - 1), 1)
+            sensorsChanged.append(move)
         for move in sensorsChanged:
             self.playTileSound(move.row, move.col)
-            self.moveColorChangeTimer.append(0)
-            self.moveColorChange.append(move)
             self.display.setColor(move.row, move.col, Colors.RANDOM)
 
     def playTileSound(self, row, col):
