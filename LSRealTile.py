@@ -165,6 +165,7 @@ class LSRealTile(LSTileAPI):
         self.row = row
         self.col = col
         self.mySerial = sharedSerial
+        self.serial = self.mySerial
         # cmdNargs is address + command + N optional bytes
         self.Debug = False
         self.shape = None
@@ -496,16 +497,18 @@ class lsOpen:
     
     def __init__(self):        
         self.lsMatrix = self.portmap()
-        if len(self.lsMatrix) is 0:
-            print("Cannot find any lightsweeper tiles")
-        if len(self.lsMatrix) is 1:
-            print("Only one serial port->" + repr([key for key in self.lsMatrix.keys()]))
-        print("There are " + repr(len(self.lsMatrix)) + " valid serial ports.")
+
         self.sharedSerials = {}
         for port in self.lsMatrix:
             newSerial = self.lsSerial(port)
             self.sharedSerials[newSerial.name] = (newSerial)
-        print("Shared serials are: " + repr(self.sharedSerials.keys()))  #debugging
+
+        if len(self.lsMatrix) is 0:
+            print("Cannot find any lightsweeper tiles")
+        if len(self.lsMatrix) is 1:
+            print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
+        if len(self.lsMatrix) > 1:
+            print("There are {:d} valid serial ports -> {:s}".format(int(len(self.lsMatrix)),repr([port for port in self.lsMatrix.keys()])))
 
     def lsSerial(self, port, baud=19200, timeout=0.01):
         """
@@ -531,7 +534,6 @@ class lsOpen:
         try:
             testTile = LSRealTile(self.lsSerial(port))
         except serial.SerialException:
-            print("Serial Exception on port: " + str(port))
             return False
         testTile.assignAddress(0)
         if testTile.version():
@@ -1138,9 +1140,9 @@ def main():
             print("    4 - run single digit mode")
             print("    5 - EEPROM tasks")
 #            print("    6 - discovery walk thru the address space")
-            print("    7 - test setSegments API")
-            print("    8 - set segments and poll sensor")
-            print("    9 - random tile address procedure")
+            print("    6 - test setSegments API")
+            print("    7 - set segments and poll sensor")
+            print("    8 - random tile address procedure")
             reply = input("\nWhat test do you want to run? <Enter> to repeat: ")
             if reply != "":
                 testChoice = int(reply)
