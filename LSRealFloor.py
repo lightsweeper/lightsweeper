@@ -25,7 +25,7 @@ class LSRealFloor():
     def __init__(self, rows=0, cols=0, serials=None, configFile=None):
         if configFile is None:
             try:
-                floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir()))
+                floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
             except:
                 raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
             if len(floorFiles) is 1:
@@ -50,7 +50,9 @@ class LSRealFloor():
         self.calibrationMap = dict()
 
         self.addressToRowColumn = {}
-        # make all the rows
+        # single-dimensional array of tiles to iterate over
+        self.tileList = []
+        # double array of tile objects
         self.tileRows = []
         print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
                 
@@ -68,6 +70,7 @@ class LSRealFloor():
                 tile.setColor(Colors.WHITE)
                 tile.setShape(Shapes.ZERO)
                 tiles.append(tile)
+                self.tileList.append(tile)
                 print("Address assigned:", tile.getAddress())
                 wait(.1)
             self.tileRows.append(tiles)
@@ -159,9 +162,13 @@ class LSRealFloor():
 
     def pollSensors(self, sensitivity=.95):
         sensorsChanged = []
-        tiles = self._getTileList(0,0)
+        #tiles = self._getTileList(0,0)
+        tiles = self.tileList
+        #sensorPoll = 0
         for tile in tiles:
+            #currentTime = time.time()
             reading = tile.sensorStatus()
+            #sensorPoll = sensorPoll + time.time() - currentTime
             cMap = self.calibrationMap[tile.address]
             lowest = cMap[0]
             highest = cMap[1]
@@ -186,7 +193,7 @@ class LSRealFloor():
                 if tile.active > 0:
                     tile.active = 0
               #      print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
-                    
+        #print("sensor polls took " + str(sensorPoll) + "ms")
                     
     # Old code:
 #            val = tile.sensorStatus()
@@ -291,52 +298,6 @@ def wait(seconds):
     currentTime = time.time()
     while time.time() - currentTime < seconds:
         pass
-
-def playRandom8bitSound(audio):
-    val = random.randint(0, 10)
-    if val is 0:
-        audio.playSound("8bit/10.wav")
-    if val is 1:
-        audio.playSound("8bit/12.wav")
-    if val is 2:
-        audio.playSound("8bit/13.wav")
-    if val is 3:
-        audio.playSound("8bit/15.wav")
-    if val is 4:
-        audio.playSound("8bit/16.wav")
-    if val is 5:
-        audio.playSound("8bit/23.wav")
-    if val is 6:
-        audio.playSound("8bit/34.wav")
-    if val is 7:
-        audio.playSound("8bit/38.wav")
-    if val is 8:
-        audio.playSound("8bit/46.wav")
-    if val is 9:
-        audio.playSound("8bit/Reveal_G_4.wav")
-    if val is 10:
-        audio.playSound("8bit/Reveal_G_2.wav")
-
-
-def playRandomCasioSound(audio):
-    val = random.randint(0, 7)
-    if val is 0:
-        audio.playSound("8bit/casio_C_2.wav")
-    if val is 1:
-        audio.playSound("8bit/casio_C_3.wav")
-    if val is 2:
-        audio.playSound("8bit/casio_C_4.wav")
-    if val is 3:
-        audio.playSound("8bit/casio_C_5.wav")
-    if val is 4:
-        audio.playSound("8bit/casio_C_6.wav")
-    if val is 5:
-        audio.playSound("8bit/casio_D.wav")
-    if val is 6:
-        audio.playSound("8bit/casio_E.wav")
-    if val is 7:
-        audio.playSound("8bit/casio_G.wav")
-
 
 if __name__ == "__main__":
     print("todo: testing RealFloor")
