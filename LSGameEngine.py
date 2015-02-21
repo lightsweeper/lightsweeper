@@ -14,7 +14,8 @@ class GameEngine():
     COLUMNS = 8
 
     def __init__(self):
-        self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE)
+        self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
+                               eventCallback = self.handleTileStepEvent)
         self.audio = Audio()
         self.newGame()
 
@@ -29,6 +30,9 @@ class GameEngine():
 
             self.enterFrame()
 
+    def handleTileStepEvent(self, row, col, val):
+        if self.game.handlesEvents is not False:
+            self.game.handleTileStepEvent(row, col, val)
 
     def beginEmulatorLoop(self):
         pass

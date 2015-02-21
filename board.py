@@ -37,7 +37,7 @@ class Board():
         for i in range(mines):
             new_pos = random.choice(available_pos)
             available_pos.remove(new_pos)
-            (row_id, col_id) = (new_pos // (cols), new_pos % (rows))
+            (row_id, col_id) = random.randint(0, rows-1), random.randint(0, cols-1) #(new_pos // (cols), new_pos % (rows))
             self.place_mine(row_id, col_id)
         self.is_playing = True
         return
@@ -70,8 +70,7 @@ class Board():
             #print("board.show", row_id, col_id)
             cell.show()
             # self.display.show(row_id, col_id)
-            if (cell.is_mine and not
-                cell.is_flagged):
+            if (cell.is_mine and not cell.is_flagged):
                 self.is_playing = False
                 print("mine'd!")
             elif self.count_surrounding(row_id, col_id) == 0:

@@ -8,6 +8,7 @@ class Audio():
     def __init__(self):
         pygame.mixer.init()
         pygame.init()
+        self.soundVolume = 1.0
         self.loadedSongs = []
         self.soundDictionary = {}
 
@@ -50,6 +51,7 @@ class Audio():
     def playSound(self, filename):
         print("playing sound", filename)
         sound = pygame.mixer.Sound("sounds/" + filename)
+        sound.set_volume(self.soundVolume)
         pygame.mixer.Sound.play(sound)
         #pygame.mixer.music.load("sounds/" + filename)
         #pygame.mixer.music.play(1)
@@ -62,4 +64,5 @@ class Audio():
         pass
 
     def setSoundVolume(self, vol):
-        pygame.mixer.Sound.set_volume(1.0)
+        print("setting sound vol:" + str(vol))
+        self.soundVolume = vol

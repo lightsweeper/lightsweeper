@@ -11,20 +11,28 @@ class Soundboard():
         self.rows = rows
         self.cols = cols
         self.ended = False
-        self.audio.loadSong('8bit/8bit-loop.wav', 'between1')
-        self.audio.shuffleSongs()
+        self.handlesEvents = True
+        #self.audio.loadSong('8bit/8bit-loop.wav', 'between1')
+        #self.audio.shuffleSongs()
         self.audio.setSongVolume(0)
+        self.audio.loadSound('8bit/casio_C_4.wav', 'casioC4')
         self.board = None
-        self.audio.playSound('StartUp.wav')
+        #self.audio.playSound('StartUp.wav')
 
     def heartbeat(self, sensorsChanged):
         #if random.randint(0, 10) > 8:
         #    move = Move(random.randint(0, self.rows - 1), random.randint(0, self.cols - 1), 1)
         #    sensorsChanged.append(move)
         for move in sensorsChanged:
-            #print("Tile:{:d},{:d} at {:d}".format(move.row, move.col, move.val))
-            self.playTileSound(move.row, move.col)
-            self.display.setColor(move.row, move.col, Colors.RANDOM())
+            print("Tile:{:d},{:d} at {:d}".format(move.row, move.col, move.val))
+            #self.playTileSound(move.row, move.col)
+            #self.display.setColor(move.row, move.col, Colors.RANDOM())
+
+    def handleTileStepEvent(self, row, col, val):
+        self.audio.setSoundVolume((255 - val) / 255)
+        self.playTileSound(row, col)
+        #self.audio.playLoadedSound('casioC4')
+        self.display.setColor(row, col, Colors.RANDOM())
 
     def playTileSound(self, row, col):
         if row is 0:

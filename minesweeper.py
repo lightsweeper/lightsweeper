@@ -11,7 +11,7 @@ import time
 class Minesweeper():
     def __init__(self, display, audio, rows, cols):
         board = Board()
-        mines = random.randint(2, cols)
+        mines = random.randint(int(cols / 2), cols + 2)
         board.create_board(rows, cols, mines)
         self.board = board
         self.audio = audio
@@ -25,8 +25,10 @@ class Minesweeper():
         self.audio.loadSong('BetweenGames3.wav', 'between3')
         self.audio.loadSong('BetweenGames4.wav', 'between4')
         self.audio.shuffleSongs()
-        self.audio.setSongVolume(0.2)
+        self.handlesEvents = False
+        self.audio.setSongVolume(0)
         self.songsQuiet = False
+        self.firstStep = True
         self.updateBoard(self.board)
 
         # Confirmed that both sounsd play simultaneously
@@ -35,11 +37,21 @@ class Minesweeper():
 
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:
+            playSound = True
             for move in sensorsChanged:
                 if self.songsQuiet:
                     self.songsQuiet = True
-                self.audio.playSound("Blop.wav")
+                if self.board.board[move.row][move.col].is_visible:
+                    playSound = False
+                if self.firstStep and self.board.board[move.row][move.col].is_mine:
+                    self.firstStep = False
+                    #self.board.board[move.row][move.col].is_mine = False
+                    #print("Saved from the mine!")
                 self.board.show(move.row, move.col)
+                if self.board.board[move.row][move.col].is_mine:
+                    self.audio.playSound("Explosion.wav")
+                elif playSound:
+                    self.audio.playSound("Blop.wav")
             self.updateBoard(self.board)
         elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
@@ -48,7 +60,7 @@ class Minesweeper():
                 self.animatingEnd = True
                 self.audio.playSound("Success.wav")
             else:
-                self.audio.playSound("Explosion.wav")
+                #self.audio.playSound("Explosion.wav")
                 self.board.show_all()
                 self.endAnim = EndAnimation(False, self.rows, self.cols)
                 self.animatingEnd = True
@@ -77,7 +89,7 @@ class Minesweeper():
                     elif cell == ' ' or cell == '':
                         self.display.set(row, col, Shapes.DASH, Colors.BLACK)
                     elif cell == 'M':
-                        self.display.set(row, col, Shapes.DASH, Colors.RED)
+                        self.display.set(row, col, Shapes.ZERO, Colors.RED)
                     elif cell == 'F':
                         break
                     else:
@@ -107,47 +119,33 @@ class EndAnimation:
             frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.GREEN)
             self.frames.append(frame)
+
+            frame = Frame(self.rows, self.cols)
+            frame.setAllColor(Colors.CYAN)
+            self.frames.append(frame)
+            frame = Frame(self.rows, self.cols)
+            frame.setAllColor(Colors.BLUE)
+            self.frames.append(frame)
+            frame = Frame(self.rows, self.cols)
+            frame.setAllColor(Colors.GREEN)
+            self.frames.append(frame)
         else:
             frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.RED)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 3
+            frame.heartbeats = 1
             self.frames.append(frame)
 
             frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.BLACK)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 2
+            frame.heartbeats = 1
             self.frames.append(frame)
 
             frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.RED)
             frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 2
-            self.frames.append(frame)
-
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.BLACK)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 2
-            self.frames.append(frame)
-
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 2
-            self.frames.append(frame)
-
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.BLACK)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 2
-            self.frames.append(frame)
-
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 2
+            frame.heartbeats = 1
             self.frames.append(frame)
 
     def getFrame(self):

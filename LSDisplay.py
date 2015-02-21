@@ -12,12 +12,13 @@ import time
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
-    def __init__(self, row, cols, realFloor = False, simulatedFloor = False, console = False):
+    def __init__(self, row, cols, realFloor = False, simulatedFloor = False, console = False, eventCallback=None):
         self.row = row
         self.cols = cols
+        self.eventCallback = eventCallback
         if realFloor:
             print("Display instantiating real floor")
-            self.realFloor = LSRealFloor(row, cols)
+            self.realFloor = LSRealFloor(row, cols, eventCallback=self.handleTileStepEvent)
         else:
             self.realFloor = None
         self.floor = []
@@ -30,8 +31,6 @@ class Display():
             print("Display instantiating simulated floor")
             self.simulatedFloor = EmulateFloor(row, cols)
 
-
-
     #this is to handle display functions only
     def heartbeat(self):
         #print("Display heartbeat")
@@ -41,6 +40,10 @@ class Display():
             self.realFloor.heartbeat()
         #check pygame for position and click ness of mouse
         pass
+
+    def handleTileStepEvent(self, row, col, val):
+        if self.eventCallback is not None:
+            self.eventCallback(row, col, val)
 
     def printFloor(self):
         print("printing floor")

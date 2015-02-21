@@ -22,7 +22,7 @@ class LSRealFloor():
     SENSOR_THRESHOLD = 100
     sharedSerials = dict()
 
-    def __init__(self, rows=0, cols=0, serials=None, configFile=None):
+    def __init__(self, rows=0, cols=0, serials=None, configFile=None, eventCallback=None):
         if configFile is None:
             try:
                 floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
@@ -41,6 +41,7 @@ class LSRealFloor():
         conf = lsFloorConfig(fileName)
         self.rows = conf.rows
         self.cols = conf.cols
+        self.eventCallback = eventCallback
         print("RealFloor init", self.rows, self.cols)
 
         # Initialize the serial ports
@@ -66,6 +67,7 @@ class LSRealFloor():
                 self.calibrationMap[address] = [127,127]
                 tile.active = 0
                 tile.assignAddress(address)
+                tile.eepromRead(0)
                 self.addressToRowColumn[(address,port)] = (row, col)
                 tile.setColor(Colors.WHITE)
                 tile.setShape(Shapes.ZERO)
@@ -79,6 +81,10 @@ class LSRealFloor():
 
     def heartbeat(self):
         pass
+
+    def handleTileStepEvent(self, row, col, val):
+        if self.eventCallback is not None:
+            self.eventCallback(row, col, val)
 
     def setAllColor(self, color):
         for row in self.tileRows:
@@ -180,13 +186,14 @@ class LSRealFloor():
                 cMap[1] = highest
             self.calibrationMap[tile.address] = cMap
             
-            if reading < (((highest-lowest) * sensitivity) + lowest):
+            if reading < (((highest-lowest) * sensitivity) + lowest) and lowest < 127:
                 if tile.active <= 0:
                     tile.active = 1
-               #     print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
+                    #print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
                     rowCol = self.addressToRowColumn[(tile.address, tile.comNumber)]
                     move = Move(rowCol[0], rowCol[1], reading)
                     sensorsChanged.append(move)
+                    self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
                 else:
                     tile.active += 1
             elif reading is highest:
