@@ -110,7 +110,7 @@ if __name__ == '__main__':
             
     theSerial=lsls.lsSerial(com)
 
-    myTile = LSRealTile(theSerial)    
+    myTile = LSRealTile(lsls.sharedSerials[port])    
     myTile.assignAddress(address)
 
     if theSerial != None:
