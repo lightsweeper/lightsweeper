@@ -9,6 +9,7 @@ class Audio():
         pygame.mixer.init()
         pygame.init()
         self.loadedSongs = []
+        self.soundDictionary = {}
 
     def heartbeat(self):
         for event in pygame.event.get():
@@ -16,7 +17,7 @@ class Audio():
                 self.shuffleSongs()
 
     def loadSong(self, filename, name):
-        #pygame.mixer.music.load("sounds/" + filename)
+        pygame.mixer.music.load("sounds/" + filename)
         self.loadedSongs.append(filename)
         pass
 
@@ -41,12 +42,21 @@ class Audio():
         self.playSong(self.loadedSongs[song], 1)
         pygame.mixer.music.set_endevent(self.SONG_END)
 
+    def loadSound(self, filename, name):
+        print("loading sound " + filename + " into " + name)
+        sound = pygame.mixer.Sound("sounds/" + filename)
+        self.soundDictionary[name] = sound
+
     def playSound(self, filename):
         print("playing sound", filename)
         sound = pygame.mixer.Sound("sounds/" + filename)
         pygame.mixer.Sound.play(sound)
         #pygame.mixer.music.load("sounds/" + filename)
         #pygame.mixer.music.play(1)
+
+    def playLoadedSound(self, name):
+        sound = self.soundDictionary[name]
+        pygame.mixer.Sound.play(sound)
 
     def stopSounds(self):
         pass
