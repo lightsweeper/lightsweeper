@@ -495,13 +495,14 @@ class lsOpen:
         for discovering and making use of valid lightsweeper serial objects
     """
     
-    def __init__(self):        
+    def __init__(self):
+        self.sharedSerials = dict()
+                
         self.lsMatrix = self.portmap()
 
-        self.sharedSerials = {}
-        for port in self.lsMatrix:
-            newSerial = self.lsSerial(port)
-            self.sharedSerials[newSerial.name] = (newSerial)
+    #    for port in self.lsMatrix:
+    #        newSerial = self.lsSerial(port)
+    #        self.sharedSerials[newSerial.name] = (newSerial)
 
         if len(self.lsMatrix) is 0:
             print("Cannot find any lightsweeper tiles")
@@ -510,6 +511,7 @@ class lsOpen:
         if len(self.lsMatrix) > 1:
             print("There are {:d} valid serial ports -> {:s}".format(int(len(self.lsMatrix)),repr([port for port in self.lsMatrix.keys()])))
 
+
     def lsSerial(self, port, baud=19200, timeout=0.01):
         """
             Attempts to open the specified com port, returning a pySerial object
@@ -517,11 +519,14 @@ class lsOpen:
         """
         
             
-        # TODO: check if the supplied port is in lsMatrix
+        if port in self.sharedSerials.keys():
+            return self.sharedSerials[port]
         try:
-            return serial.Serial(port, baud, timeout=timeout)
+            self.sharedSerials[port] = serial.Serial(port, baud, timeout=timeout)
         except serial.SerialException:
             raise serial.SerialException  # WATCH OUT!
+        finally:
+            return self.sharedSerials[port]
             
        # return serialObject
 
@@ -531,10 +536,10 @@ class lsOpen:
             Returns true if port has any lightsweeper objects listening
         """
 
-        try:
-            testTile = LSRealTile(self.lsSerial(port))
-        except serial.SerialException:
-            return False
+    #    try:
+        testTile = LSRealTile(self.lsSerial(port))
+    #    except serial.SerialException:
+    #        return False
         testTile.assignAddress(0)
         if testTile.version():
             return True
@@ -572,14 +577,12 @@ class lsOpen:
         """
             Returns a generator for valid lightsweeper addresses on provided port
         """
-        testSerial = self.lsSerial(port)
-        testTile = LSRealTile(testSerial)
+        testTile = LSRealTile(self.lsSerial(port))
         for address in range(1,32):
             tileAddr = address * 8
             testTile.assignAddress(tileAddr)
             if testTile.version():
                 yield tileAddr
-        testSerial.close()
 
 
     def portmap(self):
