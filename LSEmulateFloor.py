@@ -29,38 +29,12 @@ class EmulateFloor(LSApi):
             for c in range(0, self.cols):
                 tile = self.tiles[r][c]
                 image = tile.loadImage()
-                self.screen.blit(image, (100 * r, 100 * c))
+                self.screen.blit(image, (100 * c, 100 * r))
         pygame.display.update()
 
     def _flushQueue(self):
         pass
 
-    def _getTileList (self, row, column):
-        tileList = []
-        # whole floor
-        if row < 1 and column < 1:
-            for tileRow in self.tileRows:
-                for tile in tileRow:
-                    tileList.append(tile)
-                    count = len(tileList)
-        # whole row
-        elif column < 1:
-            tileRow = self.tileRows[row-1]
-            for tile in tileRow:
-                tileList.append(tile)
-                count = len(tileList)
-        # whole column
-        elif row < 1:
-            for tileRow in self.tileRows:
-                tile = tileRow[column-1]
-                tileList.append(tile)
-                count = len(tileList)
-        # single tile
-        else:
-            tileRow = self.tileRows[row-1]
-            tileList = [tileRow[column-1]]
-        return tileList
-    
     def _getCols (self):
         return self.cols
 

@@ -7,8 +7,8 @@ from LSAudio import Audio
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FRAME_GAP = 1 / 30
-    REAL_FLOOR = True
-    SIMULATED_FLOOR = False
+    REAL_FLOOR = False
+    SIMULATED_FLOOR = True
     CONSOLE = False
     ROWS = 3
     COLUMNS = 8
@@ -20,8 +20,8 @@ class GameEngine():
         self.newGame()
 
     def newGame(self):
-        #self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
-        self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
+        #self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
 
     def beginLoop(self):
         while True:

@@ -1,5 +1,4 @@
 
-
 class WhackAMole():
     def __init__(self, display, audio, rows, cols):
         self.rows = rows

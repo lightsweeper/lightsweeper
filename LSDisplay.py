@@ -33,8 +33,7 @@ class Display():
         if initScreen and rows > 1 and cols > 7:
             self.setAllColor(Colors.BLACK)
 
-            self.setShape(0, 1, Shapes.L)
-            self.setColor(0, 1, Colors.RED)
+            self.set(0, 1, Shapes.L, Colors.RED)
             self.setShape(0, 2, Shapes.I)
             self.setColor(0, 2, Colors.YELLOW)
             self.setShape(0, 3, Shapes.G)
@@ -60,7 +59,7 @@ class Display():
             self.setColor(1, 6, Colors.MAGENTA)
             self.setShape(1, 7, Shapes.R)
             self.setColor(1, 7, Colors.WHITE)
-            wait(8.0)
+            #wait(8.0)
 
     #this is to handle display functions only
     def heartbeat(self):
@@ -119,6 +118,7 @@ class Display():
         if self.simulatedFloor:
             self.simulatedFloor.setColor(row, col, color)
         wait(0.005)
+
     def setAllColor(self, color):
         if self.realFloor:
             self.realFloor.setAllColor(color)
@@ -129,6 +129,7 @@ class Display():
         if self.simulatedFloor:
             self.simulatedFloor.setShape(row, col, shape)
         wait(0.005)
+
     def setSegmentsCustom(self, row, col, colors):
         pass
 
@@ -140,8 +141,6 @@ class Display():
                     self.setColor(row, col, frame.getColor(row, col))
                 if frame.hasShapeChangesFor(row, col):
                     self.setShape(row, col, frame.getShape(row, col))
-
-
 
     def add(self, row, col, shape, color):
         pass

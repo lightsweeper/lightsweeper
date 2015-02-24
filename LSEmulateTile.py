@@ -8,13 +8,16 @@ from LSEmulateSevenSegment import LSEmulateSevenSegment
 # this class holds a seven segment display and a button to mimic the pressure sensor
 # it does no segment processing, it just passes thru to the seven segment display
 class EmulateTile(LSApi):
-
-    def __init__(self, floor, row=0, col=0):
+    def __init__(self, floor, row=0, col=0, labelTiles = False):
         self.row = row
         self.col = col
         self.floor = floor
         self.color = Colors.BLACK
         self.shape = Shapes.ZERO
+        if labelTiles:
+            self.post = "_labels.png"
+        else:
+            self.post = ".png"
 
     def flushQueue(self):
         pass
@@ -35,29 +38,36 @@ class EmulateTile(LSApi):
         return self.shape
 
     def loadImage(self):
-        fileName = "test.bmp"
-        if self.getShape() is Shapes.ZERO:
-            fileName = "img_zero.png"
-        if self.getShape() is Shapes.ONE:
-            fileName = "img_one.png"
-        if self.getShape() is Shapes.TWO:
-            fileName = "img_two.png"
-        if self.getShape() is Shapes.THREE:
-            fileName = "img_three.png"
-        if self.getShape() is Shapes.FOUR:
-            fileName = "img_four.png"
-        if self.getShape() is Shapes.FIVE:
-            fileName = "img_five.png"
-        if self.getShape() is Shapes.SIX:
-            fileName = "img_six.png"
-        if self.getShape() is Shapes.SEVEN:
-            fileName = "img_seven.png"
-        if self.getShape() is Shapes.EIGHT:
-            fileName = "img_eight.png"
-        if self.getShape() is Shapes.NINE:
-            fileName = "img_nine.png"
-        image = pygame.image.load(fileName).convert_alpha()
-        image.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+        shape = self.getShape()
+        image = pygame.image.load("images/blank_tile.png")
+        if shape & Shapes.SEG_A:
+            seg = pygame.image.load("images/seg_A" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
+        if shape & Shapes.SEG_B:
+            seg = pygame.image.load("images/seg_B" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
+        if shape & Shapes.SEG_C:
+            seg = pygame.image.load("images/seg_C" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
+        if shape & Shapes.SEG_D:
+            seg = pygame.image.load("images/seg_D" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
+        if shape & Shapes.SEG_E:
+            seg = pygame.image.load("images/seg_E" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
+        if shape & Shapes.SEG_F:
+            seg = pygame.image.load("images/seg_F" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
+        if shape & Shapes.SEG_G:
+            seg = pygame.image.load("images/seg_G" + self.post)
+            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
+            image.blit(seg, (0,0))
         return image
 
     # set immediately or queue these segments in addressed tiles

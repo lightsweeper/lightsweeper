@@ -8,16 +8,16 @@ SEG_E = 0b00000100
 SEG_F = 0b00000010
 SEG_G = 0b00000001
 
-ZERO = 0x7E
-ONE = 0x30
-TWO = 0x6D
-THREE = 0x79
-FOUR = 0x33
-FIVE = 0x5B
-SIX = 0x7D
-SEVEN = 0x70
-EIGHT = 0x7F
-NINE = 0x7B
+ZERO = SEG_A + SEG_B + SEG_C + SEG_D + SEG_E + SEG_F
+ONE = SEG_B + SEG_C
+TWO = SEG_A + SEG_B + SEG_D + SEG_E + SEG_G
+THREE = SEG_A + SEG_B + SEG_C + SEG_D + SEG_G
+FOUR = SEG_B + SEG_C + SEG_F + SEG_G
+FIVE = SEG_A + SEG_C + SEG_D + SEG_F + SEG_G
+SIX = SEG_A + SEG_C + SEG_D + SEG_E + SEG_F + SEG_G
+SEVEN = SEG_A + SEG_B + SEG_C
+EIGHT = SEG_A + SEG_B + SEG_C + SEG_D + SEG_E + SEG_F + SEG_G
+NINE = SEG_A + SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
 
 A = SEG_A + SEG_B + SEG_C + SEG_E + SEG_F + SEG_G
 B = SEG_C + SEG_D + SEG_E + SEG_F + SEG_G
@@ -44,7 +44,7 @@ V = SEG_C + SEG_D
 Y = SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
 Z = SEG_A + SEG_B + SEG_D + SEG_E + SEG_G
 
-DASH = 0x1
+DASH = SEG_G
 
 def digitToHex(digit):
     if digit is 0:
