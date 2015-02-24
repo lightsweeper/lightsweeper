@@ -6,6 +6,9 @@ class WhackAMole():
         self.display = display
         self.audio = audio
         self.ended = False
+        self.moleTimeout = 20
+        self.moles = []
+        self.molesTimeLeft = []
 
     def heartbeat(self, sensorsChanged):
         pass
