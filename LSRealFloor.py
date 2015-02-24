@@ -90,6 +90,7 @@ class LSRealFloor():
         for row in self.tileRows:
             for tile in row:
                 tile.setColor(color)
+                wait(0.005)
 
 
     def set(self, row, col, shape, color):
@@ -100,12 +101,12 @@ class LSRealFloor():
     def setColor(self, row, col, color):
         tile = self.tileRows[row][col]
         tile.setColor(color)
-
+        wait(0.005)
 
     def setShape(self, row, col, shape):
         tile = self.tileRows[row][col]
         tile.setShape(shape)
-
+        wait(0.005)
 
     def setSegmentsCustom(self, row, col, segments):
         tile = self.tileRows[row][col]

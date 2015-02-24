@@ -1,5 +1,5 @@
 import random
-
+#segment order starts at top (A) and works clockwise, with the center segment (G) last
 SEG_A = 0b01000000
 SEG_B = 0b00100000
 SEG_C = 0b00010000
@@ -26,7 +26,23 @@ D = SEG_B + SEG_C + SEG_D + SEG_E + SEG_G
 E = SEG_A + SEG_D + SEG_E + SEG_F + SEG_G
 F = SEG_A + SEG_E + SEG_F + SEG_G
 G = SEG_A + SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
-H = SEG_B + SEG_C + SEG_E + SEG_F + SEG_G
+H = SEG_C + SEG_E + SEG_F + SEG_G
+I = SEG_B + SEG_C
+J = SEG_B + SEG_C + SEG_D
+K = SEG_B + SEG_C + SEG_E + SEG_F + SEG_G
+L = SEG_D + SEG_E + SEG_F
+N = SEG_C + SEG_E + SEG_G
+O = SEG_C + SEG_D + SEG_E + SEG_G
+P = SEG_A + SEG_B + SEG_E + SEG_F + SEG_G
+Q = SEG_A + SEG_B + SEG_C + SEG_F + SEG_G
+R = SEG_E + SEG_G
+S = SEG_A + SEG_C + SEG_D + SEG_F + SEG_G
+T = SEG_D + SEG_E + SEG_F + SEG_G
+u = SEG_C + SEG_D + SEG_E
+U = SEG_B + SEG_C + SEG_D + SEG_E + SEG_F
+V = SEG_C + SEG_D
+Y = SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
+Z = SEG_A + SEG_B + SEG_D + SEG_E + SEG_G
 
 DASH = 0x1
 

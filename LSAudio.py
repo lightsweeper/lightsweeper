@@ -6,11 +6,12 @@ import random
 class Audio():
     SONG_END = pygame.USEREVENT + 1
 
-    def __init__(self):
+    def __init__(self, initSound=True):
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
         self.soundVolume = 1.0
         self.loadedSongs = []
         self.soundDictionary = {}
+        self.playSound('StartUp.wav')
 
     def heartbeat(self):
         #for event in pygame.event.get():
