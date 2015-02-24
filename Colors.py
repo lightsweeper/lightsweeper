@@ -26,7 +26,7 @@ def intToRGB(i):
         return (255, 255, 0)
     if i is BLUE:
         return (0, 0, 255)
-    if i is VIOLET:
+    if i is MAGENTA:
         return (255, 0, 255)
     if i is CYAN:
         return (0, 255, 255)
@@ -54,3 +54,13 @@ def RANDOM(exclude=None):
             return ourRandC
     
     return randC()
+
+def RAINBOW(firstColor = RED):
+    rainbowList=[RED,YELLOW,GREEN,CYAN,BLUE,MAGENTA]
+    i = rainbowList.index(firstColor)
+    
+    while True:
+        if i is 6:
+            i = 0
+        yield intToRGB(rainbowList[i])
+        i += 1
