@@ -214,32 +214,34 @@ class LSRealFloor():
         return sensorsChanged
 
     def _getTileList(self,row,column):
-        tileList = []
-        #whole floor
-        # whole floor
-        if row < 1 and column < 1:
-            for tileRow in self.tileRows:
-                for tile in tileRow:
-                    tileList.append(tile)
-                    count = len(tileList)
-        # whole row
-        elif column < 1:
-            tileRow = self.tileRows[row-1]
-            for tile in tileRow:
-                tileList.append(tile)
-                count = len(tileList)
-        # whole column
-        elif row < 1:
-            for tileRow in self.tileRows:
-                tile = tileRow[column-1]
-                tileList.append(tile)
-                count = len(tileList)
-        # single tile
-        else:
-            tileRow = self.tileRows[row-1]
-            tileList = [tileRow[column-1]]
-        return tileList
-
+    # __init__ makes this for us now:
+    # Unused functionality of this method should be split into _getRow and _getCol methods (perhaps public?)
+#        tileList = []
+#        #whole floor
+#        # whole floor
+#        if row < 1 and column < 1:
+#            for tileRow in self.tileRows:
+#                for tile in tileRow:
+#                    tileList.append(tile)
+#                    count = len(tileList)
+#        # whole row
+#        elif column < 1:
+#            tileRow = self.tileRows[row-1]
+#            for tile in tileRow:
+#                tileList.append(tile)
+#                count = len(tileList)
+#        # whole column
+#        elif row < 1:
+#            for tileRow in self.tileRows:
+#                tile = tileRow[column-1]
+#                tileList.append(tile)
+#                count = len(tileList)
+#        # single tile
+#        else:
+#            tileRow = self.tileRows[row-1]
+#            tileList = [tileRow[column-1]]
+#        return tileList
+        return self.tileList
 
     def clearboard(self):
         zeroTile = LSRealTile(self.sharedSerials[0])
