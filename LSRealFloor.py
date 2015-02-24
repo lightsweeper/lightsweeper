@@ -93,10 +93,11 @@ class LSRealFloor():
                 wait(0.005)
 
 
-    def set(self, row, col, shape, color):
+    def set(self, row, col, colors):
         tile = self.tileRows[row][col];
-        tile.setColor(color)
-        tile.setShape(shape)
+        raise Exception("Not yet implemented!")
+        #tile.setColor(color)
+        #tile.setShape(shape)
 
     def setColor(self, row, col, color):
         tile = self.tileRows[row][col]

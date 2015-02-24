@@ -19,6 +19,7 @@ SEVEN = SEG_A + SEG_B + SEG_C
 EIGHT = SEG_A + SEG_B + SEG_C + SEG_D + SEG_E + SEG_F + SEG_G
 NINE = SEG_A + SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
 
+#letters not included: K (looks like H), M (two n's), W (two u's), X (looks like H)
 A = SEG_A + SEG_B + SEG_C + SEG_E + SEG_F + SEG_G
 B = SEG_C + SEG_D + SEG_E + SEG_F + SEG_G
 C = SEG_A + SEG_D + SEG_E + SEG_F

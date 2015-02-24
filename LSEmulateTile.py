@@ -18,71 +18,61 @@ class EmulateTile(LSApi):
             self.post = "_labels.png"
         else:
             self.post = ".png"
+        self.set(self.shape, self.color)
 
     def flushQueue(self):
         pass
 
-    def setColor (self, newColor, setItNow = True):
-        #change the state.
-        self.color = newColor
-        if not setItNow:
-            print("[LSEmulateTile] Non-instantaneous setting not yet supported.")
+    def set(self, shape=Shapes.ZERO, color=Colors.BLACK):
+        self.segments = []
+        if shape & Shapes.SEG_A:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_B:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_C:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_D:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_E:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_F:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_G:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
 
-    def getColor(self):
-        return self.color
-
-    def setShape(self, shape, setItNow = True):
-        self.shape = shape
+    def setCustom(self, segments):
+        self.segments = segments
+        pass
 
     def getShape(self):
         return self.shape
 
     def loadImage(self):
-        shape = self.getShape()
-        image = pygame.image.load("images/blank_tile.png")
-        if shape & Shapes.SEG_A:
-            seg = pygame.image.load("images/seg_A" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
-        if shape & Shapes.SEG_B:
-            seg = pygame.image.load("images/seg_B" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
-        if shape & Shapes.SEG_C:
-            seg = pygame.image.load("images/seg_C" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
-        if shape & Shapes.SEG_D:
-            seg = pygame.image.load("images/seg_D" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
-        if shape & Shapes.SEG_E:
-            seg = pygame.image.load("images/seg_E" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
-        if shape & Shapes.SEG_F:
-            seg = pygame.image.load("images/seg_F" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
-        if shape & Shapes.SEG_G:
-            seg = pygame.image.load("images/seg_G" + self.post)
-            seg.fill(Colors.intToRGB(self.getColor()), special_flags=pygame.BLEND_RGBA_MULT)
-            image.blit(seg, (0,0))
+        image = pygame.image.load("images/segments.png")
+        horizontal = (42,10)
+        vertical = (10,30)
+        image.fill(Colors.intToRGB(self.segments[0]), pygame.Rect((29,10),horizontal))
+        image.fill(Colors.intToRGB(self.segments[1]), pygame.Rect((71,17),vertical))
+        image.fill(Colors.intToRGB(self.segments[2]), pygame.Rect((71,52),vertical))
+        image.fill(Colors.intToRGB(self.segments[3]), pygame.Rect((29,79),horizontal))
+        image.fill(Colors.intToRGB(self.segments[4]), pygame.Rect((19,52),vertical))
+        image.fill(Colors.intToRGB(self.segments[5]), pygame.Rect((19,17),vertical))
+        image.fill(Colors.intToRGB(self.segments[6]), pygame.Rect((29,45),horizontal))
         return image
-
-    # set immediately or queue these segments in addressed tiles
-    # segments is a seven-tuple interpreted as True or False
-    def setSegments(self, segments, setItNow = True):
-        #change the state.
-        pass
-
-    def setSegmentsCustom(self, colors):
-        #change the state.
-        pass
-
-    def setDigit (self, newDigit, setItNow = True):
-        #change the state.
-        pass
 
     def getSensors(self):
         if self.button.isChecked():
@@ -98,10 +88,6 @@ class EmulateTile(LSApi):
 
     def getRow (self):
         return self.row
-
-    #returns an object that EmulateFloor can simply blit in the right place.
-    def getRenderable(self):
-        return None
 
     def _display (self, val):
         return
@@ -120,15 +106,6 @@ class EmulateTile(LSApi):
 
 
     def setTransition(self, transition):
-        return
-
-    def set(self,color=0, shape=0, transition=0):
-        if (color != 0):
-            self.setColor(color)
-        if (shape != 0 ):
-            self.setShape(shape)
-        if(transition != 0):
-            self.setTransition(transition)
         return
 
     def update(self,type):

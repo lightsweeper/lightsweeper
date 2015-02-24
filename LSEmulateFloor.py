@@ -5,6 +5,7 @@ from LSEmulateTile import EmulateTile
 from Move import Move
 import Colors
 import pygame
+import time
 
 class EmulateFloor(LSApi):
 
@@ -25,8 +26,8 @@ class EmulateFloor(LSApi):
         background = pygame.Surface((800, 800))
         background.fill(Colors.BLACK)
         self.screen.blit(background, (0,0))
-        for r in range(0, self.rows):
-            for c in range(0, self.cols):
+        for r in range(self.rows):
+            for c in range(self.cols):
                 tile = self.tiles[r][c]
                 image = tile.loadImage()
                 self.screen.blit(image, (100 * c, 100 * r))
@@ -35,42 +36,28 @@ class EmulateFloor(LSApi):
     def _flushQueue(self):
         pass
 
-    def _getCols (self):
-        return self.cols
-
-    def _getRows (self):
-        return self.rows
-
     def pollSensors(self):
         pass
 
     def handleTileSensed(self, row, col):
         pass
 
-    def setColor(self, row, column, color, setItNow = True):
-        #tileList = self._getTileList(row, column)
-        #for tile in tileList:
-        tile = self.tiles[row][column]
-        tile.setColor(color, setItNow)
-
-    def setShape(self, row, col, shape):
+    def set(self, row, col, shape, color):
         tile = self.tiles[row][col]
-        tile.setShape(shape)
+        tile.set(shape, color)
 
-    # set immediately or queue these segments in addressed tiles
-    # segments is a byte
-    def setSegments(self, row, col, segments, setItNow = True):
-        tile = self.tileRows[row][col]
-        tile.setSegments(segments)
+    #segments is a list of seven colors in A,...,G order of segments
+    def setCustom(self, row, col, segments):
+        tile = self.tiles[row][col]
+        tile.setCustom(segments)
 
-    def setSegmentsCustom(self, row, col, colors):
-        tile = self.tileRows[row][col]
-        tile.setSegmentsCustom(colors)
+    def clear(self, row, col):
+        tile = self.tiles[row][col]
+        tile.set()
 
-    def setDigit(self, row, column, digit, setItNow = True):
-        tileList = self._getTileList(row, column)
-        for tile in tileList:
-            tile.setDigit(digit, setItNow)
+    def clearAll(self):
+        for tile in self.tiles:
+            tile.set()
 
     def getSensors(self):
         activeSensors = []

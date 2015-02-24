@@ -14,6 +14,7 @@ class Display():
         self.rows = rows
         self.cols = cols
         self.eventCallback = eventCallback
+        self.lastTileSetTimestamp = time.time()
         if realFloor:
             print("Display instantiating real floor")
             self.realFloor = LSRealFloor(rows, cols, eventCallback=self.handleTileStepEvent)
@@ -30,36 +31,39 @@ class Display():
             self.simulatedFloor = EmulateFloor(rows, cols)
         else:
             self.simulatedFloor = None
-        if initScreen and rows > 1 and cols > 7:
-            self.setAllColor(Colors.BLACK)
-
-            self.set(0, 1, Shapes.L, Colors.RED)
-            self.setShape(0, 2, Shapes.I)
-            self.setColor(0, 2, Colors.YELLOW)
-            self.setShape(0, 3, Shapes.G)
-            self.setColor(0, 3, Colors.GREEN)
-            self.setShape(0, 4, Shapes.H)
-            self.setColor(0, 4, Colors.BLUE)
-            self.setShape(0, 5, Shapes.T)
-            self.setColor(0, 5, Colors.MAGENTA)
-
-            self.setShape(1, 0, Shapes.S)
-            self.setColor(1, 0, Colors.RED)
-            self.setShape(1, 1, Shapes.u)
-            self.setColor(1, 1, Colors.YELLOW)
-            self.setShape(1, 2, Shapes.u)
-            self.setColor(1, 2, Colors.YELLOW)
-            self.setShape(1, 3, Shapes.E)
-            self.setColor(1, 3, Colors.GREEN)
-            self.setShape(1, 4, Shapes.E)
-            self.setColor(1, 4, Colors.CYAN)
-            self.setShape(1, 5, Shapes.P)
-            self.setColor(1, 5, Colors.BLUE)
-            self.setShape(1, 6, Shapes.E)
-            self.setColor(1, 6, Colors.MAGENTA)
-            self.setShape(1, 7, Shapes.R)
-            self.setColor(1, 7, Colors.WHITE)
-            #wait(8.0)
+        # if initScreen and rows > 1 and cols > 7:
+        #     self.setAllColor(Colors.BLACK)
+        #
+        #     self.setShape(0, 1, Shapes.L)
+        #     self.setColor(0, 1, Colors.RED)
+        #     self.setShape(0, 2, Shapes.I)
+        #     self.setColor(0, 2, Colors.YELLOW)
+        #     self.setShape(0, 3, Shapes.G)
+        #     self.setColor(0, 3, Colors.GREEN)
+        #     self.setShape(0, 4, Shapes.H)
+        #     self.setColor(0, 4, Colors.BLUE)
+        #     self.setShape(0, 5, Shapes.T)
+        #     self.setColor(0, 5, Colors.MAGENTA)
+        #
+        #     self.setShape(1, 0, Shapes.S)
+        #     self.setColor(1, 0, Colors.RED)
+        #     self.setShape(1, 1, Shapes.u)
+        #     self.setColor(1, 1, Colors.YELLOW)
+        #     self.setShape(1, 2, Shapes.u)
+        #     self.setColor(1, 2, Colors.YELLOW)
+        #     self.setShape(1, 3, Shapes.E)
+        #     self.setColor(1, 3, Colors.GREEN)
+        #     self.setShape(1, 4, Shapes.E)
+        #     self.setColor(1, 4, Colors.CYAN)
+        #     self.setShape(1, 5, Shapes.P)
+        #     self.setColor(1, 5, Colors.BLUE)
+        #     self.setShape(1, 6, Shapes.E)
+        #     self.setColor(1, 6, Colors.MAGENTA)
+        #     self.setShape(1, 7, Shapes.R)
+        #     self.setColor(1, 7, Colors.WHITE)
+        #     if self.simulatedFloor:
+        #         self.simulatedFloor.heartbeat()
+        #     wait(5.0)
 
     #this is to handle display functions only
     def heartbeat(self):
@@ -74,15 +78,6 @@ class Display():
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
             self.eventCallback(row, col, val)
-
-    def printFloor(self):
-        print("printing floor")
-        s = ''
-        for r in range(self.rows):
-            for c in range(self.cols):
-                s += ' ' + str(self.floor[r][c])
-            print(s)
-            s = ''
 
     def pollSensors(self):
         sensorsChanged = []
@@ -99,25 +94,25 @@ class Display():
             return []
         return sensorsChanged
 
+
     def set(self, row, col, shape, color):
-        #print("set:", row, col, shape, color)
-        #if shape is not 126:
-        #    print("set", row, col, bin(shape))
-        if self.console:
-            self.floor[row][col] = Shapes.hexToDigit(shape)
         if self.realFloor:
             self.realFloor.set(row, col, shape, color)
         if self.simulatedFloor:
-            self.simulatedFloor.setColor(row, col, color)
-            self.simulatedFloor.setShape(row, col, shape)
-        wait(0.005)
+            self.simulatedFloor.set(row, col, shape, color)
+        # wait(0.005)
+
+    #colors is a list of seven colors in A,...,G order of segments
+    def setCustom(self, row, col, segments):
+        if self.simulatedFloor:
+            self.simulatedFloor.setCustom(row, col, segments)
 
     def setColor(self, row, col, color):
         if self.realFloor:
             self.realFloor.setColor(row, col, color)
         if self.simulatedFloor:
             self.simulatedFloor.setColor(row, col, color)
-        wait(0.005)
+        # wait(0.005)
 
     def setAllColor(self, color):
         if self.realFloor:
@@ -128,7 +123,7 @@ class Display():
             self.realFloor.setShape(row, col, shape)
         if self.simulatedFloor:
             self.simulatedFloor.setShape(row, col, shape)
-        wait(0.005)
+        # wait(0.005)
 
     def setSegmentsCustom(self, row, col, colors):
         pass

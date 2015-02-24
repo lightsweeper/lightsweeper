@@ -1,16 +1,17 @@
 import time
 from minesweeper import Minesweeper
 from EightbitSoundboard import Soundboard
+from AnimTestbed import AnimTestbed
 from LSDisplay import Display
 from LSAudio import Audio
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
-    FRAME_GAP = 1 / 30
+    FPS = 30
     REAL_FLOOR = False
     SIMULATED_FLOOR = True
     CONSOLE = False
-    ROWS = 3
+    ROWS = 6
     COLUMNS = 8
 
     def __init__(self):
@@ -19,15 +20,17 @@ class GameEngine():
                                eventCallback = self.handleTileStepEvent, initScreen=True)
         self.newGame()
 
+        #these are for bookkeeping
+        self.frames = 0
+        self.frameRenderTime = 0
+
     def newGame(self):
-        self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
+        #self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
         #self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.game = AnimTestbed(self.display, self.audio, self.ROWS, self.COLUMNS)
 
     def beginLoop(self):
         while True:
-        #for i in range(0, 100):
-            #self.wait(self.FRAME_GAP)
-
             self.enterFrame()
 
     def handleTileStepEvent(self, row, col, val):
@@ -38,18 +41,21 @@ class GameEngine():
         pass
 
     def enterFrame(self):
+        self.frames += 1
         startEnterFrame = time.time()
         if not self.game.ended:
-            #startSensorsChanged = time.time()
             sensorsChanged = self.pollSensors()
-            #endSensorsChanged = time.time()
             self.game.heartbeat(sensorsChanged)
             self.display.heartbeat()
             self.audio.heartbeat()
         else:
             self.newGame()
-        #print("enterFrame() took" + str(time.time() - startEnterFrame) + "ms\n\tpollSensors():" +
-        #      str(endSensorsChanged - startSensorsChanged) + "ms")
+        # print("enterFrame() took" + str(time.time() - startEnterFrame) + " s\n\tpollSensors():" +
+        #       str(endSensorsChanged - startSensorsChanged) + " s")
+        self.frameRenderTime += (time.time() - startEnterFrame)
+        if self.frames % self.FPS == 0:
+            print(str(1.0 / (self.frameRenderTime / self.FPS)) + " FPS")
+            self.frameRenderTime = 0
 
     def wait(self, seconds):
         # self.pollSensors()
