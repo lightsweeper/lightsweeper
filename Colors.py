@@ -5,7 +5,8 @@ RED = 1
 GREEN = 2
 YELLOW = 3
 BLUE = 4
-VIOLET = 5  # Really more pink than violet
+MAGENTA = 5
+VIOLET = MAGENTA # Deprecated
 CYAN = 6
 WHITE = 7
 
@@ -33,6 +34,23 @@ def intToRGB(i):
         return (255, 255, 255)
     return (0,0,0)
 
-def RANDOM():
-    return random.randint(1, 7)
-
+def RANDOM(exclude=None):
+    def randC():
+        ourRandC = random.randint(1,7)
+        if exclude is not None:
+            try:
+                int(exclude)
+            except:
+                if ourRandC in exclude:
+                    return randC()
+                else:
+                    return ourRandC
+            finally:
+                if ourRandC is exclude:
+                    return randC()
+                else:
+                    return ourRandC
+        else:
+            return ourRandC
+    
+    return randC()
