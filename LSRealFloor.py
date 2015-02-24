@@ -46,6 +46,7 @@ class LSRealFloor():
 
         # Initialize the serial ports
         tilepile = lsOpen()
+        self.sharedSerials = tilepile.sharedSerials
 
         # Initialize calibration map
         self.calibrationMap = dict()
@@ -112,7 +113,6 @@ class LSRealFloor():
     def setSegmentsCustom(self, row, col, segments):
         tile = self.tileRows[row][col]
         tile.setSegmentsCustom(segments)
-
 
     def RAINBOWMODE(self, updateFrequency = 0.4):
         for row in self.tileRows:
@@ -244,18 +244,24 @@ class LSRealFloor():
         return self.tileList
 
     def clearboard(self):
-        zeroTile = LSRealTile(self.sharedSerials[0])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
-        zeroTile = LSRealTile(self.sharedSerials[1])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
-        zeroTile = LSRealTile(self.sharedSerials[2])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
-        zeroTile = LSRealTile(self.sharedSerials[3])
-        zeroTile.assignAddress(0)
-        zeroTile.blank()
+        for port in self.sharedSerials:
+            zeroTile = LSRealTile(port)
+            zeroTile.assignAddress(0)
+            zeroTile.blank()
+
+    # Old code:
+#        zeroTile = LSRealTile(self.sharedSerials[0])
+#        zeroTile.assignAddress(0)
+#        zeroTile.blank()
+#        zeroTile = LSRealTile(self.sharedSerials[1])
+#        zeroTile.assignAddress(0)
+#        zeroTile.blank()
+#        zeroTile = LSRealTile(self.sharedSerials[2])
+#        zeroTile.assignAddress(0)
+#        zeroTile.blank()
+#        zeroTile = LSRealTile(self.sharedSerials[3])
+#        zeroTile.assignAddress(0)
+#        zeroTile.blank()
 
 
     def RAINBOWMODE_NoAddress(self, interval):
