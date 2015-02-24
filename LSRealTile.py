@@ -1107,7 +1107,7 @@ def main():
     if theSerial != None:
         print("\nStarting tests...")
 
-        myTile = LSRealTile(tilepile.sharedSerials[port])
+        myTile = LSRealTile(tilepile.lsSerial(comPort))
 
         # start with tile address survey
         address = 8 # default address
