@@ -45,7 +45,7 @@ class LSRealFloor():
         print("RealFloor init", self.rows, self.cols)
 
         # Initialize the serial ports
-        self.tilepile = lsOpen()
+        self.realTiles = lsOpen()
 
         # Initialize calibration map
         self.calibrationMap = dict()
@@ -62,7 +62,7 @@ class LSRealFloor():
             self.tileAddresses = []
             for col in conf.board[row]:
                 (port, address) = conf.board[row][col]
-                tile = LSRealTile(self.tilepile.sharedSerials[port])
+                tile = LSRealTile(self.realTiles.sharedSerials[port])
                 tile.comNumber = port
                 self.calibrationMap[address] = [127,127]
                 tile.active = 0
@@ -88,8 +88,8 @@ class LSRealFloor():
             self.eventCallback(row, col, val)
 
     def setAllColor(self, color):
-        for port in self.tilepile.sharedSerials.keys():
-            zeroTile = LSRealTile(self.tilepile.sharedSerials[port])
+        for port in self.realTiles.sharedSerials.keys():
+            zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
 
@@ -101,8 +101,8 @@ class LSRealFloor():
 
 
     def setAllShape(self, shape):
-        for port in self.tilepile.sharedSerials.keys():
-            zeroTile = LSRealTile(self.tilepile.sharedSerials[port])
+        for port in self.realTiles.sharedSerials.keys():
+            zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
 
