@@ -18,6 +18,15 @@ class Soundboard():
         self.audio.loadSound('8bit/casio_C_4.wav', 'casioC4')
         self.board = None
         #self.audio.playSound('StartUp.wav')
+        shapeCounter = 0x20
+        for i in range(0, rows):
+            for j in range(0, cols):
+                #print("{:d},{:d} set to 0x{:b}".format(i,j,shapeCounter))
+                #self.display.setShape(i, j, (2 * 2) + (6 * 2) + (3 * 2) + (1 * 2) + (5 * 2))
+                self.display.setShape(i,j,Shapes.digitToLetter(j))
+                self.display.setColor(i, j, i + 1)
+                print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
+                shapeCounter += 1
 
     def heartbeat(self, sensorsChanged):
         #if random.randint(0, 10) > 8:

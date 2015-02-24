@@ -25,6 +25,7 @@ class Minesweeper():
         self.audio.loadSong('BetweenGames3.wav', 'between3')
         self.audio.loadSong('BetweenGames4.wav', 'between4')
         self.audio.shuffleSongs()
+        #handles events is required to be defined
         self.handlesEvents = False
         self.audio.setSongVolume(0)
         self.songsQuiet = False

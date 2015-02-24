@@ -73,8 +73,8 @@ class LSRealFloor():
                 tile.setShape(Shapes.ZERO)
                 tiles.append(tile)
                 self.tileList.append(tile)
-                print("Address assigned:", tile.getAddress())
-                wait(.1)
+                #print("Address assigned:", tile.getAddress())
+                wait(.01)
             self.tileRows.append(tiles)
             
         return

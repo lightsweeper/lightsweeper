@@ -3,9 +3,7 @@ from LSEmulateFloor import EmulateFloor
 import Shapes
 import Colors
 import random
-import sys
 from Move import Move
-import pygame
 import time
 
 #handles animations as well as allowing a common controller for displaying
@@ -30,6 +28,8 @@ class Display():
         if simulatedFloor:
             print("Display instantiating simulated floor")
             self.simulatedFloor = EmulateFloor(row, cols)
+        else:
+            self.simulatedFloor = None
 
     #this is to handle display functions only
     def heartbeat(self):

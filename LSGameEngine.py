@@ -8,7 +8,7 @@ from LSAudio import Audio
 class GameEngine():
     FRAME_GAP = 1 / 30
     REAL_FLOOR = True
-    SIMULATED_FLOOR = True
+    SIMULATED_FLOOR = False
     CONSOLE = False
     ROWS = 3
     COLUMNS = 8
