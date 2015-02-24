@@ -1,21 +1,23 @@
 import pygame
 import random
 
+
 #this class serves as a common controller for audio
 class Audio():
     SONG_END = pygame.USEREVENT + 1
 
-    def __init__(self):
-        pygame.mixer.init()
-        pygame.init()
+    def __init__(self, initSound=True):
+        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
         self.soundVolume = 1.0
         self.loadedSongs = []
         self.soundDictionary = {}
+        self.playSound('StartUp.wav')
 
     def heartbeat(self):
-        for event in pygame.event.get():
-            if event.type == self.SONG_END:
-                self.shuffleSongs()
+        #for event in pygame.event.get():
+        #    if event.type == self.SONG_END:
+        #        self.shuffleSongs()
+        pass
 
     def loadSong(self, filename, name):
         pygame.mixer.music.load("sounds/" + filename)
@@ -23,16 +25,18 @@ class Audio():
         pass
 
     def playSong(self, filename, loops=0):
-        # pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
-        # sound = pygame.mixer.Sound('Time_to_coffee.wav').play()
+        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=256)
+        sound = pygame.mixer.Sound('Time_to_coffee.wav').play()
         pygame.mixer.music.load("sounds/" + filename)
         pygame.mixer.music.play(loops)
+        pass
 
     def stopSong(self, fadeOut = 0.1):
         pass
 
     def setSongVolume(self, vol):
         pygame.mixer.music.set_volume(vol)
+        pass
 
     #plays loaded songs in a random order
     def shuffleSongs(self):
@@ -53,8 +57,11 @@ class Audio():
         sound = pygame.mixer.Sound("sounds/" + filename)
         sound.set_volume(self.soundVolume)
         pygame.mixer.Sound.play(sound)
-        #pygame.mixer.music.load("sounds/" + filename)
-        #pygame.mixer.music.play(1)
+        try:
+            pygame.mixer.music.load("sounds/" + filename)
+            pygame.mixer.music.play(1)
+        except:
+            print("Could not load file " + filename)
 
     def playLoadedSound(self, name):
         sound = self.soundDictionary[name]
@@ -64,5 +71,6 @@ class Audio():
         pass
 
     def setSoundVolume(self, vol):
-        print("setting sound vol:" + str(vol))
-        self.soundVolume = vol
+        #print("setting sound vol:" + str(vol))
+        #self.soundVolume = vol
+        pass

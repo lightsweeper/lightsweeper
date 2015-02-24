@@ -3,33 +3,64 @@ from LSEmulateFloor import EmulateFloor
 import Shapes
 import Colors
 import random
-import sys
 from Move import Move
-import pygame
 import time
 
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
-    def __init__(self, row, cols, realFloor = False, simulatedFloor = False, console = False, eventCallback=None):
-        self.row = row
+    def __init__(self, rows, cols, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True):
+        self.rows = rows
         self.cols = cols
         self.eventCallback = eventCallback
         if realFloor:
             print("Display instantiating real floor")
-            self.realFloor = LSRealFloor(row, cols, eventCallback=self.handleTileStepEvent)
+            self.realFloor = LSRealFloor(rows, cols, eventCallback=self.handleTileStepEvent)
         else:
             self.realFloor = None
         self.floor = []
-        for r in range(row):
+        for r in range(rows):
             self.floor.append([])
             for c in range(cols):
                 self.floor[r].append('-')
         self.console = console
         if simulatedFloor:
             print("Display instantiating simulated floor")
-            self.simulatedFloor = EmulateFloor(row, cols)
+            self.simulatedFloor = EmulateFloor(rows, cols)
+        else:
+            self.simulatedFloor = None
+        if initScreen and rows > 1 and cols > 7:
+            self.setAllColor(Colors.BLACK)
+
+            self.setShape(0, 1, Shapes.L)
+            self.setColor(0, 1, Colors.RED)
+            self.setShape(0, 2, Shapes.I)
+            self.setColor(0, 2, Colors.YELLOW)
+            self.setShape(0, 3, Shapes.G)
+            self.setColor(0, 3, Colors.GREEN)
+            self.setShape(0, 4, Shapes.H)
+            self.setColor(0, 4, Colors.BLUE)
+            self.setShape(0, 5, Shapes.T)
+            self.setColor(0, 5, Colors.MAGENTA)
+
+            self.setShape(1, 0, Shapes.S)
+            self.setColor(1, 0, Colors.RED)
+            self.setShape(1, 1, Shapes.u)
+            self.setColor(1, 1, Colors.YELLOW)
+            self.setShape(1, 2, Shapes.u)
+            self.setColor(1, 2, Colors.YELLOW)
+            self.setShape(1, 3, Shapes.E)
+            self.setColor(1, 3, Colors.GREEN)
+            self.setShape(1, 4, Shapes.E)
+            self.setColor(1, 4, Colors.CYAN)
+            self.setShape(1, 5, Shapes.P)
+            self.setColor(1, 5, Colors.BLUE)
+            self.setShape(1, 6, Shapes.E)
+            self.setColor(1, 6, Colors.MAGENTA)
+            self.setShape(1, 7, Shapes.R)
+            self.setColor(1, 7, Colors.WHITE)
+            wait(8.0)
 
     #this is to handle display functions only
     def heartbeat(self):
@@ -48,8 +79,8 @@ class Display():
     def printFloor(self):
         print("printing floor")
         s = ''
-        for r in range(self.row):
-            for c in range(self.col):
+        for r in range(self.rows):
+            for c in range(self.cols):
                 s += ' ' + str(self.floor[r][c])
             print(s)
             s = ''
@@ -88,6 +119,9 @@ class Display():
         if self.simulatedFloor:
             self.simulatedFloor.setColor(row, col, color)
         wait(0.005)
+    def setAllColor(self, color):
+        if self.realFloor:
+            self.realFloor.setAllColor(color)
 
     def setShape(self, row, col, shape):
         if self.realFloor:
@@ -95,9 +129,11 @@ class Display():
         if self.simulatedFloor:
             self.simulatedFloor.setShape(row, col, shape)
         wait(0.005)
+    def setSegmentsCustom(self, row, col, colors):
+        pass
 
     def setFrame(self, frame):
-        for row in range(self.row):
+        for row in range(self.rows):
             for col in range(self.cols):
                 #if frame.hasChangesFor(row, col):
                 if frame.hasColorChangesFor(row, col):
@@ -105,8 +141,7 @@ class Display():
                 if frame.hasShapeChangesFor(row, col):
                     self.setShape(row, col, frame.getShape(row, col))
 
-    def setSegmentsCustom(self, row, col, colors):
-        pass
+
 
     def add(self, row, col, shape, color):
         pass

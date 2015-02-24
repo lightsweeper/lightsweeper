@@ -17,7 +17,11 @@ class Soundboard():
         self.audio.setSongVolume(0)
         self.audio.loadSound('8bit/casio_C_4.wav', 'casioC4')
         self.board = None
-        #self.audio.playSound('StartUp.wav')
+        for i in range(0, rows):
+            for j in range(0, cols):
+                self.display.setShape(i,j,Shapes.digitToLetter(j))
+                self.display.setColor(i, j, i + 1)
+                print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
 
     def heartbeat(self, sensorsChanged):
         #if random.randint(0, 10) > 8:

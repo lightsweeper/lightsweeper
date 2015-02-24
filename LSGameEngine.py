@@ -8,15 +8,15 @@ from LSAudio import Audio
 class GameEngine():
     FRAME_GAP = 1 / 30
     REAL_FLOOR = True
-    SIMULATED_FLOOR = True
+    SIMULATED_FLOOR = False
     CONSOLE = False
     ROWS = 3
     COLUMNS = 8
 
     def __init__(self):
+        self.audio = Audio(initSound=True)
         self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
-                               eventCallback = self.handleTileStepEvent)
-        self.audio = Audio()
+                               eventCallback = self.handleTileStepEvent, initScreen=True)
         self.newGame()
 
     def newGame(self):
