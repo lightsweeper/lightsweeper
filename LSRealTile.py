@@ -521,9 +521,11 @@ class lsOpen:
         if self.numPorts is 0:
             print("Cannot find any lightsweeper tiles")
         elif self.numPorts is 1:
-            print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
+       #     print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
+            pass
         else:
-            print("There are {:d} valid serial ports -> {:s}".format(self.numPorts,repr([port for port in self.lsMatrix.keys()])))
+       #     print("There are {:d} valid serial ports -> {:s}".format(self.numPorts,repr([port for port in self.lsMatrix.keys()])))
+            pass
 
 
     def lsSerial(self, port, baud=19200, timeout=0.01):

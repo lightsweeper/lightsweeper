@@ -42,7 +42,6 @@ class LSRealFloor():
         self.rows = conf.rows
         self.cols = conf.cols
         self.eventCallback = eventCallback
-        print("RealFloor init", self.rows, self.cols)
 
         # Initialize the serial ports
         self.realTiles = lsOpen()
@@ -55,8 +54,7 @@ class LSRealFloor():
         self.tileList = []
         # double array of tile objects
         self.tileRows = []
-        print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
-                
+        
         for row in conf.board:
             tiles = []
             self.tileAddresses = []
@@ -73,10 +71,11 @@ class LSRealFloor():
                 tile.setShape(Shapes.ZERO)
                 tiles.append(tile)
                 self.tileList.append(tile)
-                #print("Address assigned:", tile.getAddress())
-                wait(.01)
+                wait(.05)
             self.tileRows.append(tiles)
-        print("Clearing floor...")
+        print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
+
+        print("\nClearing floor...")
         self.clearBoard()
 
 
@@ -92,12 +91,6 @@ class LSRealFloor():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
-
-# Old code:
-  #      for row in self.tileRows:
-  #          for tile in row:
-  #              tile.setColor(color)
-  #              wait(0.005)
 
 
     def setAllShape(self, shape):
@@ -140,50 +133,6 @@ class LSRealFloor():
         for COLOR in RAINBOW:
             self.setAllColor(COLOR)
             wait(updateFrequency)
-
-    # Old code:
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.RED)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.YELLOW)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.GREEN)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.CYAN)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.BLUE)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.VIOLET)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
-#        for row in self.tileRows:
-#            for tile in row:
-#                tile.setColor(Colors.WHITE)
-#                tile.setShape(126)
-#                wait(OURWAIT)
-#        wait(updateFrequency)
 
 
     def printAddresses(self):
@@ -230,15 +179,9 @@ class LSRealFloor():
                     tile.active = 0
               #      print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
         #print("sensor polls took " + str(sensorPoll) + "ms")
-                    
-    # Old code:
-#            val = tile.sensorStatus()
-#            if val < self.SENSOR_THRESHOLD:
-#                rowCol = self.addressToRowColumn[(tile.address, tile.comNumber)]
-#                move = Move(rowCol[0], rowCol[1], val)
-#                sensorsChanged.append(move)
-
         return sensorsChanged
+
+
 
     def _getTileList(self,row,column):
     # __init__ makes this for us now:
@@ -270,34 +213,13 @@ class LSRealFloor():
 #        return tileList
         return self.tileList
 
+
     def clearBoard(self):
         for port in self.sharedSerials:
             zeroTile = LSRealTile(port)
             zeroTile.assignAddress(0)
             zeroTile.blank()
 
-    # Old code:
-#        zeroTile = LSRealTile(self.sharedSerials[0])
-#        zeroTile.assignAddress(0)
-#        zeroTile.blank()
-#        zeroTile = LSRealTile(self.sharedSerials[1])
-#        zeroTile.assignAddress(0)
-#        zeroTile.blank()
-#        zeroTile = LSRealTile(self.sharedSerials[2])
-#        zeroTile.assignAddress(0)
-#        zeroTile.blank()
-#        zeroTile = LSRealTile(self.sharedSerials[3])
-#        zeroTile.assignAddress(0)
-#        zeroTile.blank()
-
-
-    def RAINBOWMODE_NoAddress(self, interval):
-        #print("RAINBOWMODE: BLIND EDITION")
-        for ii in range(10):
-            randTile = LSRealTile(self.sharedSerials[random.randint(0, 3)])
-            randTile.assignAddress(random.randint(0, 200))
-            randTile.setColor(Colors.RANDOM())
-            randTile.setShape(random.randint(0, 127))
 
 
     def pollSensors_NoAddress(self, limit):
@@ -345,6 +267,7 @@ def wait(seconds):
 
 if __name__ == "__main__":
     def HYPERRAINBOWMODE(oscLow = 1, oscHigh = 30):
+        print("HYPER RAINBOW MODE!!")
         def minus(i):
             return i-1
         def plus(i):
