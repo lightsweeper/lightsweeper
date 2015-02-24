@@ -23,24 +23,16 @@ class LSRealFloor():
     sharedSerials = dict()
 
     def __init__(self, rows=0, cols=0, serials=None, configFile=None, eventCallback=None):
+        
+    # Load the configuration
         if configFile is None:
-            try:
-                floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
-            except:
-                raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
-            if len(floorFiles) is 1:
-                fileName = floorFiles[0]
-            else:
-                print("\nFound multiple configurations: \n")
-                fileName = userSelect(floorFiles, "\nWhich floor configuration would you like to use? ")
+            conf = lsFloorConfig()
         else:
-            fileName = configFile
-            
+            conf = lsFloorConfig(configFile)
 
-        # Load the configuration
-        conf = lsFloorConfig(fileName)
         self.rows = conf.rows
         self.cols = conf.cols
+        
         self.eventCallback = eventCallback
 
         # Initialize the serial ports

@@ -25,9 +25,9 @@ class GameEngine():
         self.frameRenderTime = 0
 
     def newGame(self):
-        #self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
         #self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
-        self.game = AnimTestbed(self.display, self.audio, self.ROWS, self.COLUMNS)
+        #self.game = AnimTestbed(self.display, self.audio, self.ROWS, self.COLUMNS)
 
     def beginLoop(self):
         while True:
