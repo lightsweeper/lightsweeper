@@ -100,6 +100,13 @@ class LSRealFloor():
   #              wait(0.005)
 
 
+    def setAllShape(self, shape):
+        for port in self.sharedSerials:
+            zeroTile = LSRealTile(port)
+            zeroTile.assignAddress(0)
+            zeroTile.setShape(shape)
+
+
     def set(self, row, col, colors):
         tile = self.tileRows[row][col];
         raise Exception("Not yet implemented!")
@@ -121,48 +128,62 @@ class LSRealFloor():
         tile.setSegmentsCustom(segments)
 
     def RAINBOWMODE(self, updateFrequency = 0.4):
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.RED)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.YELLOW)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.GREEN)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.CYAN)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.BLUE)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.VIOLET)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(Colors.WHITE)
-                tile.setShape(126)
-                wait(OURWAIT)
-        wait(updateFrequency)
+        self.setAllShape(Shapes.EIGHT)
+        RAINBOW = [Colors.RED,
+                Colors.YELLOW,
+                Colors.GREEN,
+                Colors.CYAN,
+                Colors.BLUE,
+                Colors.MAGENTA,
+                Colors.WHITE]
+
+        for COLOR in RAINBOW:
+            self.setAllColor(COLOR)
+            wait(updateFrequency)
+
+    # Old code:
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.RED)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.YELLOW)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.GREEN)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.CYAN)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.BLUE)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.VIOLET)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
+#        for row in self.tileRows:
+#            for tile in row:
+#                tile.setColor(Colors.WHITE)
+#                tile.setShape(126)
+#                wait(OURWAIT)
+#        wait(updateFrequency)
 
 
     def printAddresses(self):
