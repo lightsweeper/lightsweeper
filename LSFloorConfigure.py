@@ -77,7 +77,6 @@ class lsFloorConfig:
                     raise IOError("No floor configuration found. Try running LSFloorConfigure.py or calling lsFloorConfig with some arguments.")
                 if len(floorFiles) is 1:
                     self.fileName = self._formatFileName(floorFiles[0])
-                    print("Using configuration at {:s}".format(self.fileName))
                 elif len(floorFiles) > 1:
                     print("\nFound multiple configurations: \n")
                     self.fileName = self._formatFileName(userSelect(floorFiles, "\nWhich floor configuration would you like to use? "))
