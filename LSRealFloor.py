@@ -88,10 +88,16 @@ class LSRealFloor():
             self.eventCallback(row, col, val)
 
     def setAllColor(self, color):
-        for row in self.tileRows:
-            for tile in row:
-                tile.setColor(color)
-                wait(0.005)
+        for port in self.sharedSerials:
+            zeroTile = LSRealTile(port)
+            zeroTile.assignAddress(0)
+            zeroTile.setColor(color)
+
+# Old code:
+  #      for row in self.tileRows:
+  #          for tile in row:
+  #              tile.setColor(color)
+  #              wait(0.005)
 
 
     def set(self, row, col, colors):

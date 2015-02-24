@@ -355,6 +355,7 @@ class LSRealTile(LSTileAPI):
  #       cmd = FLIP_OFF
  #       self.__tileWrite([cmd])
 
+    # TODO: Move this functionality to the "FLIP-ON" command in firmware
     def flip(self):
         tile_config = self.eepromRead(EE_CONFIG)
         flip_config = ord(tile_config) ^ STATUS_FLIP_MASK
