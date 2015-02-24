@@ -60,7 +60,10 @@ if __name__ == '__main__':
 # Select com port
 
     lsls = lsOpen()
-   # print(lsls.lsMatrix) # Debugging
+
+    if lsls.numPorts is 0:
+        print("Please attach some physical Lightsweeper tiles!")
+        exit(1)
 
     if args['-p']:
         if args['-p'] not in lsls.availPorts():
@@ -92,7 +95,10 @@ if __name__ == '__main__':
         if len(comList) is 1:
             com = comList[0]
         if len(comList) > 1:
-            com = lsls.selectPort(comList)
+            if args['-p']:
+                com = args['-p']
+            else:
+                com = lsls.selectPort(comList)
         print("Connecting to tile at address: " + str(address) + "...")
     else:
         if args['-p']:

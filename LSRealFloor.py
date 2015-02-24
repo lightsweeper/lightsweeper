@@ -45,8 +45,7 @@ class LSRealFloor():
         print("RealFloor init", self.rows, self.cols)
 
         # Initialize the serial ports
-        tilepile = lsOpen()
-        self.sharedSerials = tilepile.sharedSerials
+        self.tilepile = lsOpen()
 
         # Initialize calibration map
         self.calibrationMap = dict()
@@ -63,7 +62,7 @@ class LSRealFloor():
             self.tileAddresses = []
             for col in conf.board[row]:
                 (port, address) = conf.board[row][col]
-                tile = LSRealTile(tilepile.sharedSerials[port])
+                tile = LSRealTile(self.tilepile.sharedSerials[port])
                 tile.comNumber = port
                 self.calibrationMap[address] = [127,127]
                 tile.active = 0
@@ -77,8 +76,9 @@ class LSRealFloor():
                 #print("Address assigned:", tile.getAddress())
                 wait(.01)
             self.tileRows.append(tiles)
-            
-        return
+        print("Clearing floor...")
+        self.clearBoard()
+
 
     def heartbeat(self):
         pass
@@ -88,8 +88,8 @@ class LSRealFloor():
             self.eventCallback(row, col, val)
 
     def setAllColor(self, color):
-        for port in self.sharedSerials:
-            zeroTile = LSRealTile(port)
+        for port in self.tilepile.sharedSerials.keys():
+            zeroTile = LSRealTile(self.tilepile.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
 
@@ -101,8 +101,8 @@ class LSRealFloor():
 
 
     def setAllShape(self, shape):
-        for port in self.sharedSerials:
-            zeroTile = LSRealTile(port)
+        for port in self.tilepile.sharedSerials.keys():
+            zeroTile = LSRealTile(self.tilepile.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
 
@@ -270,7 +270,7 @@ class LSRealFloor():
 #        return tileList
         return self.tileList
 
-    def clearboard(self):
+    def clearBoard(self):
         for port in self.sharedSerials:
             zeroTile = LSRealTile(port)
             zeroTile.assignAddress(0)
@@ -344,12 +344,34 @@ def wait(seconds):
         pass
 
 if __name__ == "__main__":
+    def HYPERRAINBOWMODE(oscLow = 1, oscHigh = 30):
+        def minus(i):
+            return i-1
+        def plus(i):
+            return i+1
+        i = 0
+        while True:  #Hyper rainbow mode
+            floor.RAINBOWMODE(i * .005)
+            if i > oscHigh:
+                fun = minus
+            if i < oscLow:
+                fun = plus
+            i = fun(i)
+            
+    def NOISESWEEPER(noise=.005):
+        import random
+        i = random.random()
+        while True:  #Hyper rainbow mode
+            floor.RAINBOWMODE(i * noise)
+            i = random.random()
+            print(i)    
+
+
     print("todo: testing RealFloor")
     floor = LSRealFloor()
     #audio.playSound("8bit/46.wav")
     #wait(5)
-    print("Clearing floor")
     #call not implemented yet
     #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])
-    while True:
-        floor.RAINBOWMODE()
+    HYPERRAINBOWMODE()
+    
