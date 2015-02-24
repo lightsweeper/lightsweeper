@@ -132,12 +132,7 @@ if __name__ == '__main__':
                 print("Please specify an address other than 0.")
                 exit()
             print("Flipping tile at address " + str(address))
-            # myTile.flip() # Also myTile.unflip() -- not implemented nicely
-            # Perm flip:
-            tile_config = myTile.eepromRead(EE_CONFIG)
-            flip_config = ord(tile_config) ^ STATUS_FLIP_MASK
-            myTile.eepromWrite(EE_CONFIG,flip_config)
-            myTile.reset()
+            myTile.flip()
         elif tile_command == 'reset':
             print("Resetting tile at address " + str(address))
             myTile.reset()

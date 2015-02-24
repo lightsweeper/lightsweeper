@@ -346,13 +346,20 @@ class LSRealTile(LSTileAPI):
     def setAnimation(self):
         raise NotImplementedError()
 
-    def flip(self):
-        cmd = FLIP_ON  # wire API also has FLIP_OFF
-        self.__tileWrite([cmd])
+# These should be implemented as animations
+ #   def flip(self):
+ #       cmd = FLIP_ON  # wire API also has FLIP_OFF
+ #       self.__tileWrite([cmd])
 
-    def unflip(self):
-        cmd = FLIP_OFF
-        self.__tileWrite([cmd])
+ #   def unflip(self):
+ #       cmd = FLIP_OFF
+ #       self.__tileWrite([cmd])
+
+    def flip(self):
+        tile_config = self.eepromRead(EE_CONFIG)
+        flip_config = ord(tile_config) ^ STATUS_FLIP_MASK
+        self.eepromWrite(EE_CONFIG,flip_config)
+        self.reset()
 
     def status(self):
         raise NotImplementedError()
