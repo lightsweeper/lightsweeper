@@ -29,6 +29,7 @@ F = SEG_A + SEG_E + SEG_F + SEG_G
 G = SEG_A + SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
 H = SEG_C + SEG_E + SEG_F + SEG_G
 I = SEG_B + SEG_C
+i = SEG_C
 J = SEG_B + SEG_C + SEG_D
 K = SEG_B + SEG_C + SEG_E + SEG_F + SEG_G
 L = SEG_D + SEG_E + SEG_F
