@@ -26,7 +26,7 @@ class Audio():
 
     def playSong(self, filename, loops=0):
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=256)
-        sound = pygame.mixer.Sound('Time_to_coffee.wav').play()
+  #      sound = pygame.mixer.Sound('Time_to_coffee.wav').play()
         pygame.mixer.music.load("sounds/" + filename)
         pygame.mixer.music.play(loops)
         pass

@@ -297,4 +297,5 @@ if __name__ == "__main__":
     #call not implemented yet
     #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])
     HYPERRAINBOWMODE()
+   # NOISESWEEPER()
     
