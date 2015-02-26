@@ -346,13 +346,21 @@ class LSRealTile(LSTileAPI):
     def setAnimation(self):
         raise NotImplementedError()
 
-    def flip(self):
-        cmd = FLIP_ON  # wire API also has FLIP_OFF
-        self.__tileWrite([cmd])
+# These should be implemented as animations
+ #   def flip(self):
+ #       cmd = FLIP_ON  # wire API also has FLIP_OFF
+ #       self.__tileWrite([cmd])
 
-    def unflip(self):
-        cmd = FLIP_OFF
-        self.__tileWrite([cmd])
+ #   def unflip(self):
+ #       cmd = FLIP_OFF
+ #       self.__tileWrite([cmd])
+
+    # TODO: Move this functionality to the "FLIP-ON" command in firmware
+    def flip(self):
+        tile_config = self.eepromRead(EE_CONFIG)
+        flip_config = ord(tile_config) ^ STATUS_FLIP_MASK
+        self.eepromWrite(EE_CONFIG,flip_config)
+        self.reset()
 
     def status(self):
         raise NotImplementedError()
@@ -497,19 +505,27 @@ class lsOpen:
     
     def __init__(self):
         self.sharedSerials = dict()
-                
-        self.lsMatrix = self.portmap()
-
+        
+        try:
+            self.lsMatrix = self.portmap()
+        except Exception as e:
+            self.lsMatrix = dict()
     #    for port in self.lsMatrix:
     #        newSerial = self.lsSerial(port)
     #        self.sharedSerials[newSerial.name] = (newSerial)
+    
+        self.numPorts = len(self.lsMatrix)
+        
+       # print(repr(list(self.validPorts()))) # Debugging
 
-        if len(self.lsMatrix) is 0:
+        if self.numPorts is 0:
             print("Cannot find any lightsweeper tiles")
-        if len(self.lsMatrix) is 1:
-            print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
-        if len(self.lsMatrix) > 1:
-            print("There are {:d} valid serial ports -> {:s}".format(int(len(self.lsMatrix)),repr([port for port in self.lsMatrix.keys()])))
+        elif self.numPorts is 1:
+       #     print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
+            pass
+        else:
+       #     print("There are {:d} valid serial ports -> {:s}".format(self.numPorts,repr([port for port in self.lsMatrix.keys()])))
+            pass
 
 
     def lsSerial(self, port, baud=19200, timeout=0.01):
@@ -535,11 +551,14 @@ class lsOpen:
         """
             Returns true if port has any lightsweeper objects listening
         """
+        
+        try:
+            testTile = LSRealTile(self.lsSerial(port))
+        except serial.SerialException:
+            return False
+        except KeyError as e:
+            return False
 
-    #    try:
-        testTile = LSRealTile(self.lsSerial(port))
-    #    except serial.SerialException:
-    #        return False
         testTile.assignAddress(0)
         if testTile.version():
             return True
@@ -620,10 +639,10 @@ class lsOpen:
             posPorts = enumerate(sorted(portList))
         
         # Prompts the user to select a valid serial port then returns it
-        print("The following serial ports are available:")
+        print("\nThe following serial ports are available:\n")
         for key,val in posPorts:
             print("     [" + repr(key) + "]    " + repr(val) + "  (" + repr(len(self.lsMatrix.get(val))) + " attached tiles)")
-        userPort = input("Which one do you want? ")
+        userPort = input("\nWhich one do you want? ")
         while checkinput(userPort) is False:
             print("Invalid selection.")
             userPort = input("Which one do you want? ")

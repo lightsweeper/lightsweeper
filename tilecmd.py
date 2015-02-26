@@ -60,7 +60,10 @@ if __name__ == '__main__':
 # Select com port
 
     lsls = lsOpen()
-   # print(lsls.lsMatrix) # Debugging
+
+    if lsls.numPorts is 0:
+        print("Please attach some physical Lightsweeper tiles!")
+        exit(1)
 
     if args['-p']:
         if args['-p'] not in lsls.availPorts():
@@ -92,7 +95,10 @@ if __name__ == '__main__':
         if len(comList) is 1:
             com = comList[0]
         if len(comList) > 1:
-            com = lsls.selectPort(comList)
+            if args['-p']:
+                com = args['-p']
+            else:
+                com = lsls.selectPort(comList)
         print("Connecting to tile at address: " + str(address) + "...")
     else:
         if args['-p']:
@@ -132,12 +138,7 @@ if __name__ == '__main__':
                 print("Please specify an address other than 0.")
                 exit()
             print("Flipping tile at address " + str(address))
-            # myTile.flip() # Also myTile.unflip() -- not implemented nicely
-            # Perm flip:
-            tile_config = myTile.eepromRead(EE_CONFIG)
-            flip_config = ord(tile_config) ^ STATUS_FLIP_MASK
-            myTile.eepromWrite(EE_CONFIG,flip_config)
-            myTile.reset()
+            myTile.flip()
         elif tile_command == 'reset':
             print("Resetting tile at address " + str(address))
             myTile.reset()

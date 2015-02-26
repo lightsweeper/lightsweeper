@@ -57,22 +57,32 @@ class lsFloorConfig:
                 if rows is not None and cols is not None:
                     self.config = self._createVirtualConfig(rows, cols)
                 else:
-                    print(e)
-                    raise
-            except CannotParseError as e:
-                print(e)
-                raise
-            except IOError as e:
-                print(e)
-                raise
-            except InvalidConfigError as e:
-                print(e)
-                raise
+                    if rows is not None or cols is not None:
+                        raise AttributeError("lsFloorConfig: You must specify both a number of rows and a number of columns.")
+                    else:
+                        print(e)
+                        raise
             finally:
                 self.makeFloor()
         else:
-            self.rows = rows
-            self.cols = cols
+            if rows is not None or cols is not None:
+                if rows is not None and cols is not None:
+                    self.rows = rows
+                    self.cols = cols
+                else:
+                    raise AttributeError("lsFloorConfig: You must specify both a number of rows and a number of columns.")
+            else:
+                floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
+                if len(floorFiles) is 0:
+                    raise IOError("No floor configuration found. Try running LSFloorConfigure.py or calling lsFloorConfig with some arguments.")
+                if len(floorFiles) is 1:
+                    self.fileName = self._formatFileName(floorFiles[0])
+                elif len(floorFiles) > 1:
+                    print("\nFound multiple configurations: \n")
+                    self.fileName = self._formatFileName(userSelect(floorFiles, "\nWhich floor configuration would you like to use? "))
+            self.loadConfig(self.fileName)
+            self.makeFloor()
+                    
     
     def makeFloor(self):
         """
