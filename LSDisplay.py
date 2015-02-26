@@ -33,24 +33,43 @@ class Display():
             self.simulatedFloor = None
         if initScreen and rows > 1 and cols > 7:
             self.setAllColor(Colors.BLACK)
-
+            #LIGHTSWEEPER
             self.set(0, 1, Shapes.L, Colors.RED)
             self.set(0, 2, Shapes.I, Colors.YELLOW)
             self.set(0, 3, Shapes.G, Colors.GREEN)
             self.set(0, 4, Shapes.H, Colors.BLUE)
             self.set(0, 5, Shapes.T, Colors.MAGENTA)
-
             self.set(1, 0, Shapes.S, Colors.RED)
             self.set(1, 1, Shapes.u, Colors.YELLOW)
-            self.set(1, 2, Shapes.u, Colors.YELLOW)
+            self.set(1, 2, Shapes.V, Colors.YELLOW)
             self.set(1, 3, Shapes.E, Colors.GREEN)
             self.set(1, 4, Shapes.E, Colors.CYAN)
             self.set(1, 5, Shapes.P, Colors.BLUE)
             self.set(1, 6, Shapes.E, Colors.MAGENTA)
             self.set(1, 7, Shapes.R, Colors.WHITE)
+
+            # self.set(0, 1, Shapes.G, Colors.RED)
+            # self.set(0, 2, Shapes.O, Colors.YELLOW)
+            # self.set(0, 3, Shapes.O, Colors.GREEN)
+            # self.set(0, 4, Shapes.D, Colors.CYAN)
+            #
+            # self.set(1, 0, Shapes.R, Colors.RED)
+            # self.set(1, 1, Shapes.N, Colors.RED)
+            # self.set(1, 2, Shapes.O, Colors.YELLOW)
+            # self.set(1, 3, Shapes.R, Colors.GREEN)
+            # self.set(1, 4, Shapes.N, Colors.CYAN)
+            # self.set(1, 5, Shapes.i, Colors.BLUE)
+            # self.set(1, 6, Shapes.N, Colors.MAGENTA)
+            # self.set(1, 7, Shapes.G, Colors.WHITE)
+            #
+            # self.set(2, 1, Shapes.D, Colors.RED)
+            # self.set(2, 2, Shapes.A, Colors.YELLOW)
+            # self.set(2, 3, Shapes.U, Colors.GREEN)
+            # self.set(2, 4, Shapes.E, Colors.CYAN)
+
             if self.simulatedFloor:
                 self.simulatedFloor.heartbeat()
-            wait(5.0)
+            wait(6.0)
 
     #this is to handle display functions only
     def heartbeat(self):
