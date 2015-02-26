@@ -7,11 +7,13 @@ import Colors
 import Shapes
 from Frame import Frame
 import time
+import LSGameEngine
 
 class Minesweeper():
     def __init__(self, display, audio, rows, cols):
         board = Board()
-        mines = random.randint(int(cols / 2), cols + 2)
+        mines = random.randint(int(cols*rows*.1), int(cols*rows*.3))
+        print("{:d} mines...".format(mines))
         board.create_board(rows, cols, mines)
         self.board = board
         self.audio = audio
@@ -45,9 +47,9 @@ class Minesweeper():
                 if self.board.board[move.row][move.col].is_visible:
                     playSound = False
                 if self.firstStep and self.board.board[move.row][move.col].is_mine:
-                    self.firstStep = False
-                    #self.board.board[move.row][move.col].is_mine = False
-                    #print("Saved from the mine!")
+                    self.board.board[move.row][move.col].is_mine = False
+                    print("Saved from the mine!")
+                self.firstStep = False
                 self.board.show(move.row, move.col)
                 if self.board.board[move.row][move.col].is_mine:
                     self.audio.playSound("Explosion.wav")
@@ -164,3 +166,11 @@ def wait(seconds):
     currentTime = time.time()
     while time.time() - currentTime < seconds:
         pass
+
+
+def main():
+    gameEngine = LSGameEngine.GameEngine(Minesweeper)
+    gameEngine.beginLoop()
+
+if __name__ == '__main__':
+    main()

@@ -45,6 +45,15 @@ class EmulateFloor(LSApi):
     def set(self, row, col, shape, color):
         tile = self.tiles[row][col]
         tile.set(shape, color)
+        
+    def setColor(self, row, col, color):
+        tile = self.tiles[row][col]
+        tile.setColor(color)
+        
+    def setShape(self, row, col, shape):
+        tile = self.tiles[row][col]
+        tile.setShape(shape)
+
 
     #segments is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segments):

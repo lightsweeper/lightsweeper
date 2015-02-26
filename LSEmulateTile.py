@@ -54,6 +54,12 @@ class EmulateTile(LSApi):
         else:
             self.segments.append(Colors.BLACK)
 
+    def setShape(self, shape):
+        pass
+        
+    def setColor(self, shape):
+        pass
+        
     def setCustom(self, segments):
         self.segments = segments
         pass

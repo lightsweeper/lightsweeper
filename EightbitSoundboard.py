@@ -65,7 +65,7 @@ class Soundboard():
             if col is 1:
                 self.audio.playSound("8bit/Reveal_G_4.wav")
             if col is 2:
-                self.audio.playSound("8bit/Reveal_G_5.wav")
+                self.audio.playSound("8bit/Reveal_G_4.wav")
             if col is 3:
                 self.audio.playSound("8bit/04.wav")
             if col is 4:

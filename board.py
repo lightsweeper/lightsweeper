@@ -73,6 +73,8 @@ class Board():
             if (cell.is_mine and not cell.is_flagged):
                 self.is_playing = False
                 print("mine'd!")
+            elif self.is_solved():
+                self.is_playing = False
             elif self.count_surrounding(row_id, col_id) == 0:
                 self.showingMultiple = True
                 for (surr_row, surr_col) in self.get_neighbours(row_id, col_id):
