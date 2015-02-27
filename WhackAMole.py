@@ -15,3 +15,11 @@ class WhackAMole():
 
     def ended(self):
         pass
+
+def main():
+    import LSGameEngine
+    gameEngine = LSGameEngine.GameEngine(WhackAMole)
+    gameEngine.beginLoop()
+
+if __name__ == '__main__':
+    main()

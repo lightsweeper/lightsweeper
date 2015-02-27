@@ -5,14 +5,14 @@ from AnimTestbed import AnimTestbed
 from LSDisplay import Display
 from LSAudio import Audio
 
-#GAME = Soundboard
-#GAME = AnimTestbed
-GAME = Minesweeper
+#PLAYTHISGAME = Soundboard
+#PLAYTHISGAME = AnimTestbed
+PLAYTHISGAME = Minesweeper
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FPS = 30
-    REAL_FLOOR = True
+    REAL_FLOOR = False
     SIMULATED_FLOOR = True
     CONSOLE = False
     ROWS = 6
@@ -30,7 +30,7 @@ class GameEngine():
         self.frameRenderTime = 0
 
     def newGame(self):
-        self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.game = self.GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
         #self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
         #self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
         #self.game = AnimTestbed(self.display, self.audio, self.ROWS, self.COLUMNS)
@@ -74,7 +74,7 @@ class GameEngine():
         return sensorsChanged
 
 def main():
-    gameEngine = GameEngine(GAME)
+    gameEngine = GameEngine(PLAYTHISGAME)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

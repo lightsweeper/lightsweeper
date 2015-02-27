@@ -100,3 +100,11 @@ class Soundboard():
 
     if __name__ == "__main__":
         print("Test code goes here")
+        
+def main():
+    import LSGameEngine
+    gameEngine = LSGameEngine.GameEngine(Soundboard)
+    gameEngine.beginLoop()
+
+if __name__ == '__main__':
+    main()

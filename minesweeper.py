@@ -7,7 +7,6 @@ import Colors
 import Shapes
 from Frame import Frame
 import time
-import LSGameEngine
 
 class Minesweeper():
     def __init__(self, display, audio, rows, cols):
@@ -167,8 +166,8 @@ def wait(seconds):
     while time.time() - currentTime < seconds:
         pass
 
-
 def main():
+    import LSGameEngine
     gameEngine = LSGameEngine.GameEngine(Minesweeper)
     gameEngine.beginLoop()
 

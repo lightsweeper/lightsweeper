@@ -48,7 +48,7 @@ class _pygameAudio(_lsAudio):
         print("Using pygame for Audio...")
         self.SONG_END = pygame.USEREVENT + 1
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-        lsAudio.__init__(initSound)
+        _lsAudio.__init__(self)
 
     def heartbeat(self):
         #for event in pygame.event.get():

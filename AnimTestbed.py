@@ -23,3 +23,11 @@ class AnimTestbed():
 
     def ended(self):
         pass
+        
+def main():
+    import LSGameEngine
+    gameEngine = LSGameEngine.GameEngine(AnimTestbed)
+    gameEngine.beginLoop()
+
+if __name__ == '__main__':
+    main()
