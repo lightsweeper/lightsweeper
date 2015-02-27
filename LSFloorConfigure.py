@@ -59,15 +59,6 @@ class lsFloorConfig:
                 else:
                     print(e)
                     raise
-            except CannotParseError as e:
-                print(e)
-                raise
-            except IOError as e:
-                print(e)
-                raise
-            except InvalidConfigError as e:
-                print(e)
-                raise
             finally:
                 self.makeFloor()
         else:
@@ -113,6 +104,7 @@ class lsFloorConfig:
             raise CannotParseError("Could not parse " + fileName + "!")
         finally:
             print("Board mapping loaded from " + fileName)
+            self._parseConfig(self.config)
             return True
 
 
@@ -150,6 +142,25 @@ class lsFloorConfig:
         else:
             print("\nYour configuration was saved in {:s}".format(self.fileName))
 
+
+    def selectConfig(self):
+        """
+            This function looks in the current directory for .floor files and prompts the user to
+            select one, then loads it into self. 
+            
+            Raises:
+                IOError                 if no .floor files are found
+        """
+        try:
+            floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
+        except:
+            raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
+        if len(floorFiles) is 1:
+            fileName = floorFiles[0]
+        else:
+            print("\nFound multiple configurations: \n")
+            fileName = userSelect(floorFiles, "\nWhich floor configuration would you like to use? ")
+        self.loadConfig(fileName)
 
     def _formatFileName(self, fileName):
         if fileName.endswith(".floor") is False:
