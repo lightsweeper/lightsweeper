@@ -1,5 +1,6 @@
 import time
 import os
+import random
 from minesweeper import Minesweeper
 from EightbitSoundboard import Soundboard
 from AnimTestbed import AnimTestbed
@@ -8,9 +9,8 @@ from LSAudio import Audio
 from LSFloorConfigure import lsFloorConfig
 from LSFloorConfigure import userSelect
 
-#PLAYTHISGAME = Soundboard
-#PLAYTHISGAME = AnimTestbed
-PLAYTHISGAME = Minesweeper
+GAMES = [Soundboard, AnimTestbed, Minesweeper]
+PLAYTHISGAME = random.choice(GAMES)
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
@@ -85,6 +85,8 @@ class GameEngine():
         return sensorsChanged
 
 def main():
+    ourGame = PLAYTHISGAME
+    print("Playing {:s}".format(ourGame.__name__))
     gameEngine = GameEngine(PLAYTHISGAME)
     gameEngine.beginLoop()
 
