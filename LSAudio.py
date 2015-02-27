@@ -1,17 +1,54 @@
-import pygame
 import random
 
-
-#this class serves as a common controller for audio
-class Audio():
-    SONG_END = pygame.USEREVENT + 1
-
+class _lsAudio:
     def __init__(self, initSound=True):
-        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
         self.soundVolume = 1.0
         self.loadedSongs = []
         self.soundDictionary = {}
         self.playSound('StartUp.wav')
+
+    def heartbeat(self):
+        pass
+
+    def loadSong(self, filename, name):
+        pass
+
+    def playSong(self, filename, loops=0):
+        pass
+
+    def stopSong(self, fadeOut = 0.1):
+        pass
+
+    def setSongVolume(self, vol):
+        pass
+
+    #plays loaded songs in a random order
+    def shuffleSongs(self):
+        pass
+
+    def loadSound(self, filename, name):
+        pass
+
+    def playSound(self, filename):
+        pass
+
+    def playLoadedSound(self, name):
+        pass
+
+    def stopSounds(self):
+        pass
+
+    def setSoundVolume(self, vol):
+        pass
+
+
+class _pygameAudio(_lsAudio):
+
+    def __init__(self, initSound=True):
+        print("Using pygame for Audio...")
+        self.SONG_END = pygame.USEREVENT + 1
+        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+        lsAudio.__init__(initSound)
 
     def heartbeat(self):
         #for event in pygame.event.get():
@@ -74,3 +111,14 @@ class Audio():
         #print("setting sound vol:" + str(vol))
         #self.soundVolume = vol
         pass
+
+try:
+    import pygame
+    lsAudioBackend = _pygameAudio
+except:
+    lsAudioBackend = _lsAudio
+    print("No sound platform installed. Make sure pygame is installed with sdl mixer support.")
+
+#this class serves as a common controller for audio
+class Audio(lsAudioBackend):
+    pass

@@ -70,3 +70,4 @@ docs/_build/
 # Ignore Lightsweeper floor configuration files
 *.floor
 
+rpi
