@@ -1,9 +1,12 @@
 import time
+import os
 from minesweeper import Minesweeper
 from EightbitSoundboard import Soundboard
 from AnimTestbed import AnimTestbed
 from LSDisplay import Display
 from LSAudio import Audio
+from LSFloorConfigure import lsFloorConfig
+from LSFloorConfigure import userSelect
 
 #PLAYTHISGAME = Soundboard
 #PLAYTHISGAME = AnimTestbed
@@ -15,10 +18,26 @@ class GameEngine():
     REAL_FLOOR = False
     SIMULATED_FLOOR = True
     CONSOLE = False
-    ROWS = 6
-    COLUMNS = 6
 
-    def __init__(self, GAME):
+    def __init__(self, GAME, floorConfig=None):
+        if floorConfig is None:
+            try:
+                floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
+            except:
+                raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
+            if len(floorFiles) is 1:
+                fileName = floorFiles[0]
+            else:
+                print("\nFound multiple configurations: \n")
+                fileName = userSelect(floorFiles, "\nWhich floor configuration would you like to use? ")
+        else:
+            fileName = configFile
+            
+            
+        conf = lsFloorConfig(fileName)
+        self.ROWS = conf.rows
+        self.COLUMNS = conf.cols
+            
         self.GAME = GAME
         self.audio = Audio(initSound=True)
         self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
