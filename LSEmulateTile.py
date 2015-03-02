@@ -1,5 +1,5 @@
 # Lightsweeper additions
-from LSApi import LSApi
+from lightsweeper import LSApi
 import Colors
 import Shapes
 import pygame
