@@ -151,11 +151,11 @@ class LSFloorConfig:
             Raises:
                 IOError                 if no .floor files are found
         """
-        try:
-            floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
-        except:
+        floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir("./")))
+        
+        if len(floorFiles) is 0:
             raise IOError("No floor configuration found. Try running LSFloorConfigure.py")
-        if len(floorFiles) is 1:
+        elif len(floorFiles) is 1:
             fileName = floorFiles[0]
         else:
             print("\nFound multiple configurations: \n")
@@ -329,32 +329,41 @@ def main():
         else:
             print("Configuring {:s}...".format(config.fileName))
 
-        tilepile = LSOpen()
-
-        # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
-        availPorts = list(tilepile.lsMatrix)
-
-        print("Available serial ports: " + str(availPorts))
-    
         totaltiles = 0
-        for port in tilepile.lsMatrix:
-            totaltiles += len(tilepile.lsMatrix[port])
 
-        if len(availPorts) > 0:  # default to the first port in the list
-            defaultPort = availPorts[0]
+        isLive = True
+        try:
+            tilepile = LSOpen()
+        except IOError as e:
+            print("Not using serial because: {:s}".format(str(e)))
+            isLive = False
 
-        # It's the little details that count
-        question = "Would you like this to be a virtual floor?"
-        if totaltiles is 0:
-            isVirtual = YESno(question)
+        if isLive is not False:
+            # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
+            availPorts = list(tilepile.lsMatrix)
+
+            print("Available serial ports: " + str(availPorts))
+    
+            for port in tilepile.lsMatrix:
+                totaltiles += len(tilepile.lsMatrix[port])
+
+            if len(availPorts) > 0:  # default to the first port in the list
+                defaultPort = availPorts[0]
+
+            # It's the little details that count
+            question = "Would you like this to be a virtual floor?"
+            if totaltiles is 0:
+               isVirtual = YESno(question)
+            else:
+                isVirtual = yesNO(question)
         else:
-            isVirtual = yesNO(question)
+            isVirtual = True
+
 
         if isVirtual is True:
             print("\nConfiguring virtual Lightsweeper floor...")
         else:
             print("\nConfiguring real floor...")
-
 
         rows = int(pickRowCol(totaltiles, "\nHow many rows do you want?: "))
         

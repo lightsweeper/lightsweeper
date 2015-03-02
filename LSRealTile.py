@@ -505,10 +505,10 @@ class LSOpen:
     def __init__(self):
         try:
             import serial
-        except:
+        except ImportError as e:
             raise IOError("Could not import serial functions. Make sure pyserial is installed.")
-        finally:
-            from serial.tools import list_ports
+
+        from serial.tools import list_ports
 
         self.sharedSerials = dict()
         
