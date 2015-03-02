@@ -3,7 +3,6 @@ from LSApi import LSApi
 import Colors
 import Shapes
 import pygame
-from LSEmulateSevenSegment import LSEmulateSevenSegment
 
 # this class holds a seven segment display and a button to mimic the pressure sensor
 # it does no segment processing, it just passes thru to the seven segment display
