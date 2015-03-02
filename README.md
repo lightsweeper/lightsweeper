@@ -4,9 +4,26 @@ lightsweeper
 Lightsweeper - a burning man 2014 project
 
 
-To run this project, you need the following Python 3 packages:
-- PyGame (e.g. http://florian-berger.de/en/articles/installing-pygame-for-python-3-on-os-x)
-- PyQT (e.g. http://www.pythonschool.net/mac_pyqt/)
+Requirements:
+  - Python version 3.2 or later
+  - PyGame (http://www.pygame.org/)
 
-Once you have both of them installed, simply do 
-_python3 minesweeperqt.py_ 
+ To use Lightsweeper with a real floor you will also need:
+  - pyserial (http://pyserial.sourceforge.net/)
+
+
+To use:
+ First run:
+
+  > python3 LSFloorConfigure.py
+
+ this will walk you through creating a floor configuration file. If you are not using
+ a real floor just create a virtual configuration.
+
+ Once configured, run a game by calling it directly, e.g.:
+
+  > python3 minesweeper.py
+
+ or by accessing it through LSGameEngine:
+
+ > python3 LSGameEngine.py
