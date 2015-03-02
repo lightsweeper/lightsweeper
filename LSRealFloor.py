@@ -1,6 +1,6 @@
 ### Implementation of the Lightsweeper floor
 from LSRealTile import LSRealTile
-from LSRealTile import lsOpen
+from LSRealTile import LSOpen
 
 import time
 import os
@@ -35,7 +35,7 @@ class LSRealFloor():
         self.eventCallback = eventCallback
 
         # Initialize the serial ports
-        self.realTiles = lsOpen()
+        self.realTiles = LSOpen()
 
         # Initialize calibration map
         self.calibrationMap = dict()

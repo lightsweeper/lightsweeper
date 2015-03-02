@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
 # Select com port
 
-    lsls = lsOpen()
+    lsls = LSOpen()
 
     if lsls.numPorts is 0:
         print("Please attach some physical Lightsweeper tiles!")

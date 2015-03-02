@@ -3,7 +3,7 @@ import os
 import json
 import numbers
 from collections import defaultdict
-from LSRealTile import lsOpen
+from LSRealTile import LSOpen
 from LSRealTile import LSRealTile
 
 class FileDoesNotExistError(IOError):
@@ -329,7 +329,7 @@ def main():
         else:
             print("Configuring {:s}...".format(config.fileName))
 
-        tilepile = lsOpen()
+        tilepile = LSOpen()
 
         # serial ports are COM<N> on windows, /dev/xyzzy on Unixlike systems
         availPorts = list(tilepile.lsMatrix)

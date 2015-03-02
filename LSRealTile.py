@@ -495,7 +495,7 @@ class LSRealTile(LSTileAPI):
     ############################################
     # Serial code
 
-class lsOpen:
+class LSOpen:
 
     """
         This class probes the LS address space and provides methods for
@@ -1110,7 +1110,7 @@ def singleModeTest(mySerial):
 def main():
     print("\nTesting LSRealTile")
 
-    tilepile = lsOpen()
+    tilepile = LSOpen()
     
     comPort = tilepile.selectPort()
     
