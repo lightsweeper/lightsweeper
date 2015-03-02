@@ -2,7 +2,7 @@
 import Colors
 import Shapes
 import random
-from Move import Move
+from lightsweeper import Move
 
 class Soundboard():
     def __init__(self, display, audio, rows, cols):

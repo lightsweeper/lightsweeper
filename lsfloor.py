@@ -1,11 +1,12 @@
 from lightsweeper import wait
+from lightsweeper import Move
 
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from LSEmulateTile import EmulateTile
 from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
-from Move import Move
+
 import Colors
 import Shapes
 

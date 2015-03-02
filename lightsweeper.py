@@ -114,6 +114,12 @@ class Frame():
     def addColor(self, row, col, color):
         self.colors[(row, col)] = color
 
+class Move():
+    def __init__(self, row, col, val):
+        self.row = row
+        self.col = col
+        self.val = val
+
 
 def wait(seconds):
     currentTime = time.time()

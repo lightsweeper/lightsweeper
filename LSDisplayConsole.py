@@ -2,7 +2,7 @@
 import Shapes
 import sys
 import string
-import Move
+from lightsweeper import Move
 
 ClearScreen = "\x1b[37;40m" #"\x1b[2J"
 SetColorFg = "\x1b[3%s;40m"

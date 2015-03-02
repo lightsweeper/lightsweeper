@@ -1,9 +1,9 @@
+from lightsweeper import Move
 import lsfloor
 from lsfloor import LSRealFloor
 import Shapes
 import Colors
 import random
-from Move import Move
 import time
 import pygame
 
