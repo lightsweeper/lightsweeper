@@ -107,6 +107,15 @@ class LSFloorConfig:
             self._parseConfig(self.config)
             return True
 
+    def isVirtual(self):
+        """
+            This function returns true if the configuration contains any
+            virtual tiles.
+        """
+        for cell in self.config:
+            if cell[2].find("virtual") is not -1:
+                return True
+        return False
 
     # prints the list of 4-tuples
     def printConfig(self):

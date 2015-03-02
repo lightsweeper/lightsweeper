@@ -15,16 +15,22 @@ PLAYTHISGAME = random.choice(GAMES)
 #enforces the framerate, pushes sensor data to games, and selects games
 class GameEngine():
     FPS = 30
-    REAL_FLOOR = False
     SIMULATED_FLOOR = True
     CONSOLE = False
 
     def __init__(self, GAME, floorConfig=None):
+
         if floorConfig is None:
             conf = LSFloorConfig()
             conf.selectConfig()
         else:
             conf = LSFloorConfig(floorConfig)
+
+        if conf.isVirtual() is True:
+            self.REAL_FLOOR = False
+        else:
+            self.REAL_FLOOR = True
+
 
         self.ROWS = conf.rows
         self.COLUMNS = conf.cols
