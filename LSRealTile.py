@@ -3,8 +3,6 @@
 # the API is the base class
 from LSTileAPI import *
 
-import serial
-from serial.tools import list_ports
 #from struct import *
 
 # imports for testing
@@ -498,12 +496,20 @@ class LSRealTile(LSTileAPI):
     # Serial code
 
 class lsOpen:
+
     """
         This class probes the LS address space and provides methods for
         for discovering and making use of valid lightsweeper serial objects
     """
     
     def __init__(self):
+        try:
+            import serial
+        except:
+            raise IOError("Could not import serial functions. Make sure pyserial is installed.")
+        finally:
+            from serial.tools import list_ports
+
         self.sharedSerials = dict()
         
         try:
