@@ -4,7 +4,7 @@ import random
 
 import Colors
 import Shapes
-from Frame import Frame
+from lightsweeper import Frame
 import time
 
 class Cell(object):
