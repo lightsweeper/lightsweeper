@@ -1,6 +1,5 @@
 #from LSRealFloor import LSRealFloor
 import Shapes
-#from LSEmulateFloor import LSEmulateFloor
 import sys
 import string
 import Move

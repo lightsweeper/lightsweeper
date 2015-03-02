@@ -1,10 +1,34 @@
+import lsfloor
 from LSRealFloor import LSRealFloor
-from LSEmulateFloor import EmulateFloor
 import Shapes
 import Colors
 import random
 from Move import Move
 import time
+import pygame
+
+class EmulateFloor(lsfloor.LSFloor):
+
+    def __init__(self, rows=0, cols=0):
+        # Call parent init
+        lsfloor.LSFloor.__init__(self, rows=rows, cols=cols)
+
+        print("Making the screen")
+        self.screen = pygame.display.set_mode((800, 800))
+
+
+    def heartbeat(self):
+        #gets the images from the individual tiles, blits them in succession
+        #print("heartbeat drawing floor")
+        background = pygame.Surface((800, 800))
+        background.fill(Colors.BLACK)
+        self.screen.blit(background, (0,0))
+        for r in range(self.rows):
+            for c in range(self.cols):
+                tile = self.tiles[r][c]
+                image = tile.loadImage()
+                self.screen.blit(image, (100 * c, 100 * r))
+        pygame.display.update()
 
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
