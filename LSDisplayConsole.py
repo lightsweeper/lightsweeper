@@ -1,4 +1,4 @@
-#from LSRealFloor import LSRealFloor
+#from lsfloor import LSRealFloor
 import Shapes
 import sys
 import string

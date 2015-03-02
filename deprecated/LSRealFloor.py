@@ -10,7 +10,6 @@ import random
 import Colors
 import Shapes
 from Move import Move
-from LSAudio import Audio
 from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
 from lightsweeper import wait
@@ -196,7 +195,6 @@ if __name__ == "__main__":
 
     print("todo: testing RealFloor")
     floor = LSRealFloor()
-    #audio.playSound("8bit/46.wav")
     #wait(5)
     #call not implemented yet
     #floor.setSegmentsCustom(0, 0, [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.VIOLET, Colors.WHITE])

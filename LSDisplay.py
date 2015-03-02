@@ -1,5 +1,5 @@
 import lsfloor
-from LSRealFloor import LSRealFloor
+from lsfloor import LSRealFloor
 import Shapes
 import Colors
 import random
