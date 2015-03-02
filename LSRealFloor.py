@@ -2,6 +2,8 @@
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 
+from lsfloor import LSFloor
+
 import time
 import os
 import random
@@ -11,28 +13,23 @@ from Move import Move
 from LSAudio import Audio
 from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
+from lightsweeper import wait
 
-# Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
-OURWAIT = .005
+# This is a buffer against serial corruption, bigger numbers are slower but more stable
+# .005 = Fastest speed before observed corruption (on 24 tiles split between two com ports)
+LSWAIT = .005
 
 #handles all communications with RealTile objects, serving as the interface to the
 #actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
 #(sensor changes)
-class LSRealFloor():
+class LSRealFloor(LSFloor):
     SENSOR_THRESHOLD = 100
     sharedSerials = dict()
 
     def __init__(self, rows=0, cols=0, serials=None, configFile=None, eventCallback=None):
-        # Load the configuration
-        if configFile is None:
-            conf = LSFloorConfig()
-            conf.selectConfig()
-        else:
-            conf = LSFloorConfig(configFile)
 
-        self.rows = conf.rows
-        self.cols = conf.cols
-        self.eventCallback = eventCallback
+        # Call parent init
+        LSFloor.__init__(self, rows=rows, cols=cols, configFile=configFile, eventCallback=eventCallback)
 
         # Initialize the serial ports
         self.realTiles = LSOpen()
@@ -40,14 +37,9 @@ class LSRealFloor():
         # Initialize calibration map
         self.calibrationMap = dict()
 
-        self.addressToRowColumn = {}
-        # single-dimensional array of tiles to iterate over
-        self.tileList = []
-        # double array of tile objects
-        self.tileRows = []
-        
+
+    def _makeFloor(self):
         for row in conf.board:
-            tiles = []
             self.tileAddresses = []
             for col in conf.board[row]:
                 (port, address) = conf.board[row][col]
@@ -56,22 +48,15 @@ class LSRealFloor():
                 self.calibrationMap[address] = [127,127]
                 tile.active = 0
                 tile.assignAddress(address)
-                tile.eepromRead(0)
                 self.addressToRowColumn[(address,port)] = (row, col)
                 tile.setColor(Colors.WHITE)
                 tile.setShape(Shapes.ZERO)
-                tiles.append(tile)
+                self.tiles.append(tile)
                 self.tileList.append(tile)
                 wait(.05)
             self.tileRows.append(tiles)
         print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
 
-        print("\nClearing floor...")
-        self.clearBoard()
-
-
-    def heartbeat(self):
-        pass
 
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
@@ -82,6 +67,7 @@ class LSRealFloor():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
+            wait(LSWAIT)
 
 
     def setAllShape(self, shape):
@@ -89,42 +75,35 @@ class LSRealFloor():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
+            wait(LSWAIT)
 
 
-    def set(self, row, col, shape=0, color=0):
-        tile = self.tileRows[row][col];
-        tile.setColor(color)
-        tile.setShape(shape)
-        wait(0.005)
+    def set(self, *args, **kwargs):
+        LSFloor.set(self, *args, **kwargs)
+        wait(LSWAIT)
 
-    def setColor(self, row, col, color):#
-        tile = self.tileRows[row][col]
-        tile.setColor(color)
-        wait(0.005)
+    def setColor(self, *args, **kwargs):
+        LSFloor.setColor(self, *args, **kwargs)
+        wait(LSWAIT)
 
-    def setShape(self, row, col, shape):
-        tile = self.tileRows[row][col]
-        tile.setShape(shape)
-        wait(0.005)
+    def setShape(self, *args, **kwargs):
+        LSFloor.setShape(self, *args, **kwargs)
+        wait(LSWAIT)
+
+    def setCustom(self, *args, **kwargs):
+        LSFloor.setShape(self, *args, **kwargs)
+        wait(LSWAIT)
 
     def setSegmentsCustom(self, row, col, segments):
         tile = self.tileRows[row][col]
         tile.setSegmentsCustom(segments)
 
-    def RAINBOWMODE(self, updateFrequency = 0.4):
-        self.setAllShape(Shapes.EIGHT)
-        RAINBOW = [Colors.RED,
-                Colors.YELLOW,
-                Colors.GREEN,
-                Colors.CYAN,
-                Colors.BLUE,
-                Colors.MAGENTA,
-                Colors.WHITE]
-
-        for COLOR in RAINBOW:
-            self.setAllColor(COLOR)
-            wait(updateFrequency)
-
+    def clearBoard(self):
+        for port in self.sharedSerials:
+            zeroTile = LSRealTile(port)
+            zeroTile.assignAddress(0)
+            zeroTile.blank()
+        wait(LSWAIT)
 
     def printAddresses(self):
         s = ""
@@ -174,45 +153,6 @@ class LSRealFloor():
 
 
 
-    def _getTileList(self,row,column):
-    # __init__ makes this for us now:
-    # Unused functionality of this method should be split into _getRow and _getCol methods (perhaps public?)
-#        tileList = []
-#        #whole floor
-#        # whole floor
-#        if row < 1 and column < 1:
-#            for tileRow in self.tileRows:
-#                for tile in tileRow:
-#                    tileList.append(tile)
-#                    count = len(tileList)
-#        # whole row
-#        elif column < 1:
-#            tileRow = self.tileRows[row-1]
-#            for tile in tileRow:
-#                tileList.append(tile)
-#                count = len(tileList)
-#        # whole column
-#        elif row < 1:
-#            for tileRow in self.tileRows:
-#                tile = tileRow[column-1]
-#                tileList.append(tile)
-#                count = len(tileList)
-#        # single tile
-#        else:
-#            tileRow = self.tileRows[row-1]
-#            tileList = [tileRow[column-1]]
-#        return tileList
-        return self.tileList
-
-
-    def clearBoard(self):
-        for port in self.sharedSerials:
-            zeroTile = LSRealTile(port)
-            zeroTile.assignAddress(0)
-            zeroTile.blank()
-
-
-
     def pollSensors_NoAddress(self, limit):
         sensorsChanged = []
         polled = 0
@@ -228,33 +168,6 @@ class LSRealFloor():
                 if polled >= limit:
                     return sensorsChanged
         return sensorsChanged
-
-
-    def showboard(self):
-        return
-
-
-    def refreshboard(self):
-        return
-
-
-    def resetboard(self):
-        return
-
-
-    def purgetile(self,tile):
-        return False
-
-
-    def clock(self):
-        return
-
-
-def wait(seconds):
-    # self.pollSensors()
-    currentTime = time.time()
-    while time.time() - currentTime < seconds:
-        pass
 
 if __name__ == "__main__":
     def HYPERRAINBOWMODE(oscLow = 1, oscHigh = 30):
