@@ -25,7 +25,7 @@ class InvalidConfigError(Exception):
     """ Custom exception returned when the configuration is not valid. """
     pass
 
-class lsFloorConfig:
+class LSFloorConfig:
     """
         This class implements methods to read/write and otherwise
         manipulate Lightsweeper floor configurations.
@@ -74,7 +74,7 @@ class lsFloorConfig:
     
     def makeVirtual(self):
         """
-            This function turns the current lsFloorConfig object into a virtual floor
+            This function turns the current LSFloorConfig object into a virtual floor
         """
         self.cells = self.rows * self.cols
         self.config = self._createVirtualConfig(self.rows, self.cols)
@@ -282,13 +282,13 @@ def main():
             if os.path.exists(fileName) is False:
                 if YESno(fileName + " does not exist, would you like to create it?") is True:
                     print("Creating {:s}.".format(fileName))
-                    floorConfig = lsFloorConfig()
+                    floorConfig = LSFloorConfig()
                     floorConfig.fileName = fileName
                     return floorConfig
                 else:
                     return pickFile(message)
             try:
-                return lsFloorConfig(fileName)
+                return LSFloorConfig(fileName)
             except Exception as e:
                 print(e)
                 return pickFile(message)
@@ -366,11 +366,11 @@ def main():
         print("OK, you have a floor with " + repr(rows) + " by " + repr(cols)  + " columns")
 
         if isVirtual is True:
-            config = lsFloorConfig(rows=rows, cols=cols)
+            config = LSFloorConfig(rows=rows, cols=cols)
             config.makeVirtual()
         else:
             if totaltiles is not 0:
-                config = lsFloorConfig(rows=rows, cols=cols)
+                config = LSFloorConfig(rows=rows, cols=cols)
                 configWithKeyboard(config, tilepile)
 
         return config

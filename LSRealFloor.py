@@ -9,7 +9,7 @@ import Colors
 import Shapes
 from Move import Move
 from LSAudio import Audio
-from LSFloorConfigure import lsFloorConfig
+from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
 
 # Maximum speed of loop before serial corruption (on 24 tiles split between two com ports)
@@ -25,10 +25,10 @@ class LSRealFloor():
     def __init__(self, rows=0, cols=0, serials=None, configFile=None, eventCallback=None):
         # Load the configuration
         if configFile is None:
-            conf = lsFloorConfig()
+            conf = LSFloorConfig()
             conf.selectConfig()
         else:
-            conf = lsFloorConfig(configFile)
+            conf = LSFloorConfig(configFile)
 
         self.rows = conf.rows
         self.cols = conf.cols

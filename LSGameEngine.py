@@ -6,7 +6,7 @@ from EightbitSoundboard import Soundboard
 from AnimTestbed import AnimTestbed
 from LSDisplay import Display
 from LSAudio import Audio
-from LSFloorConfigure import lsFloorConfig
+from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
 
 GAMES = [Soundboard, AnimTestbed, Minesweeper]
@@ -21,10 +21,10 @@ class GameEngine():
 
     def __init__(self, GAME, floorConfig=None):
         if floorConfig is None:
-            conf = lsFloorConfig()
+            conf = LSFloorConfig()
             conf.selectConfig()
         else:
-            conf = lsFloorConfig(floorConfig)
+            conf = LSFloorConfig(floorConfig)
 
         self.ROWS = conf.rows
         self.COLUMNS = conf.cols
