@@ -297,8 +297,8 @@ class LSRealFloor(LSFloor):
         tile.setSegments(Colors.segmentsToRgb(segments))
 
     def clearBoard(self):
-        for port in self.sharedSerials:
-            zeroTile = LSRealTile(port)
+        for port in self.realTiles.sharedSerials.keys():
+            zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.blank()
 
@@ -440,7 +440,6 @@ def main():
     d.heartbeat()
     wait(2)
 
-    d.setShape(0,0,Shapes.I)
 
 
 if __name__ == '__main__':
