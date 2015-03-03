@@ -12,6 +12,10 @@ import time
 # TODO - perhaps better to use hexlify and unhexlify
 #from HexByteConversion import *
 
+# This is a buffer against serial corruption, bigger numbers are slower but more stable
+# .005 = Fastest speed before observed corruption (on 24 tiles split between two com ports)
+LSWAIT = .005
+
 # these constants copied from LSTileAPI.h
 
 # one byte commands for special test modes
@@ -477,6 +481,7 @@ class LSRealTile(LSTileAPI):
                 # debug or not, if tile sends something, we want to see it
                 if True or self.Debug:
                     print ("Debug response: " + ' '.join(format(x, '#02x') for x in thisRead))
+        time.sleep(LSWAIT)
 
     # read from the tile
     def __tileRead(self, count=8):
@@ -547,8 +552,11 @@ class LSOpen:
             return self.sharedSerials[port]
         try:
             self.sharedSerials[port] = self._pyserial.Serial(port, baud, timeout=timeout)
-        except self._pyserial.SerialException:
-            raise self._pyserial.SerialException  # WATCH OUT!
+        except self._pyserial.SerialException as e:
+            # TODO: Check Exception...
+            #       5 = I/O Error (No lightsweeper tiles)
+            #       13 = Permissions error (Linux: add user to dialout group)
+            raise
         finally:
             return self.sharedSerials[port]
             
@@ -559,13 +567,13 @@ class LSOpen:
         """
             Returns true if port has any lightsweeper objects listening
         """
-        
         try:
             testTile = LSRealTile(self.lsSerial(port))
         except self._pyserial.SerialException:
             return False
         except KeyError as e:
             return False
+
 
         testTile.assignAddress(0)
         if testTile.version():
@@ -900,6 +908,7 @@ def setRandomTileAddress(mySerial,myTile):
         myTile.setDebug(0)  # minimize visual clutter
         strAddr = repr(result)
         print("Reading EEPROM 0 at tile address = " + strAddr)
+
         eepromAddr = 0
         thisRead = myTile.eepromRead(eepromAddr)
         if len(thisRead) > 0:

@@ -362,7 +362,7 @@ def main():
             # It's the little details that count
             question = "Would you like this to be a virtual floor?"
             if totaltiles is 0:
-               isVirtual = YESno(question)
+                isVirtual = YESno(question)
             else:
                 isVirtual = yesNO(question)
         else:
@@ -396,7 +396,8 @@ def main():
 
     print("\nLightsweeper Configuration utility")
 
-    config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
+  #  config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
+    config = None
 
     if config is None:                              # Start a new configuration
         config = interactiveConfig()

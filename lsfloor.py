@@ -247,10 +247,6 @@ class LSRealFloor(LSFloor):
         This class extends LSFloor with methods specific to interacting with real Lightsweeper hardware
     """
 
-    # This is a buffer against serial corruption, bigger numbers are slower but more stable
-    # .005 = Fastest speed before observed corruption (on 24 tiles split between two com ports)
-    LSWAIT = .005
-
     SENSOR_THRESHOLD = 100
 
     def __init__(self, rows=None, cols=None, serials=None, conf=None, eventCallback=None):
@@ -265,8 +261,8 @@ class LSRealFloor(LSFloor):
         print("\nClearing floor...")
         self.clearBoard()
         
-        def _returnTile(self, row, col, port):
-            return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
+    def _returnTile(self, row, col, port):
+        return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
 
 
   #  def _makeFloor(self):
@@ -297,7 +293,6 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
-            wait(self.LSWAIT)
 
 
     def setAllShape(self, shape):
@@ -305,26 +300,12 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
-            wait(self.LSWAIT)
 
     # !!!
     def set(self, row, col, shape, color):
         tile = self.tiles[row][col]
         tile.setShape(shape)
         tile.setColor(color)
-        wait(self.LSWAIT)
-
-    def setColor(self, *args, **kwargs):
-        LSFloor.setColor(self, *args, **kwargs)
-        wait(self.LSWAIT)
-
-    def setShape(self, *args, **kwargs):
-        LSFloor.setShape(self, *args, **kwargs)
-        wait(self.LSWAIT)
-
-    def setCustom(self, *args, **kwargs):
-        LSFloor.setShape(self, *args, **kwargs)
-        wait(self.LSWAIT)
 
     def setSegmentsCustom(self, row, col, segments):
         tile = self.tiles[row][col]
@@ -335,7 +316,6 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(port)
             zeroTile.assignAddress(0)
             zeroTile.blank()
-        wait(self.LSWAIT)
 
     def printAddresses(self):
         s = ""
@@ -404,16 +384,26 @@ class LSRealFloor(LSFloor):
 
 def main():
 
-    
+    def getRandRow(lsDisplay):
+        return random.randint(0, lsDisplay.rows-1)
+
+    def getRandCol(lsDisplay):
+        return random.randint(0, lsDisplay.cols-1)
+
+    useRealFloor = True
+    try:
+        realTiles = LSOpen()
+    except Exception as e:
+        useRealFloor = False
 
     print("Importing LSDisplay")
     import LSDisplay
 
-    d = LSDisplay.Display(realFloor = True, simulatedFloor = True)
+    d = LSDisplay.Display(realFloor = useRealFloor, simulatedFloor = True)
 
     print("Testing set")
-    d.set(0,1,Shapes.L,Colors.RED)
-    d.set(0,1,Shapes.I,Colors.YELLOW)
+    d.set(getRandRow(d),getRandCol(d),Shapes.L,Colors.RED)
+    d.set(getRandRow(d),getRandCol(d),Shapes.I,Colors.YELLOW)
     d.heartbeat()
     wait(2)
 
@@ -422,13 +412,16 @@ def main():
     d.heartbeat()
     wait(2)
 
+    trow = getRandRow(d)
+    tcol = getRandCol(d)
+
     print("Testing setColor")
-    d.setColor(2,1,Colors.GREEN)
+    d.setColor(trow,tcol,Colors.GREEN)
     d.heartbeat()
     wait(2)
 
     print("Testing setShape")
-    d.setShape(1,1,Shapes.ZERO)
+    d.setShape(trow,tcol,Shapes.ZERO)
     d.heartbeat()
     wait(2)
 
@@ -443,7 +436,7 @@ def main():
     wait(2)
 
     print("Testing clear")
-    d.clear(1,1)
+    d.clear(getRandRow(d),getRandCol(d))
     d.heartbeat()
     wait(2)
 
