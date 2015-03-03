@@ -25,7 +25,7 @@ class EmulateFloor(lsfloor.LSFloor):
     def heartbeat(self):
         #gets the images from the individual tiles, blits them in succession
         #print("heartbeat drawing floor")
-        background = pygame.Surface((800, 800))
+        background = pygame.Surface(((self.cols*100), (self.rows*100)))
         background.fill(Colors.BLACK)
         self.screen.blit(background, (0,0))
         for r in range(self.rows):
@@ -144,7 +144,9 @@ class Display():
     #colors is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segments):
         if self.simulatedFloor:
-            self.simulatedFloor.setCustom(row, col, segments)
+            self.simulatedFloor.setSegments(row, col, segments)
+        if self.realFloor:
+            self.realFloor.setSegments(row, col, segments)
 
     def setColor(self, row, col, color):
         if self.realFloor:

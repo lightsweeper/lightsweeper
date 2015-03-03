@@ -116,9 +116,9 @@ class LSFloor():
             self.set(tile.row, tile.col, shape, color)
 
     #segments is a list of seven colors in A,...,G order of segments
-    def setCustom(self, row, col, segments):
+    def setSegments(self, row, col, segments):
         tile = self.tiles[row][col]
-        tile.setCustom(segments)
+        tile.segments=segments
 
     def blank(self, row, col):
         """
@@ -288,9 +288,9 @@ class LSRealFloor(LSFloor):
         tile.setShape(shape)
         tile.setColor(color)
 
-    def setSegmentsCustom(self, row, col, segments):
+    def setSegments(self, row, col, segments):
         tile = self.tiles[row][col]
-        tile.setSegmentsCustom(segments)
+        tile.setSegments(Colors.segmentsToRgb(segments))
 
     def clearBoard(self):
         for port in self.sharedSerials:
@@ -366,7 +366,7 @@ def main():
 
     print("Testing set")
     d.set(getRandRow(d),getRandCol(d),Shapes.L,Colors.RED)
-    d.set(getRandRow(d),getRandCol(d),Shapes.I,Colors.YELLOW)
+    d.set(getRandRow(d),getRandCol(d),Shapes.S,Colors.MAGENTA)
     d.heartbeat()
     wait(2)
 
@@ -407,6 +407,30 @@ def main():
     d.clearAll()
     d.heartbeat()
     wait(2)
+
+    print("Testing setCustom")
+    d.setCustom(0, 0, [1,3,2,6,4,5])
+    d.heartbeat()
+    wait(.5)
+    d.setCustom(0, 0, [0,0,0,0,0,0,7])
+    d.heartbeat()
+    wait(.5)
+    d.setCustom(0, 0, [1,3,2,6,4,5])
+    d.heartbeat()
+    wait(.5)
+    d.setCustom(0, 0, [0,0,0,0,0,0,7])
+    d.heartbeat()
+    wait(.5)
+    d.setCustom(0, 0, [1,3,2,6,4,5])
+    d.heartbeat()
+    wait(.5)
+    d.setCustom(0, 0, [0,0,0,0,0,0,7])
+    d.heartbeat()
+    wait(.5)
+    d.setCustom(0, 0, [1,3,2,6,4,5,7])
+    d.heartbeat()
+    wait(2)
+
 
     
 if __name__ == '__main__':

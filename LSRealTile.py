@@ -266,7 +266,6 @@ class LSRealTile(LSTileAPI):
 
     # expecting a 7-tuple of Color constants
     def setSegmentsCustom(self, segments, setItNow = True):
-
         pass
 
     def setDigit(self, digit):

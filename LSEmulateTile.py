@@ -62,24 +62,25 @@ class EmulateTile(LSTileAPI):
     def setColor(self, color):
        self.set(self.shape, color)
         
-    def setCustom(self, segments):
-        self.segments = segments
-        pass
+    def setSegments(self, rgb):
+        self.segments = Colors.rgbToSegments(rgb)
 
     def getShape(self):
         return self.shape
 
     def loadImage(self):
+        self.segments += [Colors.BLACK] * (7 - len(self.segments))
         image = pygame.image.load("images/segments.png")
         horizontal = (42,10)
         vertical = (10,30)
-        image.fill(Colors.intToRGB(self.segments[0]), pygame.Rect((29,10),horizontal))
-        image.fill(Colors.intToRGB(self.segments[1]), pygame.Rect((71,17),vertical))
-        image.fill(Colors.intToRGB(self.segments[2]), pygame.Rect((71,52),vertical))
-        image.fill(Colors.intToRGB(self.segments[3]), pygame.Rect((29,79),horizontal))
-        image.fill(Colors.intToRGB(self.segments[4]), pygame.Rect((19,52),vertical))
-        image.fill(Colors.intToRGB(self.segments[5]), pygame.Rect((19,17),vertical))
-        image.fill(Colors.intToRGB(self.segments[6]), pygame.Rect((29,45),horizontal))
+        segMap = [(29,10),(71,17),(71,52),(29,79),(19,52),(19,17),(29,45)]
+        image.fill(Colors.intToRGB(self.segments[0]), pygame.Rect(segMap[0],horizontal))
+        image.fill(Colors.intToRGB(self.segments[1]), pygame.Rect(segMap[1],vertical))
+        image.fill(Colors.intToRGB(self.segments[2]), pygame.Rect(segMap[2],vertical))
+        image.fill(Colors.intToRGB(self.segments[3]), pygame.Rect(segMap[3],horizontal))
+        image.fill(Colors.intToRGB(self.segments[4]), pygame.Rect(segMap[4],vertical))
+        image.fill(Colors.intToRGB(self.segments[5]), pygame.Rect(segMap[5],vertical))
+        image.fill(Colors.intToRGB(self.segments[6]), pygame.Rect(segMap[6],horizontal))
         return image
 
     def getSensors(self):

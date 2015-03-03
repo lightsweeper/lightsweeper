@@ -15,6 +15,28 @@ colorArray = ["black", "red", "green", "yellow", "blue", "violet", "cyan", "whit
 def intToName(i):
     return colorArray[i]
 
+def rgbToSegments(rgb):
+    print(rgb)
+    return([RED, RED, RED, RED, RED, RED, RED])
+
+def segmentsToRgb(segments):
+        #Segments:  A  B  C D E F G
+    segmentMask = [64,32,16,8,4,2,1]
+    r=0
+    g=0
+    b=0
+    i=0
+    for seg in map(intToRGB, segments):
+        if seg[0] > 0:
+            r+=segmentMask[i]
+        if seg[1] > 0:
+            g+=segmentMask[i]
+        if seg[2] > 0:
+            b+=segmentMask[i]
+        i += 1
+   # print("rgb -> {:d} {:d} {:d}".format(r,g,b))  #Debugging
+    return([r,g,b])
+
 def intToRGB(i):
     if i is BLACK:
         return (0,0,0)
@@ -33,6 +55,7 @@ def intToRGB(i):
     if i is WHITE:
         return (255, 255, 255)
     return (0,0,0)
+
 
 def RANDOM(exclude=None):
     def randC():
