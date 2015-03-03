@@ -440,6 +440,8 @@ def main():
     d.heartbeat()
     wait(2)
 
+    d.setShape(0,0,Shapes.I)
+
 
 if __name__ == '__main__':
 
