@@ -296,6 +296,12 @@ class LSRealFloor(LSFloor):
         tile = self.tiles[row][col]
         tile.setSegments(Colors.segmentsToRgb(segments))
 
+    def setSegmentsAll(self, segments):
+        for port in self.realTiles.sharedSerials.keys():
+            zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
+            zeroTile.assignAddress(0)
+            zeroTile.setSegments(Colors.segmentsToRgb(segments))
+
     def clearBoard(self):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
