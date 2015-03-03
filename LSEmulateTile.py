@@ -23,6 +23,8 @@ class EmulateTile(LSApi):
         pass
 
     def set(self, shape=Shapes.ZERO, color=Colors.BLACK):
+        self.shape = shape
+        self.color = color
         self.segments = []
         if shape & Shapes.SEG_A:
             self.segments.append(color)
@@ -54,10 +56,10 @@ class EmulateTile(LSApi):
             self.segments.append(Colors.BLACK)
 
     def setShape(self, shape):
-        pass
+        self.set(shape, self.color)
         
-    def setColor(self, shape):
-        pass
+    def setColor(self, color):
+       self.set(self.shape, color)
         
     def setCustom(self, segments):
         self.segments = segments
@@ -127,7 +129,7 @@ class EmulateTile(LSApi):
         return 1
 
     def blank(self):
-        self.setColor('black')
+        self.setColor(Colors.BLACK)
         return
 
     def locate(self):

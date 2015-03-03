@@ -7,6 +7,8 @@ import random
 import time
 import pygame
 
+
+# Tweaks LSFloor to update pygame emulator
 class EmulateFloor(lsfloor.LSFloor):
 
     def __init__(self, rows=0, cols=0):
@@ -132,6 +134,12 @@ class Display():
             self.simulatedFloor.set(row, col, shape, color)
         # wait(0.005)
 
+    def setAll(self, shape, color):
+        if self.realFloor:
+            self.realFloor.setAll(shape, color)
+        if self.simulatedFloor:
+            self.simulatedFloor.setAll(shape, color)
+
     #colors is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segments):
         if self.simulatedFloor:
@@ -147,16 +155,35 @@ class Display():
     def setAllColor(self, color):
         if self.realFloor:
             self.realFloor.setAllColor(color)
+        if self.simulatedFloor:
+            self.simulatedFloor.setAllColor(color)
 
     def setShape(self, row, col, shape):
         if self.realFloor:
             self.realFloor.setShape(row, col, shape)
         if self.simulatedFloor:
             self.simulatedFloor.setShape(row, col, shape)
-        # wait(0.005)
 
-    def setSegmentsCustom(self, row, col, colors):
-        pass
+    def setAllShape(self, shape):
+        if self.realFloor:
+            self.realFloor.setAllShape(shape)
+        if self.simulatedFloor:
+            self.simulatedFloor.setAllShape(shape)
+
+    def clear(self, row, col):
+        if self.realFloor:
+            self.realFloor.blank(row, col)
+        if self.simulatedFloor:
+            self.simulatedFloor.blank(row, col)
+
+    def clearAll(self):
+        if self.realFloor:
+            self.realFloor.clearBoard()
+        if self.simulatedFloor:
+            self.simulatedFloor.clearBoard()
+
+#    def setSegmentsCustom(self, row, col, colors):
+#        pass
 
     def setFrame(self, frame):
         for row in range(self.rows):
@@ -176,8 +203,6 @@ class Display():
     def addAnimation(self, row, col, animation, loops):
         pass
 
-    def clear(self):
-        pass
 
 def wait(seconds):
     # self.pollSensors()

@@ -18,8 +18,15 @@ import random
 class LSFloor():
     """
         This class describes an abstract lightsweeper floor.
-    """
 
+        Attributes:
+            conf (LSFloorConfig):   An LSFloorConfig object containing the floor's configuration
+            rows (int):             The number of rows
+            cols (int):             The number of columns
+            tileList (list):        A single array of tile objects
+            tiles (list):           A double array of LSTile objects
+
+    """
     def __init__(self, rows=0, cols=0, configFile=None, eventCallback=None):
         # Load the configuration, if provided
         if configFile is None:
@@ -37,64 +44,90 @@ class LSFloor():
 
         self.eventCallback = eventCallback
         self.tiles = []
-
-        self.addressToRowColumn = {}
-        # single-dimensional array of tiles to iterate over
         self.tileList = []
-        # double array of tile objects
-        self.tileRows = []
-
-        self.addressToRowColumn = {}
-        # single-dimensional array of tiles to iterate over
-        self.tileList = []
-        # double array of tile objects
-        self.tileRows = []
 
         self._makeFloor()
         print("\nClearing floor...")
         self.clearBoard()
 
+
     def _makeFloor (self):
         for r in range(0,self.rows):
             self.tiles.append([])
             for c in range(0, self.cols):
-                self.tiles[r].append(EmulateTile(self, r, c))
+                thisTile = EmulateTile(self, r, c)
+                self.tiles[r].append(thisTile)
+                self.tileList.append(thisTile)
+
 
     def setColor(self, row, col, color):
+        """
+            Sets the color of the selected tile.
+        """
         tile = self.tiles[row][col]
         tile.setColor(color)
 
     def setShape(self, row, col, shape):
+        """
+            Sets the shape of the selected tile.
+        """
         tile = self.tiles[row][col]
         tile.setShape(shape)
-        print(row)
+
+    def setAllColor(self, color):
+        for tile in self.tileList:
+            self.setColor(tile.row, tile.col, color)
+
+
+    def setAllShape(self, shape):
+        for tile in self.tileList:
+            self.setShape(tile.row, tile.col, shape)
 
 # TODO
-    def setDigit(self, row, column, digit):
+    def setDigit(self, row, column, digit, color=None):
+        """
+            Sets the tile at row, column to the provided digit.
+        """
         pass
 
     def set(self, row, col, shape, color):  # set is a python type, we may want to rename this
+        """
+            Sets the color and shape simultaneously.
+        """
         tile = self.tiles[row][col]
         tile.set(shape, color)
+
+    def setAll(self, shape, color):
+        for tile in self.tileList:
+            self.set(tile.row, tile.col, shape, color)
 
     #segments is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segments):
         tile = self.tiles[row][col]
         tile.setCustom(segments)
 
+    def blank(self, row, col):
+        """
+            Blanks the tile at row, col
+        """
+        tile = self.tiles[row][col]
+        tile.blank()
+
     def clearBoard(self):
-        tiles = self.tileList
-        for tile in tiles:
+        """
+            Blanks the whole floor.
+        """
+        for tile in self.tileList:
             tile.blank()
         return
 
-    def clear(self, row, col):
-        tile = self.tiles[row][col]
-        tile.set()
+#    def clear(self, row, col):
+#        tile = self.tiles[row][col]
+#        tile.set()
 
-    def clearAll(self):
-        for tile in self.tiles:
-            tile.set()
+#    def clearAll(self):
+#        for tile in self.tileList:
+#            tile.set()
 
     def pollSensors(self):
         pass
@@ -106,23 +139,20 @@ class LSFloor():
         pass
 
     def refreshBoard(self):
-        tiles = self._getTileList(0,0)
-        for tile in tiles:
+        for tile in self.tileList:
             tile.update('CLOCK')
         return
 
     def resetBoard(self):
-        for row in self.tileRows:
-            for tile in row:
-                tile.reset()
+        for tile in self.tileList:
+            tile.reset()
         return
 
     def purgeTile(self,tile):
         return False
 
     def clock(self):
-        tiles = self._getTileList(0,0)
-        for tile in tiles:
+        for tile in self.tileList:
             try:
                 tile.read()
             except:
@@ -140,7 +170,7 @@ class LSFloor():
     # How is this different from pollSensors?
     def getSensors(self):
         activeSensors = []
-        for row in self.tileRows:
+        for row in self.tiles:
             for tile in row:
                 sensorChecked = tile.getSensors()
                 if sensorChecked:
@@ -211,13 +241,11 @@ class LSRealFloor(LSFloor):
     sharedSerials = dict()
 
     def __init__(self, rows=0, cols=0, serials=None, configFile=None, eventCallback=None):
-
+        self._addressToRowColumn = {}
         # Call parent init
         LSFloor.__init__(self, rows=rows, cols=cols, configFile=configFile, eventCallback=eventCallback)
-
         # Initialize the serial ports
         self.realTiles = LSOpen()
-
         # Initialize calibration map
         self.calibrationMap = dict()
 
@@ -232,13 +260,12 @@ class LSRealFloor(LSFloor):
                 self.calibrationMap[address] = [127,127]
                 tile.active = 0
                 tile.assignAddress(address)
-                self.addressToRowColumn[(address,port)] = (row, col)
+                self._addressToRowColumn[(address,port)] = (row, col)
                 tile.setColor(Colors.WHITE)
                 tile.setShape(Shapes.ZERO)
                 self.tiles.append(tile)
                 self.tileList.append(tile)
                 wait(.05)
-            self.tileRows.append(tiles)
         print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
 
 
@@ -279,7 +306,7 @@ class LSRealFloor(LSFloor):
         wait(self.LSWAIT)
 
     def setSegmentsCustom(self, row, col, segments):
-        tile = self.tileRows[row][col]
+        tile = self.tiles[row][col]
         tile.setSegmentsCustom(segments)
 
     def clearBoard(self):
@@ -293,7 +320,7 @@ class LSRealFloor(LSFloor):
         s = ""
         for row in range(0,self.rows):
             for col in range(0, self.cols):
-                s += str(self.tileRows[row][col].getAddress()) + " "
+                s += str(self.tiles[row][col].getAddress()) + " "
             #print(s)
             s = ""
 
@@ -322,7 +349,7 @@ class LSRealFloor(LSFloor):
                 if tile.active <= 0:
                     tile.active = 1
                     #print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
-                    rowCol = self.addressToRowColumn[(tile.address, tile.comNumber)]
+                    rowCol = self._addressToRowColumn[(tile.address, tile.comNumber)]
                     move = Move(rowCol[0], rowCol[1], reading)
                     sensorsChanged.append(move)
                     self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
@@ -337,19 +364,75 @@ class LSRealFloor(LSFloor):
 
 
 
-    def pollSensors_NoAddress(self, limit):
-        sensorsChanged = []
-        polled = 0
-        for com in range(len(self.sharedSerials)):
-            for addy in range(1, 25):
-                tile = LSRealTile(self.sharedSerials[com])
-                tile.assignAddress(addy * 8)
-                val = tile.sensorStatus()
-                if val < self.SENSOR_THRESHOLD:
-                    print("sensor sensed", val)
-                    sensorsChanged.append((addy * 8, com))
-                polled += 1
-                if polled >= limit:
-                    return sensorsChanged
-        return sensorsChanged
+#    def pollSensors_NoAddress(self, limit):
+#        sensorsChanged = []
+#        polled = 0
+#        for com in range(len(self.sharedSerials)):
+#            for addy in range(1, 25):
+#                tile = LSRealTile(self.sharedSerials[com])
+#                tile.assignAddress(addy * 8)
+#                val = tile.sensorStatus()
+#                if val < self.SENSOR_THRESHOLD:
+#                    print("sensor sensed", val)
+#                    sensorsChanged.append((addy * 8, com))
+#                polled += 1
+#                if polled >= limit:
+#                    return sensorsChanged
+#        return sensorsChanged
+
+
+def main():
+
     
+
+    print("Importing LSDisplay")
+    import LSDisplay
+
+    d = LSDisplay.Display(5,4,False,True)
+
+    print("Testing set")
+    d.set(0,1,Shapes.L,Colors.RED)
+    d.set(0,2,Shapes.I,Colors.YELLOW)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing setAll")
+    d.setAll(Shapes.B,Colors.BLUE)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing setColor")
+    d.setColor(2,2,Colors.GREEN)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing setShape")
+    d.setShape(2,2,Shapes.ZERO)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing setAllColor")
+    d.setAllColor(Colors.MAGENTA)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing setAllShape")
+    d.setAllShape(Shapes.DASH)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing clear")
+    d.clear(1,1)
+    d.heartbeat()
+    wait(2)
+
+    print("Testing clearAll")
+    d.clearAll()
+    d.heartbeat()
+    wait(2)
+
+    
+if __name__ == '__main__':
+
+    main()
+
