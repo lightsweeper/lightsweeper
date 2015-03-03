@@ -27,20 +27,20 @@ class LSFloor():
             tiles (list):           A double array of LSTile objects
 
     """
-    def __init__(self, rows=0, cols=0, configFile=None, eventCallback=None):
+    def __init__(self, rows=None, cols=None, conf=None, eventCallback=None):
         # Load the configuration, if provided
-        if configFile is None:
-            self.conf = LSFloorConfig()
-            self.conf.selectConfig()
-        else:
-            self.conf = LSFloorConfig(configFile)
+        if conf is None:
+            if rows is None or cols is None:
+                conf = LSFloorConfig()
+                conf.selectConfig()
+            else:
+                self.rows = rows
+                self.cols = cols
+                conf = LSFloorConfig(rows=rows, cols=cols)
 
-        if configFile is None:
-            self.rows = rows
-            self.cols = cols
-        else:
-            self.rows = conf.rows
-            self.cols = conf.cols
+        self.conf = conf
+        self.rows = conf.rows
+        self.cols = conf.cols
 
         self.eventCallback = eventCallback
         self.tiles = []
@@ -238,12 +238,12 @@ class LSRealFloor(LSFloor):
     LSWAIT = .005
 
     SENSOR_THRESHOLD = 100
-    sharedSerials = dict()
 
-    def __init__(self, rows=0, cols=0, serials=None, configFile=None, eventCallback=None):
-        self._addressToRowColumn = {}
+    def __init__(self, rows=None, cols=None, serials=None, conf=None, eventCallback=None):
         # Call parent init
-        LSFloor.__init__(self, rows=rows, cols=cols, configFile=configFile, eventCallback=eventCallback)
+        LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
+        self.sharedSerials = dict()
+        self._addressToRowColumn = {}
         # Initialize the serial ports
         self.realTiles = LSOpen()
         # Initialize calibration map
@@ -251,10 +251,10 @@ class LSRealFloor(LSFloor):
 
 
     def _makeFloor(self):
-        for row in conf.board:
+        for row in self.conf.board:
             self.tileAddresses = []
-            for col in conf.board[row]:
-                (port, address) = conf.board[row][col]
+            for col in self.conf.board[row]:
+                (port, address) = self.conf.board[row][col]
                 tile = LSRealTile(self.realTiles.sharedSerials[port])
                 tile.comNumber = port
                 self.calibrationMap[address] = [127,127]
@@ -388,7 +388,7 @@ def main():
     print("Importing LSDisplay")
     import LSDisplay
 
-    d = LSDisplay.Display(5,4,False,True)
+    d = LSDisplay.Display(None,None,True,True)
 
     print("Testing set")
     d.set(0,1,Shapes.L,Colors.RED)

@@ -1,4 +1,5 @@
 from lightsweeper import Move
+from LSFloorConfigure import LSFloorConfig
 import lsfloor
 from lsfloor import LSRealFloor
 import Shapes
@@ -36,14 +37,21 @@ class EmulateFloor(lsfloor.LSFloor):
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
-    def __init__(self, rows, cols, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True):
-        self.rows = rows
-        self.cols = cols
+    def __init__(self, rows=None, cols=None, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True, conf=None):
+        if conf is None:
+            if rows is None or cols is None:
+                conf = LSFloorConfig()
+                conf.selectConfig()
+            else:
+                conf = LSFloorConfig(rows=rows, cols=cols)
+
+        self.rows = conf.rows
+        self.cols = conf.cols
         self.eventCallback = eventCallback
         self.lastTileSetTimestamp = time.time()
         if realFloor:
             print("Display instantiating real floor")
-            self.realFloor = LSRealFloor(rows, cols, eventCallback=self.handleTileStepEvent)
+            self.realFloor = LSRealFloor(rows, cols, conf=conf, eventCallback=self.handleTileStepEvent)
         else:
             self.realFloor = None
         self.floor = []

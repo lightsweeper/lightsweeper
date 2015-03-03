@@ -507,8 +507,10 @@ class LSOpen:
             import serial
         except ImportError as e:
             raise IOError("Could not import serial functions. Make sure pyserial is installed.")
-
         from serial.tools import list_ports
+
+        self._pyserial = serial
+        self._list_ports = list_ports
 
         self.sharedSerials = dict()
         
@@ -544,9 +546,9 @@ class LSOpen:
         if port in self.sharedSerials.keys():
             return self.sharedSerials[port]
         try:
-            self.sharedSerials[port] = serial.Serial(port, baud, timeout=timeout)
-        except serial.SerialException:
-            raise serial.SerialException  # WATCH OUT!
+            self.sharedSerials[port] = self._pyserial.Serial(port, baud, timeout=timeout)
+        except self._pyserial.SerialException:
+            raise self._pyserial.SerialException  # WATCH OUT!
         finally:
             return self.sharedSerials[port]
             
@@ -560,7 +562,7 @@ class LSOpen:
         
         try:
             testTile = LSRealTile(self.lsSerial(port))
-        except serial.SerialException:
+        except self._pyserial.SerialException:
             return False
         except KeyError as e:
             return False
@@ -579,13 +581,13 @@ class LSOpen:
         if os.name == 'nt': # windows
             for i in range(256):
                 try:
-                    s = serial.Serial(i)
+                    s = self._pyserial.Serial(i)
                     s.close()
                     yield 'COM' + str(i + 1)
-                except serial.SerialException:
+                except self._pyserial.SerialException:
                     pass
         else:               # unix
-            for port in list_ports.comports():
+            for port in self._list_ports.comports():
                 yield port[0]
 
 
@@ -593,7 +595,6 @@ class LSOpen:
         """
             Returns a generator for all serial ports with lightsweeper tiles attached
         """
-
         for validPort in list(filter(self.testport,self.availPorts())):
             yield validPort
         
