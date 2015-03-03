@@ -120,6 +120,10 @@ class LSFloor():
         tile = self.tiles[row][col]
         tile.segments=segments
 
+    def setSegmentsAll(self, segments):
+        for tile in self.tileList:
+            self.setSegments(tile.row, tile.col, segments)
+
     def blank(self, row, col):
         """
             Blanks the tile at row, col
@@ -431,8 +435,12 @@ def main():
     d.heartbeat()
     wait(2)
 
+    print("Testing setAllCustom")
+    d.setAllCustom([1,3,2,6,4,5,7])
+    d.heartbeat()
+    wait(2)
 
-    
+
 if __name__ == '__main__':
 
     main()

@@ -148,6 +148,13 @@ class Display():
         if self.realFloor:
             self.realFloor.setSegments(row, col, segments)
 
+    def setAllCustom(self, segments):
+        if self.simulatedFloor:
+            self.simulatedFloor.setSegmentsAll(segments)
+        if self.realFloor:
+            self.realFloor.setSegmentsAll(segments)
+        
+
     def setColor(self, row, col, color):
         if self.realFloor:
             self.realFloor.setColor(row, col, color)
