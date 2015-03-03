@@ -1,4 +1,3 @@
-from lightsweeper import wait
 from lightsweeper import Move
 
 from LSRealTile import LSRealTile
@@ -14,6 +13,8 @@ import sys
 import time
 import os
 import random
+
+wait=time.sleep
 
 class LSFloor():
     """

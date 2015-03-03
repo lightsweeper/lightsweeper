@@ -9,6 +9,8 @@ import time
 import pygame
 
 
+wait = time.sleep
+
 # Tweaks LSFloor to update pygame emulator
 class EmulateFloor(lsfloor.LSFloor):
 
@@ -213,12 +215,6 @@ class Display():
     def addAnimation(self, row, col, animation, loops):
         pass
 
-
-def wait(seconds):
-    # self.pollSensors()
-    currentTime = time.time()
-    while time.time() - currentTime < seconds:
-        pass
 
 def main():
     print("Testing LSDisplay realfloor and emulatedfloor")

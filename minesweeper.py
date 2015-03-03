@@ -7,6 +7,8 @@ import Shapes
 from lightsweeper import Frame
 import time
 
+wait=time.sleep
+
 class Cell(object):
     def __init__(self, is_mine, is_visible=False, is_flagged=False):
         self.is_mine = is_mine
@@ -299,12 +301,6 @@ class EndAnimation:
         else:
             self.currentFrame = self.frames.pop()
         return self.currentFrame
-
-def wait(seconds):
-    # self.pollSensors()
-    currentTime = time.time()
-    while time.time() - currentTime < seconds:
-        pass
 
 def main():
     import LSGameEngine

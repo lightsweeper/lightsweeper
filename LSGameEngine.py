@@ -19,13 +19,12 @@ class GameEngine():
     CONSOLE = False
 
     def __init__(self, GAME, floorConfig=None):
-
+        self.wait = time.sleep
         if floorConfig is None:
             conf = LSFloorConfig()
             conf.selectConfig()
         else:
             conf = LSFloorConfig(floorConfig)
-
         if conf.isVirtual() is True:
             self.REAL_FLOOR = False
         else:
@@ -79,12 +78,6 @@ class GameEngine():
         if self.frames % self.FPS == 0:
             print(str(1.0 / (self.frameRenderTime / self.FPS)) + " FPS")
             self.frameRenderTime = 0
-
-    def wait(self, seconds):
-        # self.pollSensors()
-        currentTime = time.time()
-        while time.time() - currentTime < seconds:
-            pass
 
     def pollSensors(self):
         sensorsChanged = self.display.pollSensors()

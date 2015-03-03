@@ -119,9 +119,3 @@ class Move():
         self.row = row
         self.col = col
         self.val = val
-
-
-def wait(seconds):
-    currentTime = time.time()
-    while time.time() - currentTime < seconds:
-        pass
