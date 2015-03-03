@@ -51,21 +51,21 @@ class Display():
         self.lastTileSetTimestamp = time.time()
         if realFloor:
             print("Display instantiating real floor")
-            self.realFloor = LSRealFloor(rows, cols, conf=conf, eventCallback=self.handleTileStepEvent)
+            self.realFloor = LSRealFloor(conf=conf, eventCallback=self.handleTileStepEvent)
         else:
             self.realFloor = None
         self.floor = []
-        for r in range(rows):
+        for r in range(self.rows):
             self.floor.append([])
-            for c in range(cols):
+            for c in range(self.cols):
                 self.floor[r].append('-')
         self.console = console
         if simulatedFloor:
             print("Display instantiating simulated floor")
-            self.simulatedFloor = EmulateFloor(rows, cols)
+            self.simulatedFloor = EmulateFloor(self.rows, self.cols)
         else:
             self.simulatedFloor = None
-        if initScreen and rows > 1 and cols > 7:
+        if initScreen and self.rows > 1 and self.cols > 7:
             self.setAllColor(Colors.BLACK)
             #LIGHTSWEEPER
             self.set(0, 1, Shapes.L, Colors.RED)

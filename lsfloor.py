@@ -39,25 +39,39 @@ class LSFloor():
                 conf = LSFloorConfig(rows=rows, cols=cols)
 
         self.conf = conf
+        
         self.rows = conf.rows
         self.cols = conf.cols
+        
 
         self.eventCallback = eventCallback
         self.tiles = []
         self.tileList = []
+        
+        # Initialize calibration map
+        self.calibrationMap = dict()
+        
+        self._addressToRowColumn = {}
+        self.tileAddresses = []
 
-        self._makeFloor()
-        print("\nClearing floor...")
-        self.clearBoard()
-
-
-    def _makeFloor (self):
-        for r in range(0,self.rows):
+        for row in range(0,self.rows):
             self.tiles.append([])
-            for c in range(0, self.cols):
-                thisTile = EmulateTile(self, r, c)
-                self.tiles[r].append(thisTile)
-                self.tileList.append(thisTile)
+            for col in range(0, self.cols):
+                (port, address) = self.conf.board[row][col]
+                tile = self._returnTile(row, col, port)
+                tile.comNumber = port
+                self.calibrationMap[address] = [127,127]
+                self._addressToRowColumn[(address,port)] = (row, col)
+                tile.assignAddress(address)
+                tile.setColor(Colors.WHITE)
+                tile.setShape(Shapes.ZERO)
+                tile.active=0
+                wait(.05)
+                self.tiles[row].append(tile)
+                self.tileList.append(tile)
+    
+    def _returnTile(self, row, col, port=None):
+        return(EmulateTile(self, row, col))
 
 
     def setColor(self, row, col, color):
@@ -240,33 +254,38 @@ class LSRealFloor(LSFloor):
     SENSOR_THRESHOLD = 100
 
     def __init__(self, rows=None, cols=None, serials=None, conf=None, eventCallback=None):
-        # Call parent init
-        LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
-        self.sharedSerials = dict()
-        self._addressToRowColumn = {}
+
         # Initialize the serial ports
         self.realTiles = LSOpen()
-        # Initialize calibration map
-        self.calibrationMap = dict()
+        self.sharedSerials = dict()
+        
+        # Call parent init
+        LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
+        print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
+        print("\nClearing floor...")
+        self.clearBoard()
+        
+        def _returnTile(self, row, col, port):
+            return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
 
 
-    def _makeFloor(self):
-        for row in self.conf.board:
-            self.tileAddresses = []
-            for col in self.conf.board[row]:
-                (port, address) = self.conf.board[row][col]
-                tile = LSRealTile(self.realTiles.sharedSerials[port])
-                tile.comNumber = port
-                self.calibrationMap[address] = [127,127]
-                tile.active = 0
-                tile.assignAddress(address)
-                self._addressToRowColumn[(address,port)] = (row, col)
-                tile.setColor(Colors.WHITE)
-                tile.setShape(Shapes.ZERO)
-                self.tiles.append(tile)
-                self.tileList.append(tile)
-                wait(.05)
-        print("Loaded " + str(conf.rows) + " rows and " + str(conf.cols) + " columns (" + str(conf.cells) + " tiles)")
+  #  def _makeFloor(self):
+  #      for row in self.conf.board:
+  #          self.tileAddresses = []
+  #          self.tiles.append([])
+  #          for col in self.conf.board[row]:
+  #              (port, address) = self.conf.board[row][col]
+  #              tile = LSRealTile(self.realTiles.sharedSerials[port], row, col)
+  #              tile.comNumber = port
+  #              self.calibrationMap[address] = [127,127]
+  #              tile.active = 0
+  #              tile.assignAddress(address)
+  #              self._addressToRowColumn[(address,port)] = (row, col)
+  #              tile.setColor(Colors.WHITE)
+  #              tile.setShape(Shapes.ZERO)
+  #              self.tiles[row].append(tile)
+  #              self.tileList.append(tile)
+  #              wait(.05)
 
 
     def handleTileStepEvent(self, row, col, val):
@@ -288,9 +307,11 @@ class LSRealFloor(LSFloor):
             zeroTile.setShape(shape)
             wait(self.LSWAIT)
 
-
-    def set(self, *args, **kwargs):
-        LSFloor.set(self, *args, **kwargs)
+    # !!!
+    def set(self, row, col, shape, color):
+        tile = self.tiles[row][col]
+        tile.setShape(shape)
+        tile.setColor(color)
         wait(self.LSWAIT)
 
     def setColor(self, *args, **kwargs):
@@ -388,11 +409,11 @@ def main():
     print("Importing LSDisplay")
     import LSDisplay
 
-    d = LSDisplay.Display(None,None,True,True)
+    d = LSDisplay.Display(realFloor = True, simulatedFloor = True)
 
     print("Testing set")
     d.set(0,1,Shapes.L,Colors.RED)
-    d.set(0,2,Shapes.I,Colors.YELLOW)
+    d.set(0,1,Shapes.I,Colors.YELLOW)
     d.heartbeat()
     wait(2)
 
@@ -402,12 +423,12 @@ def main():
     wait(2)
 
     print("Testing setColor")
-    d.setColor(2,2,Colors.GREEN)
+    d.setColor(2,1,Colors.GREEN)
     d.heartbeat()
     wait(2)
 
     print("Testing setShape")
-    d.setShape(2,2,Shapes.ZERO)
+    d.setShape(1,1,Shapes.ZERO)
     d.heartbeat()
     wait(2)
 

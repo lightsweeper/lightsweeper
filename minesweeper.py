@@ -150,6 +150,8 @@ class Minesweeper():
     def __init__(self, display, audio, rows, cols):
         board = Board()
         mines = random.randint(int(cols*rows*.1), int(cols*rows*.3))
+        if mines is 0:
+            mines = 1
         print("{:d} mines...".format(mines))
         board.create_board(rows, cols, mines)
         self.board = board

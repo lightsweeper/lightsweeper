@@ -251,7 +251,7 @@ class LSRealTile(LSTileAPI):
 
 
     def set(self,color=0, shape=0, transition=0):
-        raise NotImplementedError()
+     #   raise NotImplementedError()
         if (color != 0):
             self.setColor(color)
         if (shape != 0 ):
