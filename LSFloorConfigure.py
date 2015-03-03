@@ -240,7 +240,7 @@ def main():
 # Warning: spaghetti code ahead
 
 
-    def validateRowCol(numTiles, rowsOrCols):
+    def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
         try:
             rowsOrCols = int(rowsOrCols)
         except:
@@ -248,14 +248,15 @@ def main():
             return False
         if numTiles is 0:       # Virtual floor
             return True
-        if rowsOrCols > numTiles:
-            print("There are only " + repr(numTiles) + " tiles!")
-            return False
+        if isVirtual is False:
+            if rowsOrCols > numTiles:
+                print("There are only " + repr(numTiles) + " tiles!")
+                return False
         return True
 
-    def pickRowCol(cells, message):
+    def pickRowCol(cells, message, isVirtual=True):
         x = input(message)
-        while validateRowCol(cells, x) is False:
+        while validateRowCol(cells, x, isVirtual) is False:
             x = input(message)
         return x
 
@@ -377,7 +378,7 @@ def main():
         rows = int(pickRowCol(totaltiles, "\nHow many rows do you want?: "))
         
         if isVirtual is True or totaltiles is 0:
-            cols = int(pickRowCol(totaltiles, "How many columns do you want?: "))
+            cols = int(pickRowCol(totaltiles, "How many columns do you want?: ", isVirtual))
         else:
             cols = int(totaltiles/rows)
 

@@ -16,8 +16,10 @@ class EmulateFloor(lsfloor.LSFloor):
         # Call parent init
         lsfloor.LSFloor.__init__(self, rows=rows, cols=cols)
 
-        print("Making the screen")
-        self.screen = pygame.display.set_mode((800, 800))
+        width=cols*100
+        height=rows*100
+        print("Making the screen ({:d}x{:d})".format(width,height))
+        self.screen = pygame.display.set_mode((width, height))
 
 
     def heartbeat(self):
@@ -45,6 +47,9 @@ class Display():
             else:
                 conf = LSFloorConfig(rows=rows, cols=cols)
 
+        if conf.isVirtual() is True:
+            realFloor = False
+
         self.rows = conf.rows
         self.cols = conf.cols
         self.eventCallback = eventCallback
@@ -65,7 +70,16 @@ class Display():
             self.simulatedFloor = EmulateFloor(self.rows, self.cols)
         else:
             self.simulatedFloor = None
-        if initScreen and self.rows > 1 and self.cols > 7:
+        if initScreen is True:
+            self.splash()
+
+            if self.simulatedFloor:
+                self.simulatedFloor.heartbeat()
+            wait(6.0)
+
+
+    def splash(self):
+        if self.rows > 1 and self.cols > 7:
             self.setAllColor(Colors.BLACK)
             #LIGHTSWEEPER
             self.set(0, 1, Shapes.L, Colors.RED)
@@ -81,29 +95,8 @@ class Display():
             self.set(1, 5, Shapes.P, Colors.BLUE)
             self.set(1, 6, Shapes.E, Colors.MAGENTA)
             self.set(1, 7, Shapes.R, Colors.WHITE)
-
-            # self.set(0, 1, Shapes.G, Colors.RED)
-            # self.set(0, 2, Shapes.O, Colors.YELLOW)
-            # self.set(0, 3, Shapes.O, Colors.GREEN)
-            # self.set(0, 4, Shapes.D, Colors.CYAN)
-            #
-            # self.set(1, 0, Shapes.R, Colors.RED)
-            # self.set(1, 1, Shapes.N, Colors.RED)
-            # self.set(1, 2, Shapes.O, Colors.YELLOW)
-            # self.set(1, 3, Shapes.R, Colors.GREEN)
-            # self.set(1, 4, Shapes.N, Colors.CYAN)
-            # self.set(1, 5, Shapes.i, Colors.BLUE)
-            # self.set(1, 6, Shapes.N, Colors.MAGENTA)
-            # self.set(1, 7, Shapes.G, Colors.WHITE)
-            #
-            # self.set(2, 1, Shapes.D, Colors.RED)
-            # self.set(2, 2, Shapes.A, Colors.YELLOW)
-            # self.set(2, 3, Shapes.U, Colors.GREEN)
-            # self.set(2, 4, Shapes.E, Colors.CYAN)
-
-            if self.simulatedFloor:
-                self.simulatedFloor.heartbeat()
-            wait(6.0)
+        else:
+            self.setAllColor(Colors.RANDOM())
 
     #this is to handle display functions only
     def heartbeat(self):

@@ -265,25 +265,6 @@ class LSRealFloor(LSFloor):
         return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
 
 
-  #  def _makeFloor(self):
-  #      for row in self.conf.board:
-  #          self.tileAddresses = []
-  #          self.tiles.append([])
-  #          for col in self.conf.board[row]:
-  #              (port, address) = self.conf.board[row][col]
-  #              tile = LSRealTile(self.realTiles.sharedSerials[port], row, col)
-  #              tile.comNumber = port
-  #              self.calibrationMap[address] = [127,127]
-  #              tile.active = 0
-  #              tile.assignAddress(address)
-  #              self._addressToRowColumn[(address,port)] = (row, col)
-  #              tile.setColor(Colors.WHITE)
-  #              tile.setShape(Shapes.ZERO)
-  #              self.tiles[row].append(tile)
-  #              self.tileList.append(tile)
-  #              wait(.05)
-
-
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
             self.eventCallback(row, col, val)
@@ -364,24 +345,6 @@ class LSRealFloor(LSFloor):
         return sensorsChanged
 
 
-
-#    def pollSensors_NoAddress(self, limit):
-#        sensorsChanged = []
-#        polled = 0
-#        for com in range(len(self.sharedSerials)):
-#            for addy in range(1, 25):
-#                tile = LSRealTile(self.sharedSerials[com])
-#                tile.assignAddress(addy * 8)
-#                val = tile.sensorStatus()
-#                if val < self.SENSOR_THRESHOLD:
-#                    print("sensor sensed", val)
-#                    sensorsChanged.append((addy * 8, com))
-#                polled += 1
-#                if polled >= limit:
-#                    return sensorsChanged
-#        return sensorsChanged
-
-
 def main():
 
     def getRandRow(lsDisplay):
@@ -399,7 +362,7 @@ def main():
     print("Importing LSDisplay")
     import LSDisplay
 
-    d = LSDisplay.Display(realFloor = useRealFloor, simulatedFloor = True)
+    d = LSDisplay.Display(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
 
     print("Testing set")
     d.set(getRandRow(d),getRandCol(d),Shapes.L,Colors.RED)
