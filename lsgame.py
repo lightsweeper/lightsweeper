@@ -6,13 +6,7 @@ from LSFloorConfigure import userSelect
 import time
 import os
 import random
-#from minesweeper import Minesweeper
-#from EightbitSoundboard import Soundboard
-#from AnimTestbed import AnimTestbed
 
-
-#GAMES = [Soundboard, AnimTestbed, Minesweeper]
-#PLAYTHISGAME = random.choice(GAMES)
 
 #has a list of changes to the board
 class Frame():
@@ -146,11 +140,7 @@ class LSGameEngine():
         return sensorsChanged
 
 def main():
-    pass
-  #  ourGame = PLAYTHISGAME
-   # print("Playing {:s}".format(ourGame.__name__))
-  #  gameEngine = LSGameEngine(PLAYTHISGAME)
-   # gameEngine.beginLoop()
+    print("TODO: testing lsgame")
 
 if __name__ == '__main__':
     main()

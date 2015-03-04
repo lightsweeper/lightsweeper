@@ -16,8 +16,6 @@ class FileExistsError(IOError):
         and overwrite=False
     """
     pass
-
-class CannotParseError(IOError):
     """ Custom exception returned when the config file is present but cannot be parsed. """
     pass
 
@@ -168,7 +166,7 @@ class LSFloorConfig:
             fileName = floorFiles[0]
         else:
             print("\nFound multiple configurations: \n")
-            fileName = userSelect(floorFiles, "\nWhich floor configuration would you like to use? ")
+            fileName = userSelect(floorFiles, "\nWhich floor configuration would you like to use?")
         self.loadConfig(fileName)
 
     def _formatFileName(self, fileName):
@@ -210,7 +208,7 @@ class LSFloorConfig:
         if self.rows * self.cols is not self.cells:
             raise InvalidConfigError("Configuration is not valid.")
 
-def userSelect(selectionList, message="Select an option from the list: "):
+def userSelect(selectionList, message="Select an option from the list:"):
     def checkInput(selection):
         options = dict(enumerate(selectionList))
         if selection in options.values():
@@ -230,9 +228,10 @@ def userSelect(selectionList, message="Select an option from the list: "):
         return checkInput(x)
         
     options = enumerate(selectionList)
+    print("\r")
     for optNum, optName in options:
-        print("[{:d}] {:s}".format(optNum, optName))
-    return pick(message)
+        print("  [{:d}] {:s}".format(optNum, optName))
+    return pick("{:s} ".format(message))
     
 
 

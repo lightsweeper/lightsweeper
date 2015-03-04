@@ -24,6 +24,6 @@ To use:
 
   > python3 minesweeper.py
 
- or by accessing it through LSGameEngine:
+ or by accessing it through LightSweeper:
 
- > python3 LSGameEngine.py
+ > python3 LightSweeper.py

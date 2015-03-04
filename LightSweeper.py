@@ -1,0 +1,37 @@
+#!/usr/bin/python3
+import random
+
+from minesweeper import Minesweeper
+from EightbitSoundboard import Soundboard
+from AnimTestbed import AnimTestbed
+
+from lsgame import LSGameEngine
+from LSFloorConfigure import userSelect
+
+
+availableGames = dict([
+                        ("Soundboard", Soundboard),
+                        ("AnimTestbed", AnimTestbed),
+                        ("Minesweeper", Minesweeper)])
+
+
+def main():
+    print(" L I G H T S W E E P E R ")
+
+    games = [ g.__name__ for g in availableGames.values() ]
+
+    games.append("Random")
+
+    game = userSelect(games, "\nWhich game do you want?")
+
+    if game is "Random":
+        game = random.choice(list(availableGames.keys()))
+
+    currentGame = availableGames[game]
+
+    print("\nPlaying {:s}...".format(currentGame.__name__))
+    gameEngine = LSGameEngine(currentGame)
+    gameEngine.beginLoop()
+
+if __name__ == '__main__':
+    main()
