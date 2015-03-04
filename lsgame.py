@@ -1,12 +1,11 @@
-from LSDisplay import Display
-from LSAudio import Audio
-from LSFloorConfigure import LSFloorConfig
-from LSFloorConfigure import userSelect
-
-import time
 import os
 import random
+import time
 
+from LSDisplay import Display
+from lsaudio import LSAudio
+from LSFloorConfigure import LSFloorConfig
+from LSFloorConfigure import userSelect
 
 #has a list of changes to the board
 class Frame():
@@ -89,10 +88,11 @@ class LSGameEngine():
 
         self.ROWS = conf.rows
         self.COLUMNS = conf.cols
+        os.system('cls' if os.name == 'nt' else 'clear')
         print("Board size is {:d}x{:d}".format(self.ROWS, self.COLUMNS))
             
         self.GAME = GAME
-        self.audio = Audio(initSound=True)
+        self.audio = LSAudio(initSound=True)
         self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
                                eventCallback = self.handleTileStepEvent, initScreen=True, conf=conf)
         self.newGame()

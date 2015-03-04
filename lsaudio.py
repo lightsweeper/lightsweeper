@@ -120,5 +120,5 @@ except:
     print("No sound platform installed. Make sure pygame is installed with sdl mixer support.")
 
 #this class serves as a common controller for audio
-class Audio(lsAudioBackend):
+class LSAudio(lsAudioBackend):
     pass

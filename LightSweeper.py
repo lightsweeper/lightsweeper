@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import random
 
 from minesweeper import Minesweeper
@@ -10,12 +11,14 @@ from LSFloorConfigure import userSelect
 
 
 availableGames = dict([
-                        ("Soundboard", Soundboard),
                         ("AnimTestbed", AnimTestbed),
-                        ("Minesweeper", Minesweeper)])
+                        ("Minesweeper", Minesweeper),
+                        ("Soundboard", Soundboard)
+                      ])
 
 
 def main():
+    os.system('cls' if os.name == 'nt' else 'clear')
     print(" L I G H T S W E E P E R ")
 
     games = [ g.__name__ for g in availableGames.values() ]
