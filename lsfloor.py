@@ -371,9 +371,9 @@ def main():
         useRealFloor = False
 
     print("Importing LSDisplay")
-    import LSDisplay
+    import lsdisplay
 
-    d = LSDisplay.Display(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
+    d = lsdisplay.LSDisplay(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
 
     print("Testing set")
     d.set(getRandRow(d),getRandCol(d),Shapes.L,Colors.RED)

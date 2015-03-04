@@ -2,7 +2,7 @@ import os
 import random
 import time
 
-from LSDisplay import Display
+from lsdisplay import LSDisplay
 from lsaudio import LSAudio
 from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
@@ -93,7 +93,7 @@ class LSGameEngine():
             
         self.GAME = GAME
         self.audio = LSAudio(initSound=True)
-        self.display = Display(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
+        self.display = LSDisplay(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
                                eventCallback = self.handleTileStepEvent, initScreen=True, conf=conf)
         self.newGame()
 
@@ -103,9 +103,7 @@ class LSGameEngine():
 
     def newGame(self):
         self.game = self.GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
-        #self.game = Minesweeper(self.display, self.audio, self.ROWS, self.COLUMNS)
-        #self.game = Soundboard(self.display, self.audio, self.ROWS, self.COLUMNS)
-        #self.game = AnimTestbed(self.display, self.audio, self.ROWS, self.COLUMNS)
+
 
     def beginLoop(self):
         while True:

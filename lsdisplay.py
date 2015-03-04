@@ -73,7 +73,7 @@ class Move():
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
-class Display():
+class LSDisplay():
 
     def __init__(self, rows=None, cols=None, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True, conf=None):
         if conf is None:
@@ -254,7 +254,7 @@ class Display():
 
 def main():
     print("Testing LSDisplay realfloor and emulatedfloor")
-    display = Display(3, 8, True, True, False)
+    display = LSDisplay(3, 8, True, True, False)
 
     for j in range(8):
         display.setColor(0, j, Colors.RED)
