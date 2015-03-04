@@ -304,8 +304,8 @@ class EndAnimation:
         return self.currentFrame
 
 def main():
-    import LSGameEngine
-    gameEngine = LSGameEngine.GameEngine(Minesweeper)
+    import lsgame
+    gameEngine = lsgame.GameEngine(Minesweeper)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

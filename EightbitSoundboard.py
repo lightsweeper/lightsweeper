@@ -102,8 +102,8 @@ class Soundboard():
         print("Test code goes here")
         
 def main():
-    import LSGameEngine
-    gameEngine = LSGameEngine.GameEngine(Soundboard)
+    import lsgame
+    gameEngine = lsgame.GameEngine(Soundboard)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

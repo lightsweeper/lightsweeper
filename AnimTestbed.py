@@ -25,8 +25,8 @@ class AnimTestbed():
         pass
         
 def main():
-    import LSGameEngine
-    gameEngine = LSGameEngine.GameEngine(AnimTestbed)
+    import lsgame
+    gameEngine = lsgame.GameEngine(AnimTestbed)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':
