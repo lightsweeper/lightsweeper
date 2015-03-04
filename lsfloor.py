@@ -1,5 +1,3 @@
-from lightsweeper import Move
-
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from LSEmulateTile import EmulateTile

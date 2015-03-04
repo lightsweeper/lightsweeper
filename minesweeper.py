@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-
-import random
+from lsgame import LSGameEngine
+from lsgame import Frame
 
 import Colors
 import Shapes
-from lightsweeper import Frame
+
+import random
 import time
 
 wait=time.sleep
@@ -304,8 +305,7 @@ class EndAnimation:
         return self.currentFrame
 
 def main():
-    import lsgame
-    gameEngine = lsgame.GameEngine(Minesweeper)
+    gameEngine = LSGameEngine(Minesweeper)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

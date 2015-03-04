@@ -1,6 +1,9 @@
+from lsgame import LSGameEngine
+from lsgame import Frame
+
 import Colors
 import Shapes
-from lightsweeper import Frame
+
 import time
 
 class AnimTestbed():
@@ -25,8 +28,7 @@ class AnimTestbed():
         pass
         
 def main():
-    import lsgame
-    gameEngine = lsgame.GameEngine(AnimTestbed)
+    gameEngine = LSGameEngine(AnimTestbed)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

@@ -2,7 +2,8 @@
 import Colors
 import Shapes
 import random
-from lightsweeper import Move
+from lsgame import LSGameEngine
+from lsgame import Move
 
 class Soundboard():
     def __init__(self, display, audio, rows, cols):
@@ -102,8 +103,7 @@ class Soundboard():
         print("Test code goes here")
         
 def main():
-    import lsgame
-    gameEngine = lsgame.GameEngine(Soundboard)
+    gameEngine = LSGameEngine(Soundboard)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

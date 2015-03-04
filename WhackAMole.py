@@ -18,7 +18,7 @@ class WhackAMole():
 
 def main():
     import lsgame
-    gameEngine = lsgame.GameEngine(WhackAMole)
+    gameEngine = lsgame.LSGameEngine(WhackAMole)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

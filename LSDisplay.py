@@ -1,7 +1,7 @@
-from lightsweeper import Move
+from lsfloor import LSRealFloor
 from LSFloorConfigure import LSFloorConfig
 import lsfloor
-from lsfloor import LSRealFloor
+
 import Shapes
 import Colors
 import random
@@ -64,11 +64,17 @@ class EmulateFloor(lsfloor.LSFloor):
         row = int(y/100)
         return (row,col)
 
+class Move():
+    def __init__(self, row, col, val):
+        self.row = row
+        self.col = col
+        self.val = val
 
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
 class Display():
+
     def __init__(self, rows=None, cols=None, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True, conf=None):
         if conf is None:
             if rows is None or cols is None:
