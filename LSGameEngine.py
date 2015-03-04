@@ -76,7 +76,7 @@ class GameEngine():
         #       str(endSensorsChanged - startSensorsChanged) + " s")
         self.frameRenderTime += (time.time() - startEnterFrame)
         if self.frames % self.FPS == 0:
-            print(str(1.0 / (self.frameRenderTime / self.FPS)) + " FPS")
+            print("[{:f} FPS]".format(1.0 / (self.frameRenderTime / self.FPS)), end="\r")
             self.frameRenderTime = 0
 
     def pollSensors(self):

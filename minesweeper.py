@@ -196,17 +196,18 @@ class Minesweeper():
                     self.audio.playSound("Explosion.wav")
                 elif playSound:
                     self.audio.playSound("Blop.wav")
+                self.lastMove = move
             self.updateBoard(self.board)
         elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
-                self.endAnim = EndAnimation(True, self.rows, self.cols)
+                self.endAnim = EndAnimation(True, self.rows, self.cols, self.lastMove)
                 self.animatingEnd = True
                 self.audio.playSound("Success.wav")
             else:
                 #self.audio.playSound("Explosion.wav")
                 self.board.show_all()
-                self.endAnim = EndAnimation(False, self.rows, self.cols)
+                self.endAnim = EndAnimation(False, self.rows, self.cols, self.lastMove)
                 self.animatingEnd = True
         elif self.animatingEnd:
             frame = self.endAnim.getFrame()
@@ -247,7 +248,7 @@ class Minesweeper():
         print("Test code goes here")
 
 class EndAnimation:
-    def __init__(self, win, rows, cols):
+    def __init__(self, win, rows, cols, lastMove):
         self.rows = rows
         self.cols = cols
         self.ended = False

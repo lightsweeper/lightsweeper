@@ -31,10 +31,16 @@ class Frame():
             for col in range(self.columns):
                 self.colors[(row, col)] = color
 
+    def setColor(self, row, col, color):
+        self.colors[(row, col)] = color
+
     def setAllShape(self, shape):
         for row in range(self.rows):
             for col in range(self.columns):
                 self.shapes[(row, col)] = shape
+
+    def setShape(self, row, col, shape):
+        self.shapes[(row, col)] = shape
 
 
     def getShape(self, row, col):
