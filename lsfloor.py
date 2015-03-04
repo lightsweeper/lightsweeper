@@ -182,6 +182,9 @@ class LSFloor():
     def _flushQueue(self):  # What should this do?
         pass
 
+    def handleTileStepEvent(self, row, col, val):
+        if self.eventCallback is not None:
+            self.eventCallback(row, col, val)
 
     def handleTileSensed(self, row, col):
         pass
@@ -252,8 +255,6 @@ class LSRealFloor(LSFloor):
         This class extends LSFloor with methods specific to interacting with real Lightsweeper hardware
     """
 
-    SENSOR_THRESHOLD = 100
-
     def __init__(self, rows=None, cols=None, serials=None, conf=None, eventCallback=None):
 
         # Initialize the serial ports
@@ -268,7 +269,6 @@ class LSRealFloor(LSFloor):
         
     def _returnTile(self, row, col, port):
         return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
-
 
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
@@ -341,19 +341,21 @@ class LSRealFloor(LSFloor):
             if reading < (((highest-lowest) * sensitivity) + lowest) and lowest < 127:
                 if tile.active <= 0:
                     tile.active = 1
-                    #print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
+                    print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
                     rowCol = self._addressToRowColumn[(tile.address, tile.comNumber)]
                     move = Move(rowCol[0], rowCol[1], reading)
                     sensorsChanged.append(move)
                     self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
                 else:
                     tile.active += 1
+                    print("    {:d} -> {:d}                        ".format(tile.address, reading), end="\r")
             elif reading is highest:
                 if tile.active > 0:
                     tile.active = 0
-              #      print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
-        #print("sensor polls took " + str(sensorPoll) + "ms")
+                    print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
         return sensorsChanged
+            
+        #print("sensor polls took " + str(sensorPoll) + "ms")
 
 
 def main():

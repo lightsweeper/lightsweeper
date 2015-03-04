@@ -7,6 +7,7 @@ import Colors
 import random
 import time
 import pygame
+from pygame.locals import *
 
 
 wait = time.sleep
@@ -21,6 +22,7 @@ class EmulateFloor(lsfloor.LSFloor):
         width=cols*100
         height=rows*100
         print("Making the screen ({:d}x{:d})".format(width,height))
+        pygame.init()
         self.screen = pygame.display.set_mode((width, height))
 
 
@@ -36,6 +38,32 @@ class EmulateFloor(lsfloor.LSFloor):
                 image = tile.loadImage()
                 self.screen.blit(image, (100 * c, 100 * r))
         pygame.display.update()
+
+
+    def pollSensors(self):
+        sensorsChanged = []
+        reading = 1
+        for event in pygame.event.get():
+            rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
+            if event.type == QUIT:
+                exit()
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                exit()
+            if event.type == MOUSEBUTTONUP:
+                print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+            if event.type == MOUSEBUTTONDOWN:
+                print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+                move = Move(rowCol[0], rowCol[1], reading)
+                sensorsChanged.append(move)
+                self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
+        return sensorsChanged
+
+    def _whereDidIPutMyMouse(self, mousePointer):
+        (x, y) = mousePointer
+        col = int(x/100)
+        row = int(y/100)
+        return (row,col)
+
 
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
@@ -117,7 +145,9 @@ class Display():
     def pollSensors(self):
         sensorsChanged = []
         if self.realFloor:
-            sensorsChanged = self.realFloor.pollSensors()
+            sensorsChanged += self.realFloor.pollSensors()
+        if self.simulatedFloor:
+            sensorsChanged += self.simulatedFloor.pollSensors()
         if self.console and not self.realFloor:
             self.printFloor()
             consoleIn = input("Type in the next move")
