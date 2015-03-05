@@ -307,6 +307,16 @@ class LSRealFloor(LSFloor):
             zeroTile.assignAddress(0)
             zeroTile.blank()
 
+    def latch(self, row, col):
+        tile = self.tiles[row][col]
+        tile.latch()
+
+    def latchAll(self):
+        for port in self.realTiles.sharedSerials.keys():
+            zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
+            zeroTile.assignAddress(0)
+            zeroTile.latch()
+
     def printAddresses(self):
         s = ""
         for row in range(0,self.rows):
@@ -314,6 +324,11 @@ class LSRealFloor(LSFloor):
                 s += str(self.tiles[row][col].getAddress()) + " "
             #print(s)
             s = ""
+
+    def heartbeat(self):
+        self.latchAll()     # Should update floor with latched commands
+                            # but firmware doesn't support? All set updates are
+                            # currently instantaneous
 
 
     def pollSensors(self, sensitivity=.95):

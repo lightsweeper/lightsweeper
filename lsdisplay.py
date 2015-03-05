@@ -75,6 +75,7 @@ class Move():
 #any combination thereof
 class LSDisplay():
 
+
     def __init__(self, rows=None, cols=None, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True, conf=None):
         if conf is None:
             if rows is None or cols is None:
@@ -90,6 +91,9 @@ class LSDisplay():
         self.cols = conf.cols
         self.eventCallback = eventCallback
         self.lastTileSetTimestamp = time.time()
+        self.shapes = dict()
+        self.colors = dict()
+
         if realFloor:
             print("Display instantiating real floor")
             self.realFloor = LSRealFloor(conf=conf, eventCallback=self.handleTileStepEvent)
@@ -136,7 +140,6 @@ class LSDisplay():
 
     #this is to handle display functions only
     def heartbeat(self):
-        #print("Display heartbeat")
         if self.simulatedFloor:
             self.simulatedFloor.heartbeat()
         if self.realFloor:
@@ -171,6 +174,8 @@ class LSDisplay():
             self.realFloor.set(row, col, shape, color)
         if self.simulatedFloor:
             self.simulatedFloor.set(row, col, shape, color)
+        self.shapes[(row, col)] = shape
+        self.colors[(row, col)] = color
         # wait(0.005)
 
     def setAll(self, shape, color):
@@ -178,6 +183,8 @@ class LSDisplay():
             self.realFloor.setAll(shape, color)
         if self.simulatedFloor:
             self.simulatedFloor.setAll(shape, color)
+        self.allShapes(shape)
+        self.allColors(color)
 
     #colors is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segments):
@@ -198,6 +205,7 @@ class LSDisplay():
             self.realFloor.setColor(row, col, color)
         if self.simulatedFloor:
             self.simulatedFloor.setColor(row, col, color)
+        self.colors[(row, col)] = color
         # wait(0.005)
 
     def setAllColor(self, color):
@@ -205,42 +213,77 @@ class LSDisplay():
             self.realFloor.setAllColor(color)
         if self.simulatedFloor:
             self.simulatedFloor.setAllColor(color)
+        self.allColors(color)
 
     def setShape(self, row, col, shape):
         if self.realFloor:
             self.realFloor.setShape(row, col, shape)
         if self.simulatedFloor:
             self.simulatedFloor.setShape(row, col, shape)
+        self.shapes[(row, col)] = shape
 
     def setAllShape(self, shape):
         if self.realFloor:
             self.realFloor.setAllShape(shape)
         if self.simulatedFloor:
             self.simulatedFloor.setAllShape(shape)
+        self.allShapes(shape)
 
     def clear(self, row, col):
         if self.realFloor:
             self.realFloor.blank(row, col)
         if self.simulatedFloor:
             self.simulatedFloor.blank(row, col)
+        self.shapes[(row, col)] = Shapes.OFF
+        self.colors[(row, col)] = Colors.BLACK
 
     def clearAll(self):
         if self.realFloor:
             self.realFloor.clearBoard()
         if self.simulatedFloor:
             self.simulatedFloor.clearBoard()
+        self.allShapes(Shapes.OFF)
+        self.allColors(Colors.BLACK)
 
 #    def setSegmentsCustom(self, row, col, colors):
 #        pass
 
-    def setFrame(self, frame):
+    def hasShapeChangesFor(self, row, col):
+        val = True
+        try:
+            self.shapes[(row, col)]
+        except:
+            val = False
+        return val
+
+    def hasColorChangesFor(self, row, col):
+        val = True
+        try:
+            self.colors[(row, col)]
+        except:
+            val = False
+        return val
+
+    def setFrame(self):
+        self.heartbeat()
+        self.colors = dict()
+        self.shapes = dict()
+
+    def getShape(self, row, col):
+        return self.shapes[(row, col)]
+
+    def getColor(self, row, col):
+        return self.colors[(row, col)]
+
+    def allShapes(self, shape):
         for row in range(self.rows):
             for col in range(self.cols):
-                #if frame.hasChangesFor(row, col):
-                if frame.hasColorChangesFor(row, col):
-                    self.setColor(row, col, frame.getColor(row, col))
-                if frame.hasShapeChangesFor(row, col):
-                    self.setShape(row, col, frame.getShape(row, col))
+                self.shapes[(row, col)] = shape
+
+    def allColors(self, color):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.colors[(row, col)] = color
 
     def add(self, row, col, shape, color):
         pass

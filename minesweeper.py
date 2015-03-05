@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from lsgame import LSGameEngine
-from lsgame import Frame
+#from lsgame import Frame
 
 import Colors
 import Shapes
@@ -202,19 +202,20 @@ class Minesweeper():
         elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
-                self.endAnim = EndAnimation(True, self.rows, self.cols, self.lastMove)
+                self.endAnim = EndAnimation(True, self.display, self.lastMove)
                 self.animatingEnd = True
                 self.audio.playSound("Success.wav")
             else:
                 #self.audio.playSound("Explosion.wav")
                 self.board.show_all()
-                self.endAnim = EndAnimation(False, self.rows, self.cols, self.lastMove)
+                self.endAnim = EndAnimation(False, self.display, self.lastMove)
                 self.animatingEnd = True
         elif self.animatingEnd:
             frame = self.endAnim.getFrame()
             if frame:
                 #update display of each tile
-                self.display.setFrame(frame)
+                frame.setFrame()
+                wait(1)
             if self.endAnim.ended:
                 print("ended")
                 self.ended = True
@@ -249,50 +250,53 @@ class Minesweeper():
         print("Test code goes here")
 
 class EndAnimation:
-    def __init__(self, win, rows, cols, lastMove):
-        self.rows = rows
-        self.cols = cols
+    def __init__(self, win, display, lastMove):
+        self.rows = display.rows
+        self.cols = display.cols
+        print(self.rows)
+        print(self.cols)
         self.ended = False
         self.currentFrame = None
         self.frames = []
+        frame = display
         if win:
-            frame = Frame(self.rows, self.cols)
             frame.setAllColor(Colors.CYAN)
             self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
+
+
             frame.setAllColor(Colors.BLUE)
             self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
+
             frame.setAllColor(Colors.GREEN)
             self.frames.append(frame)
 
-            frame = Frame(self.rows, self.cols)
+
             frame.setAllColor(Colors.CYAN)
             self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
+
             frame.setAllColor(Colors.BLUE)
             self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
+
             frame.setAllColor(Colors.GREEN)
             self.frames.append(frame)
         else:
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 1
-            self.frames.append(frame)
+            for i in range(0,20):
+                frame.setAllColor(Colors.RED)
+                frame.setAllShape(Shapes.EIGHT)
+                frame.heartbeats = 1
+                self.frames.append(frame)
 
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.BLACK)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 1
-            self.frames.append(frame)
 
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 1
-            self.frames.append(frame)
+                frame.setAllColor(Colors.BLACK)
+                frame.setAllShape(Shapes.EIGHT)
+                frame.heartbeats = 1
+                self.frames.append(frame)
+
+
+                frame.setAllColor(Colors.RED)
+                frame.setAllShape(Shapes.EIGHT)
+                frame.heartbeats = 1
+                self.frames.append(frame)
 
     def getFrame(self):
         if len(self.frames) is 0:
