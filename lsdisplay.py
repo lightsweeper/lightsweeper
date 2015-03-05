@@ -83,7 +83,7 @@ class LSDisplay():
             else:
                 conf = LSFloorConfig(rows=rows, cols=cols)
 
-        if conf.isVirtual() is True:
+        if conf.containsVirtual() is True:
             realFloor = False
 
         self.rows = conf.rows
