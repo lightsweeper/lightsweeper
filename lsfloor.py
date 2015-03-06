@@ -14,6 +14,12 @@ import time
 
 wait=time.sleep
 
+class Move():
+    def __init__(self, row, col, val):
+        self.row = row
+        self.col = col
+        self.val = val
+
 class LSFloor():
     """
         This class describes an abstract lightsweeper floor.
