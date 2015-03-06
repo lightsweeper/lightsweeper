@@ -2,7 +2,18 @@ from collections import defaultdict
 import Shapes
 import Colors
 
-animation = list()
+class LSAnimation:
+
+    def __init__(self, rowOffset, colOffset)
+        self.offset = (rowOffset, colOffset)
+        self._frames = list()
+
+    def addFrame(self, frame):
+        self.validateFrame(frame)
+        self._frames.append(frame)
+
+    def validateFrame(self, frame):
+        print(frame.len())
 
 class LSFrameGen:
 
@@ -60,9 +71,12 @@ def main():
     frame.edit(2,2,Shapes.ZERO, colormask)
     frame.edit(2,1,Shapes.ONE, colormask)
 
-    frame.print()
-    print("")
-    print(frame.get())
+    thisFrame = frame.get()
+
+    ourAnimation = LSAnimation(0,0)
+
+    ourAnimation.addFrame(thisFrame)
+    ourAnimation.addFrame(thisFrame)
 
 if __name__ == '__main__':
     main()
