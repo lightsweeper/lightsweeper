@@ -30,7 +30,7 @@ def renderFrame(floor, frame):
         rMask = frame.pop(0)
         gMask = frame.pop(0)
         bMask = frame.pop(0)
-        floor.tiles[row][col].setSegments(rMask,gMask,bMask)
+        floor.tiles[row][col].setSegments((rMask,gMask,bMask))
         print("{:d},{:d} -> {:d} ({:d},{:d},{:d})".format(row,col,shape,rMask,gMask,bMask)) # Debugging
         col += 1
 
@@ -176,9 +176,9 @@ def main():
     print("Importing LSDisplay")
     import lsdisplay
 
-    d = lsdisplay.LSDisplay(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
+    d = lsdisplay.LSDisplay(realFloor = True, simulatedFloor = True, initScreen=False)
 
-    renderFrame(d.simulatedFloor, thisFrame)
+    renderFrame(d.realFloor, thisFrame)
     input()
 
 if __name__ == '__main__':
