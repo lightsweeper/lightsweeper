@@ -1,6 +1,9 @@
 from collections import defaultdict
+import itertools
+
 import Shapes
 import Colors
+import lsdisplay
 
 def validateFrame(frame):
     frameLen = len(frame) - 1
@@ -12,6 +15,25 @@ def validateFrame(frame):
     if all(i < 128 for i in frame[1:]) is False:
         return False
     return True
+
+def renderFrame(floor, frame):
+# TODO: Incomplete, should optimize tile calls
+
+    cols = frame.pop(0)
+    row = 0
+    col = 0
+    for _ in itertools.repeat(None, int(len(frame)/4)):
+        if col is cols:
+            row += 1
+            col = 0
+        shape = frame.pop(0)
+        rMask = frame.pop(0)
+        gMask = frame.pop(0)
+        bMask = frame.pop(0)
+        floor.tiles[row][col].setSegments(rMask,gMask,bMask)
+        print("{:d},{:d} -> {:d} ({:d},{:d},{:d})".format(row,col,shape,rMask,gMask,bMask)) # Debugging
+        col += 1
+
 
 class LSAnimation:
 
@@ -114,14 +136,15 @@ class LSFrameGen:
 def main():
     print("TODO: testing lsanimate")
 
-    colormask = (Shapes.ZERO, Shapes.EIGHT, Shapes.ZERO)
+    colormask = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
+    diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
 
     frame = LSFrameGen(2,2)
     frame.edit(1,1,Shapes.ZERO, colormask)
     frame.edit(1,1,Shapes.SEVEN)
     frame.edit(1,2,Shapes.ONE, colormask)
-    frame.edit(2,2,Shapes.ZERO, colormask)
-    frame.edit(2,1,Shapes.ONE, colormask)
+    frame.edit(2,2,Shapes.ZERO, diffmask)
+    frame.edit(2,1,Shapes.ONE, diffmask)
 
     thisFrame = frame.get()
 
@@ -135,12 +158,28 @@ def main():
     frame.edit(2,2,Shapes.FOUR)
     thisFrame = frame.get()
     ourAnimation.insertFrame(1,thisFrame)
+    ourAnimation.insertFrame(1,thisFrame)
+    ourAnimation.insertFrame(1,thisFrame)
+    ourAnimation.insertFrame(1,thisFrame)
 
-    ourAnimation.showFrames()
 
     ourAnimation.deleteFrame(1)
 
     ourAnimation.showFrames()
+
+    useRealFloor = True
+    try:
+        realTiles = LSOpen()
+    except Exception as e:
+        useRealFloor = False
+
+    print("Importing LSDisplay")
+    import lsdisplay
+
+    d = lsdisplay.LSDisplay(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
+
+    renderFrame(d.simulatedFloor, thisFrame)
+    input()
 
 if __name__ == '__main__':
     main()

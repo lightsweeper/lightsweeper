@@ -7,10 +7,10 @@ from LSFloorConfigure import userSelect
 import Colors
 import Shapes
 
-import sys
-import time
 import os
 import random
+import sys
+import time
 
 wait=time.sleep
 
@@ -148,6 +148,7 @@ class LSFloor():
 
     def pollSensors(self):
         pass
+
 
     def heartbeat(self):
         pass
