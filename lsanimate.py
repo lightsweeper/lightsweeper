@@ -2,18 +2,68 @@ from collections import defaultdict
 import Shapes
 import Colors
 
+def validateFrame(frame):
+    frameLen = len(frame) - 1
+    if frameLen % 4 is not 0:
+        return False
+    cells = frameLen/4
+    if (cells/frame[0]).is_integer() is False:
+        return False
+    if all(i < 128 for i in frame[1:]) is False:
+        return False
+    return True
+
 class LSAnimation:
 
-    def __init__(self, rowOffset, colOffset)
-        self.offset = (rowOffset, colOffset)
+    def __init__(self):
         self._frames = list()
 
     def addFrame(self, frame):
-        self.validateFrame(frame)
-        self._frames.append(frame)
+        self.insertFrame(len(self._frames), frame)
+        return True
 
-    def validateFrame(self, frame):
-        print(frame.len())
+    def insertFrame(self, index, frame):
+    # Inserts before given frame
+        if validateFrame(frame) is False:
+            print("Error frame is invalid")
+            raise Exception
+        index -= 1
+        if self._checkIndex(index) is True:
+            self._frames.insert(index,frame)
+        return True
+
+    def deleteFrame(self, index):
+        index -= 1
+        if self._checkIndex(index) is True:
+            frames = self._frames[0:index]
+            frames.extend(self._frames[index+1:])
+            self._frames = frames
+        return True
+
+    def showFrames(self):
+        Frame = self.nextFrame()
+        i = 0
+        while True:
+            i += 1
+            try:
+                print("Frame {:d}: ".format(i) + str(next(Frame)))
+            except:
+                print("Out of frames")
+                break
+
+    def nextFrame(self):
+        if len(self._frames) is 0:
+            print("No frames!")
+        else:
+            for frame in self._frames:
+                yield(frame)
+
+    def _checkIndex(self, index):
+        if index not in range(-1,len(self._frames)+1):
+            print("Error frame index out of range")
+            raise Exception
+        return True
+
 
 class LSFrameGen:
 
@@ -30,11 +80,13 @@ class LSFrameGen:
                 colormask = self.frame[row][col][1]
             except TypeError:
                 print("Frame warning: No colormask set for cell at ({:d},{:d})".format(row,col))
+                color = Colors.BLACK
         if shape is None:
             try:
                 shape = self.frame[row][col][0]
             except TypeError:
                 print("Frame warning: No shape set for cell at ({:d},{:d})".format(row,col))
+                shape = Shapes.OFF
         self.frame[row][col] = [shape, colormask]
 
     def print(self):
@@ -62,7 +114,7 @@ class LSFrameGen:
 def main():
     print("TODO: testing lsanimate")
 
-    colormask = Colors.segmentsToRgb([Colors.RED, Colors.RED])
+    colormask = (Shapes.ZERO, Shapes.EIGHT, Shapes.ZERO)
 
     frame = LSFrameGen(2,2)
     frame.edit(1,1,Shapes.ZERO, colormask)
@@ -73,10 +125,22 @@ def main():
 
     thisFrame = frame.get()
 
-    ourAnimation = LSAnimation(0,0)
+    ourAnimation = LSAnimation()
+
+
 
     ourAnimation.addFrame(thisFrame)
     ourAnimation.addFrame(thisFrame)
+
+    frame.edit(2,2,Shapes.FOUR)
+    thisFrame = frame.get()
+    ourAnimation.insertFrame(1,thisFrame)
+
+    ourAnimation.showFrames()
+
+    ourAnimation.deleteFrame(1)
+
+    ourAnimation.showFrames()
 
 if __name__ == '__main__':
     main()
