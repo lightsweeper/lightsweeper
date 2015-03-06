@@ -6,10 +6,11 @@ import Colors
 import lsdisplay
 
 def validateFrame(frame):
+   # print(repr(frame)) # Debugging
     frameLen = len(frame) - 1
-    if frameLen % 4 is not 0:
+    if frameLen % 3 is not 0:
         return False
-    cells = frameLen/4
+    cells = frameLen/3
     if (cells/frame[0]).is_integer() is False:
         return False
     if all(i < 128 for i in frame[1:]) is False:
@@ -22,16 +23,16 @@ def renderFrame(floor, frame):
     cols = frame.pop(0)
     row = 0
     col = 0
-    for _ in itertools.repeat(None, int(len(frame)/4)):
+    for _ in itertools.repeat(None, int(len(frame)/3)):
         if col is cols:
             row += 1
             col = 0
-        shape = frame.pop(0)
+    #    shape = frame.pop(0)
         rMask = frame.pop(0)
         gMask = frame.pop(0)
         bMask = frame.pop(0)
         floor.tiles[row][col].setSegments((rMask,gMask,bMask))
-        print("{:d},{:d} -> {:d} ({:d},{:d},{:d})".format(row,col,shape,rMask,gMask,bMask)) # Debugging
+        print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
         col += 1
 
 
@@ -96,20 +97,14 @@ class LSFrameGen:
 
     # Allows you to edit an existing frame structure, if no colormask is set
     # then the tile will keep its current colormask
-    def edit(self,row,col,shape=None,colormask=None):
-        if colormask is None:
-            try:
-                colormask = self.frame[row][col][1]
-            except TypeError:
-                print("Frame warning: No colormask set for cell at ({:d},{:d})".format(row,col))
-                color = Colors.BLACK
-        if shape is None:
-            try:
-                shape = self.frame[row][col][0]
-            except TypeError:
-                print("Frame warning: No shape set for cell at ({:d},{:d})".format(row,col))
-                shape = Shapes.OFF
-        self.frame[row][col] = [shape, colormask]
+    def edit(self,row,col,colormask):
+        try:
+            colormask = self.frame[row][col][1]
+        except TypeError:
+            print("Frame warning: No colormask set for cell at ({:d},{:d})".format(row,col))
+            color = Colors.BLACK
+
+        self.frame[row][col] = [colormask]
 
     def print(self):
         for row in self.frame:
@@ -120,13 +115,10 @@ class LSFrameGen:
         frameOut.append(self.cols)
         for row in self.frame:
             for col in self.frame:
-                cell = self.frame[row][col]
-         #       frameOut.append(row)
-         #       frameOut.append(col)
+                cell = self.frame[row][col][0]
                 frameOut.append(cell[0])
-                frameOut.append(cell[1][0])
-                frameOut.append(cell[1][1])
-                frameOut.append(cell[1][2])
+                frameOut.append(cell[1])
+                frameOut.append(cell[2])
         return(frameOut)  # frameOut is a list consisting of the number of columns in the frame
                           # followed by a repeating pattern of 4 integers, each representing a
                           # subsequent tile's shape, and red, green, and blue colormasks
@@ -136,15 +128,15 @@ class LSFrameGen:
 def main():
     print("TODO: testing lsanimate")
 
-    colormask = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
+    colormask = (Shapes.ZERO, 0,0)
     diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
 
     frame = LSFrameGen(2,2)
-    frame.edit(1,1,Shapes.ZERO, colormask)
-    frame.edit(1,1,Shapes.SEVEN)
-    frame.edit(1,2,Shapes.ONE, colormask)
-    frame.edit(2,2,Shapes.ZERO, diffmask)
-    frame.edit(2,1,Shapes.ONE, diffmask)
+    frame.edit(1,1,colormask)
+  #  frame.edit(1,1)
+    frame.edit(1,2,colormask)
+    frame.edit(2,2,diffmask)
+    frame.edit(2,1,diffmask)
 
     thisFrame = frame.get()
 
@@ -155,7 +147,7 @@ def main():
     ourAnimation.addFrame(thisFrame)
     ourAnimation.addFrame(thisFrame)
 
-    frame.edit(2,2,Shapes.FOUR)
+   # frame.edit(2,2,(Shapes.FOUR, Shapes.THREE, Shapes.TWO))
     thisFrame = frame.get()
     ourAnimation.insertFrame(1,thisFrame)
     ourAnimation.insertFrame(1,thisFrame)
