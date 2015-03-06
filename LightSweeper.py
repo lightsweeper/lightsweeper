@@ -5,6 +5,7 @@ import random
 from minesweeper import Minesweeper
 from EightbitSoundboard import Soundboard
 from AnimTestbed import AnimTestbed
+from WhackAMole import WhackAMole
 
 from lsgame import LSGameEngine
 from LSFloorConfigure import userSelect
@@ -13,7 +14,8 @@ from LSFloorConfigure import userSelect
 availableGames = dict([
                         ("AnimTestbed", AnimTestbed),
                         ("Minesweeper", Minesweeper),
-                        ("Soundboard", Soundboard)
+                        ("Soundboard", Soundboard),
+                        ("WhackAMole", WhackAMole)
                       ])
 
 

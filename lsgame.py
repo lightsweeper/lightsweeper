@@ -80,7 +80,7 @@ class LSGameEngine():
             conf.selectConfig()
         else:
             conf = LSFloorConfig(floorConfig)
-        if conf.isVirtual() is True:
+        if conf.containsVirtual() is True:
             self.REAL_FLOOR = False
         else:
             self.REAL_FLOOR = True

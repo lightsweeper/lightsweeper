@@ -95,6 +95,7 @@ def hexToDigit(hex):
     if hex is NINE:
         return 9
 
+#Does NOT return compound letters
 def digitToLetter(digit):
     if digit is 0:
         return A
@@ -112,5 +113,122 @@ def digitToLetter(digit):
         return G
     if digit is 7:
         return H
+    if digit is 8:
+        return I
+    if digit is 9:
+        return J
+    if digit is 10:
+        return K
+    if digit is 11:
+        return L
+    if digit is 12:
+        return N
+    if digit is 13:
+        return O
+    if digit is 14:
+        return P
+    if digit is 15:
+        return Q
+    if digit is 16:
+        return R
+    if digit is 17:
+        return S
+    if digit is 18:
+        return T
+    if digit is 19:
+        return U
+    if digit is 20:
+        return V
+    if digit is 21:
+        return Y
+    if digit is 22:
+        return Z
     else:
         return 0x0
+
+#Returns a list of shapes needed to make this letter, includes awkward ones like X / H / K
+def charToShape(c):
+    if c.lower() == 'a':
+        return [A]
+    if c.lower() == 'b':
+        return [B]
+    if c.lower() == 'c':
+        return [C]
+    if c.lower() == 'd':
+        return [D]
+    if c.lower() == 'e':
+        return [E]
+    if c.lower() == 'f':
+        return [F]
+    if c.lower() == 'g':
+        return [G]
+    if c.lower() == 'h':
+        return [H]
+    if c.lower() == 'i':
+        return [I]
+    if c.lower() == 'j':
+        return [J]
+    if c.lower() == 'k':
+        return [K]
+    if c.lower() == 'l':
+        return [L]
+    if c.lower() == 'm':
+        return [N, N]
+    if c.lower() == 'n':
+        return [N]
+    if c.lower() == 'o':
+        return [O]
+    if c.lower() == 'p':
+        return [P]
+    if c.lower() == 'q':
+        return [Q]
+    if c.lower() == 'r':
+        return [R]
+    if c.lower() == 's':
+        return [S]
+    if c.lower() == 't':
+        return [T]
+    if c.lower() == 'u':
+        return [U]
+    if c.lower() == 'v':
+        return [V]
+    if c.lower() == 'w':
+        return [u,V]
+    if c.lower() == 'x':
+        return [H]
+    if c.lower() == 'y':
+        return [Y]
+    if c.lower() == 'z':
+        return [Z]
+    if c.lower() == '1':
+        return [ONE]
+    if c.lower() == '2':
+        return [TWO]
+    if c.lower() == '3':
+        return [THREE]
+    if c.lower() == '4':
+        return [FOUR]
+    if c.lower() == '5':
+        return [FIVE]
+    if c.lower() == '6':
+        return [SIX]
+    if c.lower() == '7':
+        return [SEVEN]
+    if c.lower() == '8':
+        return [EIGHT]
+    if c.lower() == '9':
+        return [NINE]
+    if c.lower() == '0':
+        return [ZERO]
+    if c == '-':
+        return [DASH]
+    if c == '_':
+        return [SEG_D]
+    else:
+        return [0x0]
+
+def stringToShapes(s):
+    shapes = []
+    for c in s:
+        shapes += charToShape(c)
+    return shapes

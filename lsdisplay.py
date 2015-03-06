@@ -83,7 +83,7 @@ class LSDisplay():
             else:
                 conf = LSFloorConfig(rows=rows, cols=cols)
 
-        if conf.isVirtual() is True:
+        if conf.containsVirtual() is True:
             realFloor = False
 
         self.rows = conf.rows
@@ -217,6 +217,33 @@ class LSDisplay():
             self.realFloor.setAllShape(shape)
         if self.simulatedFloor:
             self.simulatedFloor.setAllShape(shape)
+
+    def setMessage(self, row, message, color = Colors.WHITE, start = 0, cutoff = -1):
+        if cutoff is -1:
+            cutoff = self.cols
+        shapes = Shapes.stringToShapes(message)
+        col = start
+        while col < cutoff and len(shapes) > 0:
+            self.set(row, col, shapes.pop(0), color)
+            col += 1
+
+    def setMessageSplit(self, row, message1, message2, color = Colors.WHITE):
+        #first determine which tile is the middle--this one must be left blank
+        middle = int(self.cols / 2)
+        self.setMessage(row, message1, color, cutoff=middle)
+        self.setMessage(row, message2, color, start=middle+1)
+        #fill left side of middle with message1, left side with message2
+        #TODO: ability to favor one message or the other, preferentially cutting off the less-favored one
+
+    def showHighScores(self, highScores):
+        self.setAll(Shapes.ZERO, Colors.BLACK)
+        self.setMessage(0,"HIGH", color=Colors.BLUE)
+        self.setMessage(1,"SCORES", color=Colors.GREEN)
+        row = 2
+        while row < self.rows and len(highScores) > 0:
+            score = highScores.pop(0)
+            self.setMessageSplit(row, score[0], score[1])
+            row += 1
 
     def clear(self, row, col):
         if self.realFloor:
