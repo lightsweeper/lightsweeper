@@ -4,7 +4,7 @@
 
 ### only very common operations are coded here
 
-class LSTileAPI():
+class LSTile():
     def __init__(self, row=0, col=0):
         super().__init__()
 

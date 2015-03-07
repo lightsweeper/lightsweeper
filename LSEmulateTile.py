@@ -1,12 +1,12 @@
 # Lightsweeper additions
-from LSTileAPI import LSTileAPI
+from lstile import LSTile
 import Colors
 import Shapes
 import pygame
 
 # this class holds a seven segment display and a button to mimic the pressure sensor
 # it does no segment processing, it just passes thru to the seven segment display
-class EmulateTile(LSTileAPI):
+class EmulateTile(LSTile):
     def __init__(self, floor, row=0, col=0, labelTiles = False):
         self.row = row
         self.col = col

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # the API is the base class
-from LSTileAPI import *
+from lstile import LSTile
 
 #from struct import *
 
@@ -161,7 +161,7 @@ TRANSITION_FIELD_MASK = 0x01
 
 
 ### Implementation of the Lightsweeper low level API to a ATTiny tile
-class LSRealTile(LSTileAPI):
+class LSRealTile(LSTile):
     def __init__(self, sharedSerial, row=0, col=0):
         super().__init__(row, col)
         self.row = row
