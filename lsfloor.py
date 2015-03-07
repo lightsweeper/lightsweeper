@@ -50,6 +50,7 @@ class LSFloor():
         
 
         self.eventCallback = eventCallback
+        print("LSFloor event callback:", eventCallback)
         self.tiles = []
         self.tileList = []
         
@@ -185,10 +186,6 @@ class LSFloor():
 
     def _flushQueue(self):  # What should this do?
         pass
-
-    def handleTileStepEvent(self, row, col, val):
-        if self.eventCallback is not None:
-            self.eventCallback(row, col, val)
 
     def handleTileSensed(self, row, col):
         pass

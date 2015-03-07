@@ -28,7 +28,7 @@ class WhackAMole():
         self.winScreen = False
         self.winScreenTimestamp = -1
         self.enterName = None
-        self.timer = CountdownTimer(5, self.timerFinished)
+        self.timer = CountdownTimer(30, self.timerFinished)
         self.display.setAll(Shapes.ZERO, Colors.BLACK)
 
     def heartbeat(self, sensorsChanged):

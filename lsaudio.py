@@ -39,15 +39,18 @@ class _lsAudio:
         pass
 
     def setSoundVolume(self, vol):
-        pass
+        self.soundVolume = vol
 
 
 class _pygameAudio(_lsAudio):
-
+    import pygame.midi
     def __init__(self, initSound=True):
         print("Using pygame for Audio...")
         self.SONG_END = pygame.USEREVENT + 1
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+        pygame.midi.init()
+        self.midiPort = pygame.midi.get_default_output_id()
+        self.midi_out = pygame.midi.Output(self.midiPort, 0)
         _lsAudio.__init__(self)
 
     def heartbeat(self):
@@ -106,6 +109,10 @@ class _pygameAudio(_lsAudio):
 
     def stopSounds(self):
         pass
+
+    def midiSoundOn(self, instrument=19, note=72):
+        self.midi_out.set_instrument(instrument)
+        self.midi_out.note_on(note,int(self.soundVolume * 127))
 
     def setSoundVolume(self, vol):
         #print("setting sound vol:" + str(vol))

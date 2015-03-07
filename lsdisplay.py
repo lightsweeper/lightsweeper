@@ -14,13 +14,13 @@ wait = time.sleep
 
 # Tweaks LSFloor to update pygame emulator
 class EmulateFloor(lsfloor.LSFloor):
-
-    def __init__(self, rows=0, cols=0):
+    def __init__(self, rows=0, cols=0, eventCallback=None):
         # Call parent init
         lsfloor.LSFloor.__init__(self, rows=rows, cols=cols)
 
         width=cols*100
         height=rows*100
+        self.eventCallback = eventCallback
         print("Making the screen ({:d}x{:d})".format(width,height))
         pygame.init()
         self.screen = pygame.display.set_mode((width, height))
@@ -39,7 +39,6 @@ class EmulateFloor(lsfloor.LSFloor):
                 self.screen.blit(image, (100 * c, 100 * r))
         pygame.display.update()
 
-
     def pollSensors(self):
         sensorsChanged = []
         reading = 1
@@ -57,6 +56,10 @@ class EmulateFloor(lsfloor.LSFloor):
                 sensorsChanged.append(move)
                 self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
         return sensorsChanged
+
+    def handleTileStepEvent(self, row, col, val):
+        if self.eventCallback is not None:
+            self.eventCallback(row, col, val)
 
     def _whereDidIPutMyMouse(self, mousePointer):
         (x, y) = mousePointer
@@ -103,7 +106,7 @@ class LSDisplay():
         self.console = console
         if simulatedFloor:
             print("Display instantiating simulated floor")
-            self.simulatedFloor = EmulateFloor(self.rows, self.cols)
+            self.simulatedFloor = EmulateFloor(self.rows, self.cols, eventCallback = eventCallback)
         else:
             self.simulatedFloor = None
         if initScreen is True:
@@ -145,6 +148,7 @@ class LSDisplay():
         pass
 
     def handleTileStepEvent(self, row, col, val):
+        print("LSDisplay handling tile event")
         if self.eventCallback is not None:
             self.eventCallback(row, col, val)
 
