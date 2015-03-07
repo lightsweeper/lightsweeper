@@ -12,6 +12,22 @@ from pygame.locals import *
 
 wait = time.sleep
 
+import types
+def loadImage(self):
+    self.segments += [Colors.BLACK] * (7 - len(self.segments))
+    image = pygame.image.load("images/segments.png")
+    horizontal = (42,10)
+    vertical = (10,30)
+    segMap = [(29,10),(71,17),(71,52),(29,79),(19,52),(19,17),(29,45)]
+    image.fill(Colors.intToRGB(self.segments[0]), pygame.Rect(segMap[0],horizontal))
+    image.fill(Colors.intToRGB(self.segments[1]), pygame.Rect(segMap[1],vertical))
+    image.fill(Colors.intToRGB(self.segments[2]), pygame.Rect(segMap[2],vertical))
+    image.fill(Colors.intToRGB(self.segments[3]), pygame.Rect(segMap[3],horizontal))
+    image.fill(Colors.intToRGB(self.segments[4]), pygame.Rect(segMap[4],vertical))
+    image.fill(Colors.intToRGB(self.segments[5]), pygame.Rect(segMap[5],vertical))
+    image.fill(Colors.intToRGB(self.segments[6]), pygame.Rect(segMap[6],horizontal))
+    return image
+
 # Tweaks LSFloor to update pygame emulator
 class EmulateFloor(lsfloor.LSFloor):
 
@@ -24,6 +40,8 @@ class EmulateFloor(lsfloor.LSFloor):
         print("Making the screen ({:d}x{:d})".format(width,height))
         pygame.init()
         self.screen = pygame.display.set_mode((width, height))
+        for tile in self.tileList:
+            tile.loadImage = types.MethodType(loadImage, tile) # Bind the loadImage function to each tile
 
 
     def heartbeat(self):
