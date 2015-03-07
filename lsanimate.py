@@ -1,6 +1,7 @@
 from collections import defaultdict
 import itertools
 
+
 import Shapes
 import Colors
 import lsdisplay
@@ -13,7 +14,7 @@ def validateFrame(frame):
     cells = frameLen/3
     if (cells/frame[0]).is_integer() is False:
         return False
-    if all(i < 128 for i in frame[1:]) is False:
+    if all(i <= 128 for i in frame[1:]) is False:
         return False
     return True
 
@@ -27,12 +28,12 @@ def renderFrame(floor, frame):
         if col is cols:
             row += 1
             col = 0
-    #    shape = frame.pop(0)
         rMask = frame.pop(0)
         gMask = frame.pop(0)
         bMask = frame.pop(0)
-        floor.tiles[row][col].setSegments((rMask,gMask,bMask))
-        print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
+        if rMask is not 128:
+            floor.tiles[row][col].setSegments((rMask,gMask,bMask))
+          #  print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
         col += 1
 
 
@@ -98,12 +99,9 @@ class LSFrameGen:
     # Allows you to edit an existing frame structure, if no colormask is set
     # then the tile will keep its current colormask
     def edit(self,row,col,colormask):
-        try:
-            colormask = self.frame[row][col][1]
-        except TypeError:
-            print("Frame warning: No colormask set for cell at ({:d},{:d})".format(row,col))
-            color = Colors.BLACK
-
+        if row > self.rows or col > self.cols:
+            print("Edit error, index out of range")
+            raise Exception
         self.frame[row][col] = [colormask]
 
     def print(self):
@@ -113,49 +111,59 @@ class LSFrameGen:
     def get(self):
         frameOut = list()
         frameOut.append(self.cols)
-        for row in self.frame:
-            for col in self.frame:
-                cell = self.frame[row][col][0]
-                frameOut.append(cell[0])
-                frameOut.append(cell[1])
-                frameOut.append(cell[2])
+        for row in range(0, self.rows):
+            for col in range(0, self.cols):
+                try:
+                    cell = self.frame[row][col][0]
+                    frameOut.append(cell[0])
+                    frameOut.append(cell[1])
+                    frameOut.append(cell[2])
+                except:
+                    print("Warning: ({:d},{:d}) has no update".format(row,col))
+                    frameOut.append(128)
+                    frameOut.append(128)
+                    frameOut.append(128)
         return(frameOut)  # frameOut is a list consisting of the number of columns in the frame
-                          # followed by a repeating pattern of 4 integers, each representing a
-                          # subsequent tile's shape, and red, green, and blue colormasks
+                          # followed by a repeating pattern of 3 integers, each representing a
+                          # subsequent tile's red, green, and blue colormasks
 
 
 
 def main():
+    import time
     print("TODO: testing lsanimate")
 
     colormask = (Shapes.ZERO, 0,0)
     diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
-
-    frame = LSFrameGen(2,2)
-    frame.edit(1,1,colormask)
-  #  frame.edit(1,1)
-    frame.edit(1,2,colormask)
-    frame.edit(2,2,diffmask)
-    frame.edit(2,1,diffmask)
-
-    thisFrame = frame.get()
+    redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    greenZero = (0, Shapes.ZERO, 0)
+    blueZero = (0, 0, 126)
 
     ourAnimation = LSAnimation()
 
+    frame = LSFrameGen(3,8)
+    
+    for _ in range(0,100):
+        for i in range(0,8):
+            frame.edit(0,i,redZero)
+            frame.edit(1,i,greenZero)
+            frame.edit(2,i,blueZero)
+        ourAnimation.addFrame(frame.get())
+        for i in range(0,8):
+            frame.edit(1,i,redZero)
+            frame.edit(2,i,greenZero)
+            frame.edit(0,i,blueZero)
+        ourAnimation.addFrame(frame.get())
+        for i in range(0,8):
+            frame.edit(2,i,redZero)
+            frame.edit(0,i,greenZero)
+            frame.edit(1,i,blueZero)
+        ourAnimation.addFrame(frame.get())
 
 
-    ourAnimation.addFrame(thisFrame)
-    ourAnimation.addFrame(thisFrame)
-
-   # frame.edit(2,2,(Shapes.FOUR, Shapes.THREE, Shapes.TWO))
-    thisFrame = frame.get()
-    ourAnimation.insertFrame(1,thisFrame)
-    ourAnimation.insertFrame(1,thisFrame)
-    ourAnimation.insertFrame(1,thisFrame)
-    ourAnimation.insertFrame(1,thisFrame)
 
 
-    ourAnimation.deleteFrame(1)
+   # ourAnimation.deleteFrame(1)
 
     ourAnimation.showFrames()
 
@@ -168,9 +176,23 @@ def main():
     print("Importing LSDisplay")
     import lsdisplay
 
-    d = lsdisplay.LSDisplay(realFloor = True, simulatedFloor = True, initScreen=False)
+    d = lsdisplay.LSDisplay(realFloor = True, simulatedFloor = False, initScreen=False)
 
-    renderFrame(d.realFloor, thisFrame)
+    
+    stime = time.time()
+    Frame = ourAnimation.nextFrame()
+    f = 0
+    for frame in Frame:
+        renderFrame(d.realFloor, frame)
+        #d.pollSensors()
+        #time.sleep(.1)
+        f += 1
+        if (time.time() - stime > 1):
+            print(f)
+            stime = time.time()
+            f = 0
+        
+
     input()
 
 if __name__ == '__main__':

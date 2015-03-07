@@ -13,7 +13,7 @@ import time
 #from HexByteConversion import *
 
 # This is a buffer against serial corruption, bigger numbers are slower but more stable
-# .005 = Fastest speed before observed corruption (on 24 tiles split between two com ports)
+# .005 = Fastst speed before observed corruption (on 24 tiles split between two com ports)
 LSWAIT = .005
 
 # these constants copied from LSTileAPI.h
