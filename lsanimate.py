@@ -165,7 +165,7 @@ def main():
 
    # ourAnimation.deleteFrame(1)
 
-    ourAnimation.showFrames()
+  #  ourAnimation.showFrames()
 
     useRealFloor = True
     try:
