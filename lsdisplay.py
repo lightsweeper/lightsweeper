@@ -29,7 +29,7 @@ def loadImage(self):
     return image
 
 # Tweaks LSFloor to update pygame emulator
-class EmulateFloor(lsfloor.LSFloor):
+class LSPygameFloor(lsfloor.LSFloor):
 
     def __init__(self, rows=0, cols=0):
         # Call parent init
@@ -82,6 +82,8 @@ class EmulateFloor(lsfloor.LSFloor):
         row = int(y/100)
         return (row,col)
 
+EmulateFloor = LSPygameFloor # Use pygame as the emulator
+
 class Move():
     def __init__(self, row, col, val):
         self.row = row
@@ -129,7 +131,7 @@ class LSDisplay():
 
             if self.simulatedFloor:
                 self.simulatedFloor.heartbeat()
-            wait(6.0)
+         #   wait(6.0)
 
 
     def splash(self):
