@@ -74,7 +74,10 @@ class LSFloor():
                 wait(.05)
                 self.tiles[row].append(tile)
                 self.tileList.append(tile)
-        print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
+        if self.conf.cells is 0:
+            print("Loaded {:d} virtual rows and {:d} virtual columns".format(self.rows, self.cols))
+        else:
+            print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
         self.clearBoard()
     
     def _returnTile(self, row, col, port=None):
@@ -125,7 +128,7 @@ class LSFloor():
     #segments is a list of seven colors in A,...,G order of segments
     def setSegments(self, row, col, segments):
         tile = self.tiles[row][col]
-        tile.segments=segments
+        tile.setSegments(segments)
 
     def setSegmentsAll(self, segments):
         for tile in self.tileList:
@@ -291,21 +294,21 @@ class LSRealFloor(LSFloor):
             zeroTile.setShape(shape)
 
     # !!!
-    def set(self, row, col, shape, color):
-        tile = self.tiles[row][col]
-        tile.set(shape, color)
+#    def set(self, row, col, shape, color):
+#        tile = self.tiles[row][col]
+#        tile.set(shape, color)
 #        tile.setShape(shape)
 #        tile.setColor(color)
 
-    def setSegments(self, row, col, segments):
-        tile = self.tiles[row][col]
-        tile.setSegments(Colors.segmentsToRgb(segments))
+#    def setSegments(self, row, col, segments):
+#        tile = self.tiles[row][col]
+#        tile.setSegments(Colors.segmentsToRgb(segments))
 
     def setSegmentsAll(self, segments):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
-            zeroTile.setSegments(Colors.segmentsToRgb(segments))
+            zeroTile.setSegments(segments)
 
     def clearBoard(self):
         for port in self.realTiles.sharedSerials.keys():
@@ -464,8 +467,10 @@ def main():
     d.heartbeat()
 #    wait(2)
     input("Press return to exit")
+    
+    d.setAllColor(Colors.YELLOW)
 
-
+    input("Press return to exit")
 
 if __name__ == '__main__':
 

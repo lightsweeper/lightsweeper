@@ -125,18 +125,18 @@ class LSDisplay():
         if self.simulatedFloor:
             self.simulatedFloor.setAll(shape, color)
 
-    #colors is a list of seven colors in A,...,G order of segments
-    def setCustom(self, row, col, segments):
+    #segColors is a list of seven colors in A,...,G order of segments
+    def setCustom(self, row, col, segColors):
         if self.simulatedFloor:
-            self.simulatedFloor.setSegments(row, col, segments)
+            self.simulatedFloor.setSegments(row, col, Colors.segmentsToRgb(segColors)) # Below this level segments are set by RGB color mask
         if self.realFloor:
-            self.realFloor.setSegments(row, col, segments)
+            self.realFloor.setSegments(row, col, Colors.segmentsToRgb(segColors))
 
-    def setAllCustom(self, segments):
+    def setAllCustom(self, segColors):
         if self.simulatedFloor:
-            self.simulatedFloor.setSegmentsAll(segments)
+            self.simulatedFloor.setSegmentsAll(Colors.segmentsToRgb(segColors))
         if self.realFloor:
-            self.realFloor.setSegmentsAll(segments)
+            self.realFloor.setSegmentsAll(Colors.segmentsToRgb(segColors))
 
     def setColor(self, row, col, color):
         if self.realFloor:

@@ -5,6 +5,25 @@ import Shapes
 
 ### only very common operations are coded here
 
+# Segment display commands from 0x80 to 0xBF
+SEGMENT_CMD =   0x80
+SEGMENT_CMD_END = (SEGMENT_CMD+0x3F)
+# Depending on the command, up to 4 byte fields will follow (R,G,B and transition)
+# Three bits in command declare that R, G, and/or B segment fields will follow
+# Two bits define the update condition
+# One bit declares that the transition field will follow
+#
+# One segment byte field will be provided for each of the RGB color bits declared
+# Three segment fields allow for arbitrary colors for each segment
+# Segment fields are defined in the -abcdefg order, to match LedControl library
+SEGMENT_FIELD_MASK  = 0x38
+SEGMENT_FIELD_RED   = 0x20
+SEGMENT_FIELD_GREEN = 0x10
+SEGMENT_FIELD_BLUE  = 0x08
+# Segment fields that are not given clear the associated target color segments
+# unless the LSB is set in one of the provided segment fields
+SEGMENT_KEEP_MASK  = 0x80 # if MSB set, do not clear any segment data
+
 class LSTile():
     def __init__(self, row=0, col=0):
         self.row = row
@@ -73,10 +92,10 @@ class LSTile():
         else:
             self.segments["g"] = None
         
-    # set immediately or queue these segments in addressed tiles
-    # segments is a seven-tuple interpreted as True or False
-    def setSegments(self, segments):
-        self.segments = Colors.rgbToSegments(segments)
+        
+    def setSegments(self, rgb):
+       pass
+        
 
     def setTransition(self, transition):
         raise NotImplementedError()
