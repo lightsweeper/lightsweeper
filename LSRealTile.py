@@ -254,15 +254,15 @@ class LSRealTile(LSTile):
         self.__tileWrite(args)
 
 
-    def set(self, shape=0, color=0, transition=0):
-     #   raise NotImplementedError()
-        if (color != 0):
-            self.setColor(color)
-        if (shape != 0 ):
-            self.setShape(shape)
-        if(transition != 0):
-            self.setTransition(transition)
-        return
+#    def set(self, shape=0, color=0, transition=0):
+#     #   raise NotImplementedError()
+#        if (color != 0):
+#            self.setColor(color)
+#        if (shape != 0 ):
+#            self.setShape(shape)
+#        if(transition != 0):
+#            self.setTransition(transition)
+#        return
 
     # expecting a 7-tuple of Color constants
     def setSegmentsCustom(self, segments, setItNow = True):
@@ -327,9 +327,10 @@ class LSRealTile(LSTile):
         val = self.__tileRead()
         return val
 
-    def blank(self):
-        self.setColor(0)
-        return
+    # Inherited from LSTile
+#    def blank(self):
+#        self.setColor(0)
+#        return
 
     # send mode command that displays stuff
     def locate(self):

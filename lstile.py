@@ -9,51 +9,65 @@ class LSTile():
     def __init__(self, row=0, col=0):
         self.row = row
         self.col = col
-        self.color = Colors.BLACK
+        self.color = None
         self.shape = Shapes.ZERO
+        self.segments = dict.fromkeys(list(map(chr, range(97, 97+7))))
 
     def destroy(self):
         raise NotImplementedError()
         
-    def set(self, shape=0, color=0, transition=0):
-        self.shape = shape
-        self.color = color
-        self.segments = []
-        if shape & Shapes.SEG_A:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
-        if shape & Shapes.SEG_B:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
-        if shape & Shapes.SEG_C:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
-        if shape & Shapes.SEG_D:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
-        if shape & Shapes.SEG_E:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
-        if shape & Shapes.SEG_F:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
-        if shape & Shapes.SEG_G:
-            self.segments.append(color)
-        else:
-            self.segments.append(Colors.BLACK)
+    def set(self, shape=None, color=None, transition=0):
+        if color is not None:
+            self.setColor(color)
+        if shape is not None:
+            self.setShape(shape)
+        if(transition != 0):
+            self.setTransition(transition)
 
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
-       self.set(color=color)
+       for segKey in self.segments.keys():
+           segment = self.segments[segKey]
+           if segment is not 0:
+               self.segments[segKey] = color
+               
 
     def setShape(self, shape):
-        self.set(shape=shape)
+        if shape & Shapes.SEG_A:
+            if self.segments["a"] is None:
+                self.segments["a"] = self.color
+        else:
+            self.segments["a"] = None
+        if shape & Shapes.SEG_B:
+            if self.segments["b"] is None:
+                self.segments["b"] = self.color
+        else:
+            self.segments["b"] = None
+        if shape & Shapes.SEG_C:
+            if self.segments["c"] is None:
+                self.segments["c"] = self.color
+        else:
+            self.segments["c"] = None
+        if shape & Shapes.SEG_D:
+            if self.segments["d"] is None:
+                self.segments["d"] = self.color
+        else:
+            self.segments["d"] = None
+        if shape & Shapes.SEG_E:
+            if self.segments["e"] is None:
+                self.segments["e"] = self.color
+        else:
+            self.segments["e"] = None
+        if shape & Shapes.SEG_F:
+            if self.segments["f"] is None:
+                self.segments["f"] = self.color
+        else:
+            self.segments["f"] = None
+        if shape & Shapes.SEG_G:
+            if self.segments["g"] is None:
+                self.segments["g"] = self.color
+        else:
+            self.segments["g"] = None
         
     # set immediately or queue these segments in addressed tiles
     # segments is a seven-tuple interpreted as True or False
