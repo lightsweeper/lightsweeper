@@ -382,16 +382,20 @@ def main():
 
     d = lsdisplay.LSDisplay(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
 
+    input("Press return to begin tests")
+
     print("Testing set")
     d.set(getRandRow(d),getRandCol(d),Shapes.L,Colors.RED)
     d.set(getRandRow(d),getRandCol(d),Shapes.S,Colors.MAGENTA)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAll")
     d.setAll(Shapes.B,Colors.BLUE)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     trow = getRandRow(d)
     tcol = getRandCol(d)
@@ -399,32 +403,38 @@ def main():
     print("Testing setColor")
     d.setColor(trow,tcol,Colors.GREEN)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setShape")
     d.setShape(trow,tcol,Shapes.ZERO)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAllColor")
     d.setAllColor(Colors.MAGENTA)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAllShape")
     d.setAllShape(Shapes.DASH)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing clear")
     d.clear(getRandRow(d),getRandCol(d))
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing clearAll")
     d.clearAll()
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setCustom")
     d.setCustom(0, 0, [1,3,2,6,4,5])
@@ -447,12 +457,14 @@ def main():
     wait(.5)
     d.setCustom(0, 0, [1,3,2,6,4,5,7])
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAllCustom")
     d.setAllCustom([1,3,2,6,4,5,7])
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to exit")
 
 
 
