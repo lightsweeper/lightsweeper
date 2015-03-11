@@ -1,6 +1,6 @@
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
-from LSEmulateTile import EmulateTile
+from lstile import LSTile
 from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
 
@@ -76,7 +76,7 @@ class LSFloor():
                 self.tileList.append(tile)
     
     def _returnTile(self, row, col, port=None):
-        return(EmulateTile(row, col))
+        return(LSTile(row, col))
 
 
     def setColor(self, row, col, color):
@@ -294,8 +294,9 @@ class LSRealFloor(LSFloor):
     # !!!
     def set(self, row, col, shape, color):
         tile = self.tiles[row][col]
-        tile.setShape(shape)
-        tile.setColor(color)
+        tile.set(shape, color)
+#        tile.setShape(shape)
+#        tile.setColor(color)
 
     def setSegments(self, row, col, segments):
         tile = self.tiles[row][col]

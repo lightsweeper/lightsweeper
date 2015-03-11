@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+import Colors
+import Shapes
 
 ### Definition of the Lightsweeper low level API
 
@@ -6,23 +7,73 @@
 
 class LSTile():
     def __init__(self, row=0, col=0):
-        super().__init__()
+        self.row = row
+        self.col = col
+        self.color = Colors.BLACK
+        self.shape = Shapes.ZERO
 
     def destroy(self):
         raise NotImplementedError()
+        
+    def set(self, shape=0, color=0, transition=0):
+        self.shape = shape
+        self.color = color
+        self.segments = []
+        if shape & Shapes.SEG_A:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_B:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_C:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_D:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_E:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_F:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
+        if shape & Shapes.SEG_G:
+            self.segments.append(color)
+        else:
+            self.segments.append(Colors.BLACK)
 
     # set immediately or queue this color in addressed tiles
     def setColor(self, color):
-        raise NotImplementedError()
+       self.set(color=color)
 
     def setShape(self, shape):
-        raise NotImplementedError()
+        self.set(shape=shape)
+        
+    # set immediately or queue these segments in addressed tiles
+    # segments is a seven-tuple interpreted as True or False
+    def setSegments(self, segments):
+        self.segments = Colors.rgbToSegments(segments)
 
     def setTransition(self, transition):
         raise NotImplementedError()
+        
+    def getShape(self):
+        return self.shape
+        
+    def getColor(self):
+        return self.color
+        
+    def getCol (self):
+        return self.col
 
-    def set(self, color=0, shape=0, transition=0):
-        raise NotImplementedError()
+    def getRow (self):
+        return self.row
 
     def update(self,type):
         raise NotImplementedError()
@@ -31,7 +82,7 @@ class LSTile():
         raise NotImplementedError()
 
     def blank(self):
-        raise NotImplementedError()
+        self.setColor(Colors.BLACK)
 
     def locate(self):
         raise NotImplementedError()
@@ -70,6 +121,17 @@ class LSTile():
 
     def read(self):
         raise NotImplementedError()
+        
+    def update(self,type):
+#        if (type == 'NOW'):
+#            return
+#        elif (type == 'CLOCK'):
+#            return
+#        elif (type == 'TRIGGER'):
+#            return
+#        else:
+#            return
+        raise NotImplementedError()
 
     # TODO - how is this different from latch?
     def flushQueue(self):
@@ -83,11 +145,6 @@ class LSTile():
     # row or column = 0 returns the whole column or row, respectively
     # single tile returns list of itself
     def getTileList (self, row, column):
-        raise NotImplementedError()
-
-    # set immediately or queue these segments in addressed tiles
-    # segments is a seven-tuple interpreted as True or False
-    def setSegments(self, row, column, segments, setItNow = True):
         raise NotImplementedError()
 
     # set immediately or queue this digit in addressed tiles
