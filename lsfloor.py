@@ -76,7 +76,7 @@ class LSFloor():
                 self.tileList.append(tile)
     
     def _returnTile(self, row, col, port=None):
-        return(EmulateTile(self, row, col))
+        return(EmulateTile(row, col))
 
 
     def setColor(self, row, col, color):

@@ -6,17 +6,17 @@ import Shapes
 # this class holds a seven segment display and a button to mimic the pressure sensor
 # it does no segment processing, it just passes thru to the seven segment display
 class EmulateTile(LSTile):
-    def __init__(self, floor, row=0, col=0, labelTiles = False):
+    def __init__(self, row=0, col=0):
         self.row = row
         self.col = col
-        self.floor = floor
+#        self.floor = floor
         self.color = Colors.BLACK
         self.shape = Shapes.ZERO
         
-        if labelTiles:
-            self.post = "_labels.png"
-        else:
-            self.post = ".png"
+#        if labelTiles:
+#            self.post = "_labels.png"
+#        else:
+#            self.post = ".png"
         self.set(self.shape, self.color)
 
     def flushQueue(self):
@@ -68,13 +68,15 @@ class EmulateTile(LSTile):
         return self.shape
 
     def getSensors(self):
-        if self.button.isChecked():
-            return (self.row, self.col)
-        else:
-            return None
+#        if self.button.isChecked():
+#            return (self.row, self.col)
+#        else:
+#            return None
+        pass
             
     def sensorStatus(self):
-        return 255 # TODO: Return based on pygame input
+#        return 255 # TODO: Return based on pygame input
+        pass
 
     def getTileList (self, row, column):
         return (self.row, self.col)
@@ -154,5 +156,5 @@ class EmulateTile(LSTile):
     def calibrate(self):
         return
 
-    def read(self):
-        return self._getButtonState()
+#    def read(self):
+#        return self._getButtonState()
