@@ -293,16 +293,6 @@ class LSRealFloor(LSFloor):
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
 
-    # !!!
-#    def set(self, row, col, shape, color):
-#        tile = self.tiles[row][col]
-#        tile.set(shape, color)
-#        tile.setShape(shape)
-#        tile.setColor(color)
-
-#    def setSegments(self, row, col, segments):
-#        tile = self.tiles[row][col]
-#        tile.setSegments(Colors.segmentsToRgb(segments))
 
     def setSegmentsAll(self, segments):
         for port in self.realTiles.sharedSerials.keys():

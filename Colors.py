@@ -6,7 +6,6 @@ GREEN = 2
 YELLOW = 3
 BLUE = 4
 MAGENTA = 5
-VIOLET = MAGENTA # Deprecated
 CYAN = 6
 WHITE = 7
 
@@ -61,21 +60,21 @@ def segmentsToRgb(segments):
     return([r,g,b])
 
 def intToRGB(i):
-    if i is BLACK:
+    if i is 0:                  # BLACK
         return (0,0,0)
-    if i is RED:
+    if i is 1:                  # RED
         return (255, 0, 0)
-    if i is GREEN:
+    if i is 2:                  # GREEN
         return (0, 255, 0)
-    if i is YELLOW:
+    if i is 3:                  # YELLOW
         return (255, 255, 0)
-    if i is BLUE:
+    if i is 4:                  # BLUE
         return (0, 0, 255)
-    if i is MAGENTA:
+    if i is 5:                  # MAGENTA
         return (255, 0, 255)
-    if i is CYAN:
+    if i is 6:                  # CYAN
         return (0, 255, 255)
-    if i is WHITE:
+    if i is 7:                  # WHITE
         return (255, 255, 255)
     return (0,0,0)
 
