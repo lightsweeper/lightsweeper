@@ -28,7 +28,7 @@ class WhackAMole():
         self.winScreen = False
         self.winScreenTimestamp = -1
         self.enterName = None
-        self.timer = CountdownTimer(30, self.timerFinished)
+        self.timer = CountdownTimer(5, self.timerFinished)
         self.display.setAll(Shapes.ZERO, Colors.BLACK)
 
     def heartbeat(self, sensorsChanged):
@@ -38,6 +38,7 @@ class WhackAMole():
             if self.enterName is not None:
                 self.enterName.heartbeat(sensorsChanged)
                 if self.enterName.ended:
+                    self.highScores.saveHighScore(self.enterName.currentText, self.score)
                     self.enterName = None
                     self.winScreenTimestamp = ts
             elif ts - self.winScreenTimestamp > 6:

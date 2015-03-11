@@ -1,4 +1,5 @@
 from lsfloor import LSRealFloor
+from lsemulate import LSPygameFloor
 from LSFloorConfigure import LSFloorConfig
 import lsfloor
 
@@ -6,63 +7,9 @@ import Shapes
 import Colors
 import random
 import time
-import pygame
-from pygame.locals import *
-
 
 wait = time.sleep
-
-# Tweaks LSFloor to update pygame emulator
-class EmulateFloor(lsfloor.LSFloor):
-
-    def __init__(self, rows=0, cols=0):
-        # Call parent init
-        lsfloor.LSFloor.__init__(self, rows=rows, cols=cols)
-
-        width=cols*100
-        height=rows*100
-        print("Making the screen ({:d}x{:d})".format(width,height))
-        pygame.init()
-        self.screen = pygame.display.set_mode((width, height))
-
-
-    def heartbeat(self):
-        #gets the images from the individual tiles, blits them in succession
-        #print("heartbeat drawing floor")
-        background = pygame.Surface(((self.cols*100), (self.rows*100)))
-        background.fill(Colors.BLACK)
-        self.screen.blit(background, (0,0))
-        for r in range(self.rows):
-            for c in range(self.cols):
-                tile = self.tiles[r][c]
-                image = tile.loadImage()
-                self.screen.blit(image, (100 * c, 100 * r))
-        pygame.display.update()
-
-
-    def pollSensors(self):
-        sensorsChanged = []
-        reading = 1
-        for event in pygame.event.get():
-            rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
-            if event.type == QUIT:
-                exit()
-            if event.type == KEYDOWN and event.key == K_ESCAPE:
-                exit()
-            if event.type == MOUSEBUTTONUP:
-                print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
-            if event.type == MOUSEBUTTONDOWN:
-                print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
-                move = Move(rowCol[0], rowCol[1], reading)
-                sensorsChanged.append(move)
-                self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
-        return sensorsChanged
-
-    def _whereDidIPutMyMouse(self, mousePointer):
-        (x, y) = mousePointer
-        col = int(x/100)
-        row = int(y/100)
-        return (row,col)
+EmulateFloor = LSPygameFloor # Use pygame as the emulator
 
 class Move():
     def __init__(self, row, col, val):
@@ -115,7 +62,7 @@ class LSDisplay():
 
             if self.simulatedFloor:
                 self.simulatedFloor.heartbeat()
-            wait(6.0)
+         #   wait(6.0)
 
 
     def splash(self):
@@ -174,9 +121,7 @@ class LSDisplay():
             self.realFloor.set(row, col, shape, color)
         if self.simulatedFloor:
             self.simulatedFloor.set(row, col, shape, color)
-        self.shapes[(row, col)] = shape
-        self.colors[(row, col)] = color
-        # wait(0.005)
+
 
     def setAll(self, shape, color):
         if self.realFloor:
@@ -186,27 +131,25 @@ class LSDisplay():
         self.allShapes(shape)
         self.allColors(color)
 
-    #colors is a list of seven colors in A,...,G order of segments
-    def setCustom(self, row, col, segments):
+    #segColors is a list of seven colors in A,...,G order of segments
+    def setCustom(self, row, col, segColors):
         if self.simulatedFloor:
-            self.simulatedFloor.setSegments(row, col, segments)
+            self.simulatedFloor.setSegments(row, col, Colors.segmentsToRgb(segColors)) # Below this level segments are set by RGB color mask
         if self.realFloor:
-            self.realFloor.setSegments(row, col, segments)
+            self.realFloor.setSegments(row, col, Colors.segmentsToRgb(segColors))
 
-    def setAllCustom(self, segments):
+    def setAllCustom(self, segColors):
         if self.simulatedFloor:
-            self.simulatedFloor.setSegmentsAll(segments)
+            self.simulatedFloor.setSegmentsAll(Colors.segmentsToRgb(segColors))
         if self.realFloor:
-            self.realFloor.setSegmentsAll(segments)
-        
+            self.realFloor.setSegmentsAll(Colors.segmentsToRgb(segColors))
 
     def setColor(self, row, col, color):
         if self.realFloor:
             self.realFloor.setColor(row, col, color)
         if self.simulatedFloor:
             self.simulatedFloor.setColor(row, col, color)
-        self.colors[(row, col)] = color
-        # wait(0.005)
+
 
     def setAllColor(self, color):
         if self.realFloor:

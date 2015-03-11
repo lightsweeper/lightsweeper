@@ -230,7 +230,7 @@ class Minesweeper():
                 if board != None:
                     cell = board.getCellState(row, col)
                     if cell == "D":
-                        self.display.set(row, col, Shapes.DASH, Colors.VIOLET)
+                        self.display.set(row, col, Shapes.DASH, Colors.MAGENTA)
                     elif cell == '.':
                         self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
                     elif cell == ' ' or cell == '':

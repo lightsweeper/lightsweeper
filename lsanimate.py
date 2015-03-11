@@ -141,20 +141,20 @@ def main():
 
     ourAnimation = LSAnimation()
 
-    frame = LSFrameGen(3,8)
+    frame = LSFrameGen(3,3)
     
     for _ in range(0,100):
-        for i in range(0,8):
+        for i in range(0,3):
             frame.edit(0,i,redZero)
             frame.edit(1,i,greenZero)
             frame.edit(2,i,blueZero)
         ourAnimation.addFrame(frame.get())
-        for i in range(0,8):
+        for i in range(0,3):
             frame.edit(1,i,redZero)
             frame.edit(2,i,greenZero)
             frame.edit(0,i,blueZero)
         ourAnimation.addFrame(frame.get())
-        for i in range(0,8):
+        for i in range(0,3):
             frame.edit(2,i,redZero)
             frame.edit(0,i,greenZero)
             frame.edit(1,i,blueZero)
@@ -165,7 +165,7 @@ def main():
 
    # ourAnimation.deleteFrame(1)
 
-  #  ourAnimation.showFrames()
+    ourAnimation.showFrames()
 
     useRealFloor = True
     try:
@@ -176,14 +176,14 @@ def main():
     print("Importing LSDisplay")
     import lsdisplay
 
-    d = lsdisplay.LSDisplay(realFloor = True, simulatedFloor = False, initScreen=False)
+    d = lsdisplay.LSDisplay(realFloor = False, simulatedFloor = True, initScreen=False)
 
     
     stime = time.time()
     Frame = ourAnimation.nextFrame()
     f = 0
     for frame in Frame:
-        renderFrame(d.realFloor, frame)
+        renderFrame(d.simulatedFloor, frame)
         #d.pollSensors()
         #time.sleep(.1)
         f += 1
@@ -191,6 +191,7 @@ def main():
             print(f)
             stime = time.time()
             f = 0
+        time.sleep(1)
         
 
     input()
