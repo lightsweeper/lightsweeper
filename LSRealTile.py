@@ -327,10 +327,10 @@ class LSRealTile(LSTile):
         val = self.__tileRead()
         return val
 
-    # Inherited from LSTile
-#    def blank(self):
-#        self.setColor(0)
-#        return
+
+    def blank(self):
+        self.setColor(0)  # Silly hack, tile should implement blank
+        return
 
     # send mode command that displays stuff
     def locate(self):

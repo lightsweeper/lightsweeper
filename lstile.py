@@ -10,8 +10,10 @@ class LSTile():
         self.row = row
         self.col = col
         self.color = None
-        self.shape = Shapes.ZERO
+        self.shape = None
         self.segments = dict.fromkeys(list(map(chr, range(97, 97+7))))
+        for segKey in self.segments.keys():
+            self.segments[segKey] = None
 
     def destroy(self):
         raise NotImplementedError()
@@ -24,15 +26,17 @@ class LSTile():
         if(transition != 0):
             self.setTransition(transition)
 
-    # set immediately or queue this color in addressed tiles
+
     def setColor(self, color):
+       self.color = color
        for segKey in self.segments.keys():
            segment = self.segments[segKey]
-           if segment is not 0:
+           if segment is not None:
                self.segments[segKey] = color
                
 
     def setShape(self, shape):
+        self.shape = shape
         if shape & Shapes.SEG_A:
             if self.segments["a"] is None:
                 self.segments["a"] = self.color
@@ -96,7 +100,7 @@ class LSTile():
         raise NotImplementedError()
 
     def blank(self):
-        self.setColor(Colors.BLACK)
+        self.setColor(None)
 
     def locate(self):
         raise NotImplementedError()
