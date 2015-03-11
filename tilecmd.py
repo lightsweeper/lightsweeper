@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 '''
 tilecmd.py - a command line interface to LSRealTile.py
 
