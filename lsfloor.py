@@ -466,9 +466,12 @@ def main():
     d.setAllCustom([1,3,2,6,4,5,7])
     d.heartbeat()
 #    wait(2)
-    input("Press return to exit")
-    
+    input("Press return to continue")
+
+    print("Testing setColor after setSegment")
+    # TODO: Make LSRealTile remember shape    
     d.setAllColor(Colors.YELLOW)
+    d.heartbeat()
 
     input("Press return to exit")
 

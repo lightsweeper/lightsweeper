@@ -3,27 +3,6 @@ import Shapes
 
 ### Definition of the Lightsweeper low level API
 
-### only very common operations are coded here
-
-# Segment display commands from 0x80 to 0xBF
-SEGMENT_CMD =   0x80
-SEGMENT_CMD_END = (SEGMENT_CMD+0x3F)
-# Depending on the command, up to 4 byte fields will follow (R,G,B and transition)
-# Three bits in command declare that R, G, and/or B segment fields will follow
-# Two bits define the update condition
-# One bit declares that the transition field will follow
-#
-# One segment byte field will be provided for each of the RGB color bits declared
-# Three segment fields allow for arbitrary colors for each segment
-# Segment fields are defined in the -abcdefg order, to match LedControl library
-SEGMENT_FIELD_MASK  = 0x38
-SEGMENT_FIELD_RED   = 0x20
-SEGMENT_FIELD_GREEN = 0x10
-SEGMENT_FIELD_BLUE  = 0x08
-# Segment fields that are not given clear the associated target color segments
-# unless the LSB is set in one of the provided segment fields
-SEGMENT_KEEP_MASK  = 0x80 # if MSB set, do not clear any segment data
-
 class LSTile():
     def __init__(self, row=0, col=0):
         self.row = row
@@ -33,9 +12,6 @@ class LSTile():
         self.segments = dict.fromkeys(list(map(chr, range(97, 97+7))))
         for segKey in self.segments.keys():
             self.segments[segKey] = None
-
-    def destroy(self):
-        raise NotImplementedError()
         
     def set(self, shape=None, color=None, transition=0):
         if color is not None:
@@ -94,7 +70,14 @@ class LSTile():
         
         
     def setSegments(self, rgb):
-       pass
+        c = Colors.rgbToSegments(rgb)
+        self.segments["a"] = c[0]
+        self.segments["b"] = c[1]
+        self.segments["c"] = c[2]
+        self.segments["d"] = c[3]
+        self.segments["e"] = c[4]
+        self.segments["f"] = c[5]
+        self.segments["g"] = c[6]
         
 
     def setTransition(self, transition):
@@ -112,7 +95,7 @@ class LSTile():
     def getRow (self):
         return self.row
 
-    def update(self,type):
+    def destroy(self):
         raise NotImplementedError()
 
     def version(self):
@@ -178,22 +161,11 @@ class LSTile():
 
     # REMOVEME - old stuff for reference only
 
-    # return a list of two-tuples
-    # row or column = 0 returns the whole column or row, respectively
-    # single tile returns list of itself
-    def getTileList (self, row, column):
-        raise NotImplementedError()
 
     # set immediately or queue this digit in addressed tiles
     # this is a convenience function that calls setSegments
     def setDigit(self, row, column, digit, setItNow = True):
         raise NotImplementedError()
 
-    # return a list of active pressure sensors
-    def getSensors (self):
-        raise NotImplementedError()
 
-    # TODO - not yet used perhaps useful if target slot can be passed in
-    def pollSensors(self):
-        raise NotImplementedError()
 
