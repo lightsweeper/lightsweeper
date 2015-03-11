@@ -7,6 +7,7 @@ from LSFloorConfigure import userSelect
 import Colors
 import Shapes
 
+import itertools
 import os
 import random
 import sys
@@ -156,6 +157,24 @@ class LSFloor():
 #    def clearAll(self):
 #        for tile in self.tileList:
 #            tile.set()
+
+    def renderFrame(self, frame):
+    # TODO: LSRealTile, should optimize tile calls
+
+        cols = frame.pop(0)
+        row = 0
+        col = 0
+        for _ in itertools.repeat(None, int(len(frame)/3)):
+            if col is cols:
+                row += 1
+                col = 0
+            rMask = frame.pop(0)
+            gMask = frame.pop(0)
+            bMask = frame.pop(0)
+            if rMask is not 128:
+                self.tiles[row][col].setSegments((rMask,gMask,bMask))
+           #     print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
+            col += 1
 
     def pollSensors(self):
         pass

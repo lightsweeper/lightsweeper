@@ -1,5 +1,4 @@
 from collections import defaultdict
-import itertools
 
 
 import Shapes
@@ -17,24 +16,6 @@ def validateFrame(frame):
     if all(i <= 128 for i in frame[1:]) is False:
         return False
     return True
-
-def renderFrame(floor, frame):
-# TODO: Incomplete, should optimize tile calls
-
-    cols = frame.pop(0)
-    row = 0
-    col = 0
-    for _ in itertools.repeat(None, int(len(frame)/3)):
-        if col is cols:
-            row += 1
-            col = 0
-        rMask = frame.pop(0)
-        gMask = frame.pop(0)
-        bMask = frame.pop(0)
-        if rMask is not 128:
-            floor.tiles[row][col].setSegments((rMask,gMask,bMask))
-          #  print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
-        col += 1
 
 
 class LSAnimation:
@@ -165,7 +146,7 @@ def main():
 
    # ourAnimation.deleteFrame(1)
 
-    ourAnimation.showFrames()
+  #  ourAnimation.showFrames()
 
     useRealFloor = True
     try:
@@ -183,18 +164,16 @@ def main():
     Frame = ourAnimation.nextFrame()
     f = 0
     for frame in Frame:
-        renderFrame(d.simulatedFloor, frame)
+        d.simulatedFloor.renderFrame(frame)
+        d.heartbeat()
         #d.pollSensors()
-        #time.sleep(.1)
+        time.sleep(.1)
         f += 1
         if (time.time() - stime > 1):
             print(f)
             stime = time.time()
             f = 0
-        time.sleep(1)
-        
 
-    input()
 
 if __name__ == '__main__':
     main()
