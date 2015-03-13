@@ -1,4 +1,5 @@
 from collections import defaultdict
+import time
 
 
 import Shapes
@@ -63,6 +64,23 @@ class LSAnimation:
             for frame in self._frames:
                 yield(frame)
 
+    def play(self, display):
+        print("Starting animation ({:d} frames)".format(len(self._frames)))
+        stime = time.time()
+        Frame = self.nextFrame()
+        f = 0
+        for frame in Frame:
+            display.simulatedFloor.renderFrame(frame)
+            display.heartbeat()
+            #d.pollSensors()
+            time.sleep(.1)
+            f += 1
+            if (time.time() - stime > 1):
+                print("{:d} fps".format(f))
+                stime = time.time()
+                f = 0
+        
+
     def _checkIndex(self, index):
         if index not in range(-1,len(self._frames)+1):
             print("Error frame index out of range")
@@ -84,6 +102,11 @@ class LSFrameGen:
             print("Edit error, index out of range")
             raise Exception
         self.frame[row][col] = [colormask]
+
+    def fill(self,colormask):
+        for row in range(0, self.rows):
+            for col in range(0, self.cols):
+                self.frame[row][col] = [colormask]
 
     def print(self):
         for row in self.frame:
@@ -111,7 +134,6 @@ class LSFrameGen:
 
 
 def main():
-    import time
     print("TODO: testing lsanimate")
 
     colormask = (Shapes.ZERO, 0,0)
@@ -143,7 +165,6 @@ def main():
 
 
 
-
    # ourAnimation.deleteFrame(1)
 
   #  ourAnimation.showFrames()
@@ -159,20 +180,8 @@ def main():
 
     d = lsdisplay.LSDisplay(realFloor = False, simulatedFloor = True, initScreen=False)
 
-    
-    stime = time.time()
-    Frame = ourAnimation.nextFrame()
-    f = 0
-    for frame in Frame:
-        d.simulatedFloor.renderFrame(frame)
-        d.heartbeat()
-        #d.pollSensors()
-        time.sleep(.1)
-        f += 1
-        if (time.time() - stime > 1):
-            print(f)
-            stime = time.time()
-            f = 0
+    ourAnimation.play(d)
+
 
 
 if __name__ == '__main__':

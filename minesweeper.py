@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from lsgame import LSGameEngine
-#from lsgame import Frame
+import lsanimate
 
 import Colors
 import Shapes
@@ -280,23 +280,59 @@ class EndAnimation:
             frame.setAllColor(Colors.GREEN)
             self.frames.append(frame)
         else:
-            for i in range(0,20):
-                frame.setAllColor(Colors.RED)
-                frame.setAllShape(Shapes.EIGHT)
-                frame.heartbeats = 1
-                self.frames.append(frame)
+            groundZero = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
+            redEight = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
+            redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+            off = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
+            redBottom = (8,0,0)
+            redTop = (64,0,0)
+            redRight = (48,0,0)
+            redLeft = (6,0,0)
+            redRightBottom = (24,0,0)
+            redLeftBottom = (12,0,0)
+            redRightTop = (96,0,0)
+            redLeftTop = (66,0,0)
+
+            losingAnimation = lsanimate.LSAnimation()
+
+            blastRadius = lsanimate.LSFrameGen(display.rows, display.cols)
+            eventHorizon = lsanimate.LSFrameGen(display.rows, display.cols)
+            blastRadius.fill(off)
+            blastRadius.edit(lastMove.row, lastMove.col, groundZero)
+            eventHorizon.fill(redEight)
+            eventHorizon.edit(lastMove.row, lastMove.col, off)
+
+            losingAnimation.addFrame(blastRadius.get())
+            losingAnimation.addFrame(eventHorizon.get())
+
+            blastRadius.edit(lastMove.row, lastMove.col, redZero)
+
+            losingAnimation.addFrame(blastRadius.get())
+            losingAnimation.addFrame(eventHorizon.get())
+
+            blastRadius.edit(lastMove.row, lastMove.col, off)
+            blastRadius.edit(lastMove.row+1, lastMove.col, redTop)
+            blastRadius.edit(lastMove.row-1, lastMove.col, redBottom)
+            blastRadius.edit(lastMove.row, lastMove.col+1, redLeft)
+            blastRadius.edit(lastMove.row, lastMove.col-1, redRight)
+
+            eventHorizon.edit(lastMove.row+1, lastMove.col, off)
+            eventHorizon.edit(lastMove.row-1, lastMove.col, off)
+            eventHorizon.edit(lastMove.row, lastMove.col+1, off)
+            eventHorizon.edit(lastMove.row, lastMove.col-1, off)
+
+            losingAnimation.addFrame(blastRadius.get())
+            losingAnimation.addFrame(eventHorizon.get())
 
 
-                frame.setAllColor(Colors.BLACK)
-                frame.setAllShape(Shapes.EIGHT)
-                frame.heartbeats = 1
-                self.frames.append(frame)
+        # Testing
+        Frame = losingAnimation.nextFrame()
+        for frame in Frame:
+            display.simulatedFloor.renderFrame(frame)
+            display.heartbeat()
+            time.sleep(.5)
 
-
-                frame.setAllColor(Colors.RED)
-                frame.setAllShape(Shapes.EIGHT)
-                frame.heartbeats = 1
-                self.frames.append(frame)
+            
 
     def getFrame(self):
         if len(self.frames) is 0:
