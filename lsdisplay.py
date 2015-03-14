@@ -1,3 +1,5 @@
+""" The main point of interface to the LightSweeper API. Launches simulated and real floors (if available) and keeps them in sync """
+
 from lsfloor import LSRealFloor
 from lsemulate import LSPygameFloor
 from LSFloorConfigure import LSFloorConfig
