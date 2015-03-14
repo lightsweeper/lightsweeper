@@ -1,3 +1,5 @@
+""" contains methods to emulate LightSweeper floors on your computer """
+
 import lsfloor
 import Colors
 
