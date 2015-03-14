@@ -1,3 +1,5 @@
+""" Contains wrappers for various audio backends """
+
 import random
 
 class _lsAudio:
