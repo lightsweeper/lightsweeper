@@ -1,3 +1,5 @@
+""" Contains descriptions of and methods for interfacing with LightSweeper floors """
+
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from lstile import LSTile
