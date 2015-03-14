@@ -1,3 +1,5 @@
+""" Shortcuts for shape constants """
+
 import random
 #segment order starts at top (A) and works clockwise, with the center segment (G) last
 SEG_A = 0b01000000
