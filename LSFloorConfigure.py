@@ -79,17 +79,17 @@ class LSFloorConfig:
         self.config = self._createVirtualConfig(self.rows, self.cols)
 
     def loadConfig(self, fileName):
-    """
-        This function attempts to load the floor configuration at fileName
+        """
+            This function attempts to load the floor configuration at fileName
 
-        Returns:
-            True                    if the load was succesful
+            Returns:
+                True                    if the load was succesful
 
-        Raises:
-            IOError                 if fileName is a directory
-            FileDoesNotExistError   if fileName is non-existent
-            CannotParseError        if the file can not be parsed
-    """
+            Raises:
+                IOError                 if fileName is a directory
+                FileDoesNotExistError   if fileName is non-existent
+                CannotParseError        if the file can not be parsed
+        """
         if os.path.exists(fileName) is True:
             if os.path.isfile(fileName) is not True:
                 raise IOError(fileName + " is not a valid floor config file!")
@@ -357,8 +357,8 @@ def main():
             for port in tilepile.lsMatrix:
                 totaltiles += len(tilepile.lsMatrix[port])
 
-            if len(availPorts) > 0:  # default to the first port in the list
-                defaultPort = availPorts[0]
+#            if len(availPorts) > 0:  # default to the first port in the list
+#                defaultPort = availPorts[0]
 
             # It's the little details that count
             question = "Would you like this to be a virtual floor?"
@@ -405,7 +405,6 @@ def main():
 
     elif config.cells is 0:     # Start a new configuration with a pre-existing filename
         config = interactiveConfig(config)
-        ourfile = config.fileName
 
     else:                       # Load an existing configuration for editing
         print("\nThis is the configuration saved in " + config.fileName + ":\n")

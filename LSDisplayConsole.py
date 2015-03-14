@@ -1,6 +1,4 @@
-#from lsfloor import LSRealFloor
-import Shapes
-import sys
+
 import string
 from lsgame import Move
 

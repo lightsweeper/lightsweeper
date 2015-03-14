@@ -3,11 +3,9 @@
 from lsfloor import LSRealFloor
 from lsemulate import LSPygameFloor
 from LSFloorConfigure import LSFloorConfig
-import lsfloor
 
 import Shapes
 import Colors
-import random
 import time
 
 wait = time.sleep
