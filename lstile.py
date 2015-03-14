@@ -1,4 +1,4 @@
-""" Contains descriptions of and methods for interfacing with LightSweeper tile objects. """
+""" Contains descriptions of and methods for interfacing with LightSweeper tile objects """
 
 import Colors
 import Shapes
