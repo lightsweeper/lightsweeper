@@ -74,6 +74,7 @@ class LSAnimation:
             display.heartbeat()
             #d.pollSensors()
             time.sleep(.1)
+            #input("Press return to step")
             f += 1
             if (time.time() - stime > 1):
                 print("{:d} fps".format(f))

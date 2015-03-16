@@ -7,18 +7,37 @@ import Colors
 import lsdisplay
 import lsanimate
 
-def validateFrame(frame):
-   # print(repr(frame)) # Debugging
-    frameLen = len(frame) - 1
-    if frameLen % 3 is not 0:
-        return False
-    cells = frameLen/3
-    if (cells/frame[0]).is_integer() is False:
-        return False
-    if all(i <= 128 for i in frame[1:]) is False:
-        return False
-    return True
 
+
+def makeWaves(origin):
+# This is a generator that produces a list of cells in expanding "waves" from the origin
+    irange = lambda low, high: range(low, high+1) # inclusive range function
+    step = 1
+    x = origin[0]
+    y = origin[1]
+    while True:
+        thisWave = list()
+        for r in irange(x-step, x+step):
+            for c in irange(y-step, y+step):
+                if r == x-step or r == x+step or c == y-step or c == y+step: # We only want the edges
+                    rowCol = (r, c)
+                    thisWave.append(rowCol)
+        yield(thisWave)
+        step += 1
+
+def exploder():
+# This generator returns a sequence of masks that makes a tile look as though it is exploding
+    explosionSequence =[(0,0,0),
+                        (Shapes.DASH, 0,0),
+                        (Shapes.H, Shapes.DASH,0),
+                        (Shapes.EIGHT, Shapes.H, Shapes.DASH),
+                        (Shapes.EIGHT, Shapes.EIGHT, Shapes.H),
+                        (Shapes.EIGHT, Shapes.EIGHT, Shapes.EIGHT),
+                        (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO),
+                        (Shapes.OFF, Shapes.OFF, Shapes.OFF)
+                       ]
+    for mask in explosionSequence:
+        yield mask
 
 
 # TODO - decide if this should subclass LSFrameGen
@@ -29,6 +48,8 @@ class LSExplosion:
     #colormask = (Shapes.ZERO, 0,0)
     #diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
     redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    yellowZero = (Shapes.ZERO, Shapes.ZERO, 0)
+    whiteZero = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
     greenZero = (0, Shapes.ZERO, 0)
     blueZero = (0, 0, 126)
     redX = (Shapes.H, 0, 0)
@@ -39,9 +60,9 @@ class LSExplosion:
     bomb4 = (Shapes.EIGHT, Shapes.EIGHT, Shapes.EIGHT)
     bomb5 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
     bomb6 = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
-    bomb7 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
+    bomb7 = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
     bomb8 = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
-    bombs = [bomb0, bomb1, bomb2, bomb3, bomb4, bomb5, bomb6, bomb7, bomb8]
+    bombs = [bomb0, bomb0, bomb1, bomb2, bomb3, bomb4, bomb7, bomb6]
 
     bombThrob0 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
     bombThrob0 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
@@ -60,6 +81,16 @@ class LSExplosion:
         self.frame = defaultdict(lambda: defaultdict(int))
         self.firstMine = mine
         self.allMines = mines
+        self.wavefront = makeWaves(mine)
+        self.boom = exploder()
+        self.stage = 0
+        self.throbbing = False
+        self.wi = 0  # A cyclic iterator, each wavefront stays active for 3 frames
+        self.allCells = list()
+        for row in range(self.rows):
+            for col in range(self.cols):
+                rowCol = (row, col)
+                self.allCells.append(rowCol)
 
     # Allows you to edit an existing frame structure, if no colormask is set
     # then the tile will keep its current colormask
@@ -98,28 +129,55 @@ class LSExplosion:
                           # subsequent tile's red, green, and blue colormasks
 
     def flamefront(self):
+            if self.stage is 1:
+                if self.wi == 0:
+                    self.thisWave = next(self.wavefront)
+                    self.wi += 1
+                elif self.wi == 2:
+                    self.wi = 0
+                else:
+                    self.wi += 1
+            else:
+                self.thisWave = list()
+            if (True not in [ i in self.allCells for i in self.thisWave ]) and len(self.thisWave) > 0:
+                # The wave has reached the edge of the board
+                self.stage = 2      # Stop making waves
+                self.boom = exploder() # Reset the explosion for the untriggered mines
+            if self.stage is 2:
+                try:
+                    self.boomMask = next(self.boom)
+                except StopIteration:
+                    self.stage = 3
+                    self.throbbing = True
+
             for col in range(0,self.cols):
                 for row in range(0,self.rows):
                     tile = (row,col)
                     # mine cells blow up then throb forever
-                    #if tile == self.firstMine:
-                    if tile in self.allMines:
-                        if self.frameNum < len(self.bombs):
-                            #maskIdx = self.frameNum % len(self.bombs)
-                            mask = self.bombs[self.frameNum]
-                        else:
-                            maskIdx = self.frameNum % len(self.bombThrobs)
-                            mask = self.bombThrobs[maskIdx]
-                        self.edit(row,col,mask)
-                    elif self.frameNum % 3 is not 0 and row == col:
+                    if  tile == self.firstMine:
+                        mask = self.blank
+                        if self.stage is 0:
+                            try:
+                                mask = next(self.boom)
+                            except StopIteration:
+                                self.stage = 1
+                    elif self.stage is 2 and tile in self.allMines:
+                        mask = self.boomMask
+                    else:
                         #mask = self.redZero
                         mask = self.blank
                         # TODO - would be better to not disturb until wavefront gets here
-                        self.edit(row,col,mask)
-                    else:
-                        #mask = self.greenZero
-                        mask = self.blank
-                        self.edit(row,col,mask)
+                    if tile in self.thisWave:
+                        if self.wi == 1:
+                            mask = self.redZero
+                        elif self.wi == 2:
+                            mask = self.yellowZero
+                        else:
+                            mask = self.whiteZero
+                    if self.throbbing is True and tile in self.allMines:
+                        maskIdx = self.frameNum % len(self.bombThrobs)
+                        mask = self.bombThrobs[maskIdx]
+                    self.edit(row,col,mask)
             self.frameNum = self.frameNum + 1
             print("Computed frame " + repr(self.frameNum))
 
@@ -140,8 +198,8 @@ def main():
     ourAnimation = lsanimate.LSAnimation()
 
     #frame = lsanimate.LSFrameGen(rows,cols)
-    mine = (0,1)   # this mine is the first to blow
-    mines = [mine, (1,2), (2,4), (3,1), (4,5)]  # all the mines in the floor
+    mine = (4,5)   # this mine is the first to blow
+    mines = [(0,1), (1,2), (2,4), (3,1), mine]  # all the mines in the floor
     # TODO - should initialize the frame from the existing floor
     # and not modify tiles until the wavefront reaches them
     frame = LSExplosion(rows,cols, mine, mines)
@@ -150,8 +208,12 @@ def main():
         frame.flamefront()
         ourAnimation.addFrame(frame.get())
 
+    ourAnimation.deleteFrame(7) # Because I'm too lazy to do it right
+    ourAnimation.deleteFrame(7) # Yes, we need both of these
+
     ourAnimation.play(d)
 
 
 if __name__ == '__main__':
     main()
+
