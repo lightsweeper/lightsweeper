@@ -32,7 +32,7 @@ class WhackAMole():
         self.winScreenTimestamp = -1
         self.enterName = None
         self.handlesEvents = True
-        self.timer = CountdownTimer(5, self.timerFinished)
+        self.timer = CountdownTimer(30, self.timerFinished)
         self.showingHighScores = False
         self.display.setAll(Shapes.ZERO, Colors.BLACK)
 
