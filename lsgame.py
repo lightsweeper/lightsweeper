@@ -1,3 +1,5 @@
+""" Contains methods related to LightSweeper games """
+
 import os
 import random
 import time

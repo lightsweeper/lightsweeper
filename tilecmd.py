@@ -2,25 +2,27 @@
 '''
 tilecmd.py - a command line interface to LSRealTile.py
 
-Usage:
-    tilecmd.py [options] [blank|locate|demo|flip|reset]
-    tilecmd.py [options] set digit <digit>
-    tilecmd.py [options] set color <color>
-    tilecmd.py [options] set address <address>
-    tilecmd.py -h | --help
+Command line::
 
-Options:
-    -p <port>           Set the communications port to <port>
-    -a <address>        Communicate with tile at address <address>
-    -h --help           Display this documentation
-    -i --interactive    Enter interactive mode
+    Usage:
+        tilecmd.py [options] [blank|locate|demo|flip|reset]
+        tilecmd.py [options] set digit <digit>
+        tilecmd.py [options] set color <color>
+        tilecmd.py [options] set address <address>
+        tilecmd.py -h | --help
 
-Tile commands:
-    blank       Blanks the tile's display
-    locate      Causes the tile to display its address
-    demo        Causes the tile to enter demo mode
-    flip        Flips the tile's display
-    reset       Causes the tile to reset
+    Options:
+        -p <port>           Set the communications port to <port>
+        -a <address>        Communicate with tile at address <address>
+        -h --help           Display this documentation
+        -i --interactive    Enter interactive mode
+
+    Tile commands:
+        blank       Blanks the tile's display
+        locate      Causes the tile to display its address
+        demo        Causes the tile to enter demo mode
+        flip        Flips the tile's display
+        reset       Causes the tile to reset
 '''
 from docopt import docopt
 from LSRealTile import *

@@ -1,3 +1,5 @@
+""" Shortcuts for color constants """
+
 import random
 
 BLACK = 0
@@ -12,27 +14,50 @@ WHITE = 7
 
 colorArray = ["black", "red", "green", "yellow", "blue", "violet", "cyan", "white"]
 
+
 def intToName(i):
     return colorArray[i]
 
+    #Segments:  A  B  C D E F G
+SEGMENTMASK = [64,32,16,8,4,2,1]
+
+def unpack(b):
+# Unpacks an int's binary flags
+    while b:
+        o = b&(~b+1)
+        yield o
+        b ^= o
+
 def rgbToSegments(rgb):
-    print(rgb)
-    return([RED, RED, RED, RED, RED, RED, RED])
+    segments = [None] * 7
+    for r in unpack(rgb[0]):
+        segments[SEGMENTMASK.index(r)] = RED
+    for g in unpack(rgb[1]):
+        if segments[SEGMENTMASK.index(g)] is RED:
+            segments[SEGMENTMASK.index(g)] = YELLOW
+        else:
+            segments[SEGMENTMASK.index(g)] = GREEN
+    for b in unpack(rgb[2]):
+        if segments[SEGMENTMASK.index(b)] is YELLOW:
+            segments[SEGMENTMASK.index(b)] = WHITE
+        elif segments[SEGMENTMASK.index(b)] is GREEN:
+            segments[SEGMENTMASK.index(b)] = CYAN
+        elif segments[SEGMENTMASK.index(b)] is RED:
+            segments[SEGMENTMASK.index(b)] = MAGENTA
+        else:
+            segments[SEGMENTMASK.index(b)] = BLUE
+    return(segments)
 
 def segmentsToRgb(segments):
-        #Segments:  A  B  C D E F G
-    segmentMask = [64,32,16,8,4,2,1]
-    r=0
-    g=0
-    b=0
+    (r,g,b) = (0,0,0)
     i=0
     for seg in map(intToRGB, segments):
         if seg[0] > 0:
-            r+=segmentMask[i]
+            r+=SEGMENTMASK[i]
         if seg[1] > 0:
-            g+=segmentMask[i]
+            g+=SEGMENTMASK[i]
         if seg[2] > 0:
-            b+=segmentMask[i]
+            b+=SEGMENTMASK[i]
         i += 1
    # print("rgb -> {:d} {:d} {:d}".format(r,g,b))  #Debugging
     return([r,g,b])

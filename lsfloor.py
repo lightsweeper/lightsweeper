@@ -1,6 +1,8 @@
+""" Contains descriptions of and methods for interfacing with LightSweeper floors """
+
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
-from LSEmulateTile import EmulateTile
+from lstile import LSTile
 from LSFloorConfigure import LSFloorConfig
 from LSFloorConfigure import userSelect
 
@@ -75,9 +77,14 @@ class LSFloor():
                 wait(.05)
                 self.tiles[row].append(tile)
                 self.tileList.append(tile)
+        if self.conf.cells is 0:
+            print("Loaded {:d} virtual rows and {:d} virtual columns".format(self.rows, self.cols))
+        else:
+            print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
+        self.clearBoard()
     
     def _returnTile(self, row, col, port=None):
-        return(EmulateTile(self, row, col))
+        return(LSTile(row, col))
 
 
     def setColor(self, row, col, color):
@@ -124,7 +131,7 @@ class LSFloor():
     #segments is a list of seven colors in A,...,G order of segments
     def setSegments(self, row, col, segments):
         tile = self.tiles[row][col]
-        tile.segments=segments
+        tile.setSegments(segments)
 
     def setSegmentsAll(self, segments):
         for tile in self.tileList:
@@ -264,9 +271,6 @@ class LSRealFloor(LSFloor):
         
         # Call parent init
         LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
-        print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
-        print("\nClearing floor...")
-        self.clearBoard()
         
     def _returnTile(self, row, col, port):
         return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
@@ -289,20 +293,21 @@ class LSRealFloor(LSFloor):
             zeroTile.setShape(shape)
 
     # !!!
-    def set(self, row, col, shape, color):
-        tile = self.tiles[row][col]
-        tile.setShape(shape)
-        tile.setColor(color)
+#    def set(self, row, col, shape, color):
+#        tile = self.tiles[row][col]
+#        tile.set(shape, color)
+#        tile.setShape(shape)
+#        tile.setColor(color)
 
-    def setSegments(self, row, col, segments):
-        tile = self.tiles[row][col]
-        tile.setSegments(Colors.segmentsToRgb(segments))
+#    def setSegments(self, row, col, segments):
+#        tile = self.tiles[row][col]
+#        tile.setSegments(Colors.segmentsToRgb(segments))
 
     def setSegmentsAll(self, segments):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
-            zeroTile.setSegments(Colors.segmentsToRgb(segments))
+            zeroTile.setSegments(segments)
 
     def clearBoard(self):
         for port in self.realTiles.sharedSerials.keys():
@@ -378,16 +383,20 @@ def main():
 
     d = lsdisplay.LSDisplay(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
 
+    input("Press return to begin tests")
+
     print("Testing set")
     d.set(getRandRow(d),getRandCol(d),Shapes.L,Colors.RED)
     d.set(getRandRow(d),getRandCol(d),Shapes.S,Colors.MAGENTA)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAll")
     d.setAll(Shapes.B,Colors.BLUE)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     trow = getRandRow(d)
     tcol = getRandCol(d)
@@ -395,32 +404,38 @@ def main():
     print("Testing setColor")
     d.setColor(trow,tcol,Colors.GREEN)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setShape")
     d.setShape(trow,tcol,Shapes.ZERO)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAllColor")
     d.setAllColor(Colors.MAGENTA)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAllShape")
     d.setAllShape(Shapes.DASH)
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing clear")
     d.clear(getRandRow(d),getRandCol(d))
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing clearAll")
     d.clearAll()
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setCustom")
     d.setCustom(0, 0, [1,3,2,6,4,5])
@@ -443,14 +458,21 @@ def main():
     wait(.5)
     d.setCustom(0, 0, [1,3,2,6,4,5,7])
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
     print("Testing setAllCustom")
     d.setAllCustom([1,3,2,6,4,5,7])
     d.heartbeat()
-    wait(2)
+#    wait(2)
+    input("Press return to continue")
 
+    print("Testing setColor after setSegment")
+    # TODO: Make LSRealTile remember shape    
+    d.setAllColor(Colors.YELLOW)
+    d.heartbeat()
 
+    input("Press return to exit")
 
 if __name__ == '__main__':
 
