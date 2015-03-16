@@ -68,7 +68,7 @@ class LSDisplay():
             self.set(0, 1, Shapes.L, Colors.RED)
             self.set(0, 2, Shapes.I, Colors.YELLOW)
             self.set(0, 3, Shapes.G, Colors.GREEN)
-            self.set(0, 4, Shapes.H, Colors.BLUE)
+            self.set(0, 4, Shapes.h, Colors.BLUE)
             self.set(0, 5, Shapes.T, Colors.MAGENTA)
             self.set(1, 0, Shapes.S, Colors.RED)
             self.set(1, 1, Shapes.u, Colors.YELLOW)
