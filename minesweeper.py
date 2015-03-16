@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from lsgame import LSGameEngine
 import lsanimate
+import lsexplosion
 
 import Colors
 import Shapes
@@ -148,6 +149,20 @@ class Board():
         #print("Remaining Mines: ", self.remaining_mines(), " Remaining Hidden: ", self.remaining_hidden())
         return self.remaining_mines() == self.remaining_hidden()
 
+    def list_mines(self):
+        r = 0
+        c = 0
+        out = list()
+        for row in self.board:
+            for cell in row:
+                if cell.is_mine is True:
+                    rowCol = (r, c)
+                    out.append(rowCol)
+                c += 1
+            r += 1
+        return out
+                    
+
 
 class Minesweeper():
     def __init__(self, display, audio, rows, cols):
@@ -202,13 +217,13 @@ class Minesweeper():
         elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
-                self.endAnim = EndAnimation(True, self.display, self.lastMove)
+                self.endAnim = EndAnimation(True, self.display, (self.lastMove.row, self.lastMove.col), self.board.list_mines())
                 self.animatingEnd = True
                 self.audio.playSound("Success.wav")
             else:
                 #self.audio.playSound("Explosion.wav")
                 self.board.show_all()
-                self.endAnim = EndAnimation(False, self.display, self.lastMove)
+                self.endAnim = EndAnimation(False, self.display, (self.lastMove.row, self.lastMove.col), self.board.list_mines())
                 self.animatingEnd = True
         elif self.animatingEnd:
             frame = self.endAnim.getFrame()
@@ -250,7 +265,7 @@ class Minesweeper():
         print("Test code goes here")
 
 class EndAnimation:
-    def __init__(self, win, display, lastMove):
+    def __init__(self, win, display, lastMove, mines):
         self.rows = display.rows
         self.cols = display.cols
         print(self.rows)
@@ -280,57 +295,64 @@ class EndAnimation:
             frame.setAllColor(Colors.GREEN)
             self.frames.append(frame)
         else:
-            groundZero = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
-            redEight = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
-            redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
-            off = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
-            redBottom = (8,0,0)
-            redTop = (64,0,0)
-            redRight = (48,0,0)
-            redLeft = (6,0,0)
-            redRightBottom = (24,0,0)
-            redLeftBottom = (12,0,0)
-            redRightTop = (96,0,0)
-            redLeftTop = (66,0,0)
+            print(mines)
+#            groundZero = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
+#            redEight = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
+#            redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+#            off = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
+#            redBottom = (8,0,0)
+#            redTop = (64,0,0)
+#            redRight = (48,0,0)
+#            redLeft = (6,0,0)
+#            redRightBottom = (24,0,0)
+#            redLeftBottom = (12,0,0)
+#            redRightTop = (96,0,0)
+#            redLeftTop = (66,0,0)
 
             losingAnimation = lsanimate.LSAnimation()
 
-            blastRadius = lsanimate.LSFrameGen(display.rows, display.cols)
-            eventHorizon = lsanimate.LSFrameGen(display.rows, display.cols)
-            blastRadius.fill(off)
-            blastRadius.edit(lastMove.row, lastMove.col, groundZero)
-            eventHorizon.fill(redEight)
-            eventHorizon.edit(lastMove.row, lastMove.col, off)
+            frame = lsexplosion.LSExplosion(self.rows, self.cols, lastMove, mines)
+            
+            for frameNum in range(0,50):
+                frame.flamefront()
+                losingAnimation.addFrame(frame.get())
 
-            losingAnimation.addFrame(blastRadius.get())
-            losingAnimation.addFrame(eventHorizon.get())
+            losingAnimation.deleteFrame(7) # Because I'm too lazy to do it right
+            losingAnimation.deleteFrame(7) # Yes, we need both of these
 
-            blastRadius.edit(lastMove.row, lastMove.col, redZero)
 
-            losingAnimation.addFrame(blastRadius.get())
-            losingAnimation.addFrame(eventHorizon.get())
-
-            blastRadius.edit(lastMove.row, lastMove.col, off)
-            blastRadius.edit(lastMove.row+1, lastMove.col, redTop)
-            blastRadius.edit(lastMove.row-1, lastMove.col, redBottom)
-            blastRadius.edit(lastMove.row, lastMove.col+1, redLeft)
-            blastRadius.edit(lastMove.row, lastMove.col-1, redRight)
-
-            eventHorizon.edit(lastMove.row+1, lastMove.col, off)
-            eventHorizon.edit(lastMove.row-1, lastMove.col, off)
-            eventHorizon.edit(lastMove.row, lastMove.col+1, off)
-            eventHorizon.edit(lastMove.row, lastMove.col-1, off)
-
-            losingAnimation.addFrame(blastRadius.get())
-            losingAnimation.addFrame(eventHorizon.get())
+#            blastRadius = lsanimate.LSFrameGen(display.rows, display.cols)
+#            eventHorizon = lsanimate.LSFrameGen(display.rows, display.cols)
+#            blastRadius.fill(off)
+#            blastRadius.edit(lastMove.row, lastMove.col, groundZero)
+#            eventHorizon.fill(redEight)
+#            eventHorizon.edit(lastMove.row, lastMove.col, off)
+#
+#            losingAnimation.addFrame(blastRadius.get())
+#            losingAnimation.addFrame(eventHorizon.get())
+#
+#            blastRadius.edit(lastMove.row, lastMove.col, redZero)
+#
+#            losingAnimation.addFrame(blastRadius.get())
+#            losingAnimation.addFrame(eventHorizon.get())
+#
+#            blastRadius.edit(lastMove.row, lastMove.col, off)
+#            blastRadius.edit(lastMove.row+1, lastMove.col, redTop)
+#            blastRadius.edit(lastMove.row-1, lastMove.col, redBottom)
+#            blastRadius.edit(lastMove.row, lastMove.col+1, redLeft)
+#            blastRadius.edit(lastMove.row, lastMove.col-1, redRight)
+#
+#            eventHorizon.edit(lastMove.row+1, lastMove.col, off)
+#            eventHorizon.edit(lastMove.row-1, lastMove.col, off)
+#            eventHorizon.edit(lastMove.row, lastMove.col+1, off)
+#            eventHorizon.edit(lastMove.row, lastMove.col-1, off)
+#
+#            losingAnimation.addFrame(blastRadius.get())
+#            losingAnimation.addFrame(eventHorizon.get())
 
 
         # Testing
-        Frame = losingAnimation.nextFrame()
-        for frame in Frame:
-            display.simulatedFloor.renderFrame(frame)
-            display.heartbeat()
-            time.sleep(.5)
+            losingAnimation.play(display)
 
             
 

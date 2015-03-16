@@ -179,7 +179,7 @@ class LSExplosion:
                         mask = self.bombThrobs[maskIdx]
                     self.edit(row,col,mask)
             self.frameNum = self.frameNum + 1
-            print("Computed frame " + repr(self.frameNum))
+            #print("Computed frame " + repr(self.frameNum))
 
 
 def main():
@@ -202,6 +202,7 @@ def main():
     mines = [(0,1), (1,2), (2,4), (3,1), mine]  # all the mines in the floor
     # TODO - should initialize the frame from the existing floor
     # and not modify tiles until the wavefront reaches them
+    print(mines)
     frame = LSExplosion(rows,cols, mine, mines)
     
     for frameNum in range(0,50):
