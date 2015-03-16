@@ -86,6 +86,11 @@ class LSFloor():
     def _returnTile(self, row, col, port=None):
         return(LSTile(row, col))
 
+    def handleTileStepEvent(self, row, col, val):
+        if self.eventCallback is not None:
+            self.eventCallback(row, col, val)
+        else:
+            print("lsfloor: eventCallback not defined")
 
     def setColor(self, row, col, color):
         """
@@ -274,10 +279,6 @@ class LSRealFloor(LSFloor):
         
     def _returnTile(self, row, col, port):
         return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
-
-    def handleTileStepEvent(self, row, col, val):
-        if self.eventCallback is not None:
-            self.eventCallback(row, col, val)
 
     def setAllColor(self, color):
         for port in self.realTiles.sharedSerials.keys():
