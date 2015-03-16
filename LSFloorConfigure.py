@@ -79,17 +79,17 @@ class LSFloorConfig:
         self.config = self._createVirtualConfig(self.rows, self.cols)
 
     def loadConfig(self, fileName):
-    """
-        This function attempts to load the floor configuration at fileName
+        """
+            This function attempts to load the floor configuration at fileName
 
-        Returns:
-            True                    if the load was succesful
+            Returns:
+                True                    if the load was succesful
 
-        Raises:
-            IOError                 if fileName is a directory
-            FileDoesNotExistError   if fileName is non-existent
-            CannotParseError        if the file can not be parsed
-    """
+            Raises:
+                IOError                 if fileName is a directory
+                FileDoesNotExistError   if fileName is non-existent
+                CannotParseError        if the file can not be parsed
+        """
         if os.path.exists(fileName) is True:
             if os.path.isfile(fileName) is not True:
                 raise IOError(fileName + " is not a valid floor config file!")
