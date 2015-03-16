@@ -1,3 +1,5 @@
+""" Shortcuts for color constants """
+
 import random
 
 BLACK = 0

@@ -1,5 +1,4 @@
 from lsgame import LSGameEngine
-#from lsgame import Frame
 
 import Colors
 import Shapes

@@ -5,7 +5,10 @@ import random
 from lsgame import LSGameEngine
 from lsgame import Move
 
-class EightbitSoundboard():
+instrument_1 = 19
+instrument_2 = 20
+
+class MidiSoundboard():
     def __init__(self, display, audio, rows, cols):
         self.display = display
         self.audio = audio
@@ -13,10 +16,9 @@ class EightbitSoundboard():
         self.cols = cols
         self.ended = False
         self.handlesEvents = True
-        #self.audio.loadSong('8bit/8bit-loop.wav', 'between1')
-        #self.audio.shuffleSongs()
         self.audio.setSongVolume(0)
-        self.audio.loadSound('8bit/casio_C_4.wav', 'casioC4')
+        self.handlesEvents = True
+        #self.audio.midiSoundOn()
         self.board = None
         for i in range(0, rows):
             for j in range(0, cols):
@@ -36,48 +38,42 @@ class EightbitSoundboard():
     def handleTileStepEvent(self, row, col, val):
         self.audio.setSoundVolume((255 - val) / 255)
         self.playTileSound(row, col)
-        #self.audio.playLoadedSound('casioC4')
         self.display.setColor(row, col, Colors.RANDOM())
 
     def playTileSound(self, row, col):
         if row is 0:
             if col is 0:
-                self.audio.playSound("8bit/casio_C_2.wav")
+                self.audio.midiSoundOn(instrument=19, note=70)
+                print("playing 0,0")
             if col is 1:
-                self.audio.playSound("8bit/casio_C_3.wav")
+                self.audio.midiSoundOn(instrument=19, note=71)
             if col is 2:
-                self.audio.playSound("8bit/casio_C_4.wav")
+                self.audio.midiSoundOn(instrument=19, note=72)
             if col is 3:
-                self.audio.playSound("8bit/casio_C_5.wav")
+                self.audio.midiSoundOn(instrument=19, note=73)
             if col is 4:
-                self.audio.playSound("8bit/casio_C_6.wav")
+                self.audio.midiSoundOn(instrument=19, note=74)
             if col is 5:
-                self.audio.playSound("8bit/casio_C_3.wav")
-                self.audio.playSound("8bit/casio_C_6.wav")
+                self.audio.midiSoundOn(instrument=19, note=75)
             if col is 6:
-                self.audio.playSound("8bit/casio_C_2.wav")
-                self.audio.playSound("8bit/casio_C_3.wav")
-                self.audio.playSound("8bit/casio_C_4.wav")
-                self.audio.playSound("8bit/casio_C_5.wav")
-                self.audio.playSound("8bit/casio_C_6.wav")
+                self.audio.midiSoundOn(instrument=19, note=76)
         elif row is 1:
             if col is 0:
-                self.audio.playSound("8bit/Reveal_G_2.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=70)
             if col is 1:
-                self.audio.playSound("8bit/Reveal_G_4.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=71)
             if col is 2:
-                self.audio.playSound("8bit/Reveal_G_4.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=72)
             if col is 3:
-                self.audio.playSound("8bit/04.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=73)
             if col is 4:
-                self.audio.playSound("8bit/08.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=74)
             if col is 5:
-                self.audio.playSound("8bit/8-bit-explosion1.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=75)
             if col is 6:
-                self.audio.playSound("8bit/8-bit-power-up.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=76)
             if col is 7:
-                print("Tile 2,8 is triggering too much")
-                #self.audio.playSound("8bit/10.wav")
+                self.audio.midiSoundOn(instrument=instrument_2, note=77)
         elif row is 2:
             if col is 0:
                 self.audio.playSound("8bit/12.wav")
@@ -101,7 +97,7 @@ class EightbitSoundboard():
 
     if __name__ == "__main__":
         print("Test code goes here")
-        
+
 def main():
     gameEngine = LSGameEngine(Soundboard)
     gameEngine.beginLoop()
