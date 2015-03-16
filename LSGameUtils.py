@@ -1,14 +1,18 @@
 import time
+import json
 
 import Colors
 import Shapes
 
 HI_SCORE_CUTOFF = 5
 class HighScores():
-    def __init__(self, fname):
-        #self.file = open(fname,mode='r')
-        self.namesAndScores = [("God", "99"), ("Bob", "10"), ("Ass", "1")]
-        self.scores = [99,10,1]
+    def __init__(self, fname="scores"):
+        self.fname = fname
+        with open(fname) as f:
+            self.namesAndScores = json.load(f)
+        self.scores = []
+        for entry in self.namesAndScores:
+            self.scores.append(int(entry[1]))
         if len(self.scores) < HI_SCORE_CUTOFF:
             self.highScoreThreshold = 0
         else:
@@ -21,34 +25,42 @@ class HighScores():
         if score < self.scores[len(self.scores) - 1]:
             self.scores.append(score)
             self.namesAndScores.append((name, str(score)))
+            with open(self.fname, 'w') as f:
+                f.dump(self.namesAndScores)
             return
         for i in range(len(self.scores)):
             if self.scores[i] < score:
                 self.scores.insert(i, score)
                 self.namesAndScores.insert(i, (name, str(score)))
+                with open(self.fname, 'w') as f:
+                    json.dump(self.namesAndScores, f)
+                return
 
     def getHighScores(self, limit=10, start=0):
         result = []
         i = start
         while len(result) < limit and i < len(self.namesAndScores):
-            result.append(self.namesAndScores[i])
+            result.append((self.namesAndScores[i][0], str(self.namesAndScores[i][1])))
             i += 1
         return result
 
 class EnterName():
-    def __init__(self, display, rows, cols, seconds=30):
+    def __init__(self, display, rows, cols, seconds=30, highScore = None):
+        print("EnterName init()")
         self.rows = rows
         self.cols = cols
         self.timer = CountdownTimer(seconds, self.timesUp, self.secondTick)
         self.display = display
+        self.display.clearAll()
         self.seconds = seconds
-        self.currentText = "_" * (cols - 3)
+        self.currentText = "_" * cols
         self.timestamp = time.time()
         self.enteringName = False
         self.rainbow = [Colors.RED, Colors.YELLOW, Colors.GREEN,Colors.CYAN,Colors.BLUE,Colors.MAGENTA]
         self.color = self.rainbow.pop(0)
         self.ended = False
         self.letterMap = []
+        self.highScore = highScore
         alphabet = "abcdefghijklnopqrstuUyz"
         i = 0
         for r in range(rows):
@@ -62,10 +74,12 @@ class EnterName():
             self.letterMap.append(currentRow)
 
     def heartbeat(self, sensorsChanged):
-        self.display.clearAll()
         if not self.enteringName:
             self.display.setMessage(1, "HIGH", self.color)
             self.display.setMessage(2, "SCORE", self.color)
+            if self.highScore is not None:
+                self.display.setMessage(3, str(self.highScore), Colors.WHITE)
+
             if len(self.rainbow) > 0:
                 if time.time() - self.timestamp > 0.5:
                     self.color = self.rainbow.pop(0)
@@ -76,20 +90,24 @@ class EnterName():
                 #self.ended = True
 
         #display letters
-        self.display.setMessage(0, self.currentText)
+        self.display.setMessage(0, self.currentText, color = Colors.CYAN)
         for i in range(len(self.letterMap)):
             self.display.setMessage(i, self.letterMap[i])
 
         #check for letter pressed
         for move in sensorsChanged:
-            self.currentText = self.currentText.replace('_', self.letterMap[move.row][move.col], 1)
+            try:
+                self.currentText = self.currentText.replace('_', self.letterMap[move.row][move.col], 1)
+                print("stepped on", self.letterMap[move.row][move.col], "text", self.currentText)
+            except:
+                pass
             if '_' not in self.currentText:
                 self.ended = True
         self.timer.heartbeat()
 
         #time left
-        self.display.set(0, self.rows - 2, Shapes.digitToHex(int(self.timer.seconds / 10)), Colors.WHITE)
-        self.display.set(0, self.rows - 1, Shapes.digitToHex(int(self.timer.seconds % 10)), Colors.WHITE)
+        self.display.set(self.rows - 1, self.cols - 2, Shapes.digitToHex(int(self.timer.seconds / 10)), Colors.YELLOW)
+        self.display.set(self.rows - 1, self.cols - 1, Shapes.digitToHex(int(self.timer.seconds % 10)), Colors.YELLOW)
 
     def timesUp(self):
         self.ended = True

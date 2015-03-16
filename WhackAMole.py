@@ -7,9 +7,9 @@ from LSGameUtils import HighScores
 from LSGameUtils import CountdownTimer
 from LSGameUtils import EnterName
 
-TIMEOUT = 3
-FAST_TIMEOUT = 1.8
-EXTREME_TIMEOUT = 1.2
+TIMEOUT = 5
+FAST_TIMEOUT = 4
+EXTREME_TIMEOUT = 4
 
 class WhackAMole():
     def __init__(self, display, audio, rows, cols):
@@ -23,13 +23,25 @@ class WhackAMole():
         self.startTimestamp = -1
         self.moles = []
         self.molesTimestamp = []
+        self.deletables = []
+        self.moleAppearanceTimes = [29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10,
+                                    9, 8, 7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1]
         self.score = 0
-        self.highScores = HighScores("WhackAMole")
+        self.highScores = HighScores()
         self.winScreen = False
         self.winScreenTimestamp = -1
         self.enterName = None
-        self.timer = CountdownTimer(5, self.timerFinished)
+        self.handlesEvents = True
+        self.timer = CountdownTimer(30, self.timerFinished)
+        self.showingHighScores = False
         self.display.setAll(Shapes.ZERO, Colors.BLACK)
+
+    def handleTileStepEvent(self, row, col, val):
+        if (row, col) in self.moles:
+            self.score += 1
+            self.audio.playSound("Blop.wav")
+            self.deletables.append((row, col))
+            self.display.set(row, col, Shapes.DASH, Colors.YELLOW)
 
     def heartbeat(self, sensorsChanged):
         #show appropriate win screen
@@ -43,40 +55,41 @@ class WhackAMole():
                     self.winScreenTimestamp = ts
             elif ts - self.winScreenTimestamp > 6:
                 self.ended = True
-            else:
+            elif not self.showingHighScores:
                 self.display.setAll(Shapes.ZERO, Colors.BLACK)
                 self.display.showHighScores(self.highScores.getHighScores())
+                self.showingHighScores = True
             return
 
         #update timer
         self.timer.heartbeat()
 
-        deletables = []
-        #check if mole is stepped on
-        for move in sensorsChanged:
-            if (move.row, move.col) in self.moles:
-                self.score += 1
-                self.audio.playSound("Blop.wav")
-                deletables.append((move.row, move.col))
-
         #delete expired moles
         for i in range(len(self.moles)):
-            if ts - self.molesTimestamp[i] > self.moleTimeout and self.moles[i] not in deletables:
-                deletables.append(self.moles[i])
-        for d in deletables:
+            if ts - self.molesTimestamp[i] > self.moleTimeout and self.moles[i] not in self.deletables:
+                self.deletables.append(self.moles[i])
+        for d in self.deletables:
             i = self.moles.index(d)
-            mole = self.moles[i]
-            self.display.set(mole[0], mole[1], Shapes.ZERO, Colors.BLACK)
             self.moles.pop(i)
             self.molesTimestamp.pop(i)
+            self.display.set(d[0], d[1], Shapes.ZERO, Colors.BLACK)
+        self.deletables = []
 
-        #add new moles
-        if random.randint(0, 20) < 1 and len(self.moles) < 4:
+        #check for moles scheduled to appear
+        while len(self.moleAppearanceTimes) > 0 and self.moleAppearanceTimes[0] > self.timer.seconds:
+            self.moleAppearanceTimes.pop(0)
+        if len(self.moleAppearanceTimes) > 0 and self.moleAppearanceTimes[0] == self.timer.seconds:
+            self.moleAppearanceTimes.pop(0)
             r = random.randint(1, self.rows-1)
             c = random.randint(0, self.cols-1)
-            if (r,c) not in self.moles:
-                self.moles.append((r,c))
-                self.molesTimestamp.append(ts)
+            iter = 0
+            while (r,c) in self.moles and iter < 10:
+                r = random.randint(1, self.rows-1)
+                c = random.randint(0, self.cols-1)
+                iter += 1
+            self.moles.append((r,c))
+            self.molesTimestamp.append(ts)
+            self.display.set(r, c, Shapes.ZERO, Colors.YELLOW)
 
         if self.timer.seconds < 15:
             if self.timer.seconds < 5:
@@ -102,7 +115,7 @@ class WhackAMole():
         self.winScreen = True
         self.winScreenTimestamp = time.time()
         if self.highScores.isHighScore(self.score):
-            self.enterName = EnterName(self.display, self.rows, self.cols)
+            self.enterName = EnterName(self.display, self.rows, self.cols, highScore=str(self.score))
 
 def main():
     import lsgame

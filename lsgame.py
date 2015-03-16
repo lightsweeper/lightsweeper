@@ -112,11 +112,10 @@ class LSGameEngine():
             self.enterFrame()
 
     def handleTileStepEvent(self, row, col, val):
-        if self.game.handlesEvents is not False:
-            try:
-                self.game.handleTileStepEvent(row, col, val)
-            except:
-                print("Game has no event handler, but that's okay") # debugging
+        try:
+            self.game.handleTileStepEvent(row, col, val)
+        except:
+            print("Game has no event handler, but that's okay") # debugging
 
     def beginEmulatorLoop(self):
         pass

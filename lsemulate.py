@@ -36,7 +36,7 @@ def loadImage(self):
 # Tweaks LSFloor to update pygame emulator
 class LSPygameFloor(lsfloor.LSFloor):
 
-    def __init__(self, rows=0, cols=0):
+    def __init__(self, rows=0, cols=0, eventCallback = None):
         # Call parent init
         lsfloor.LSFloor.__init__(self, rows=rows, cols=cols)
 
@@ -45,6 +45,7 @@ class LSPygameFloor(lsfloor.LSFloor):
         print("Making the screen ({:d}x{:d})".format(width,height))
         pygame.init()
         self.screen = pygame.display.set_mode((width, height))
+        self.eventCallback = eventCallback
         for tile in self.tileList:
             tile.loadImage = types.MethodType(loadImage, tile) # Bind the loadImage function to each tile
 
