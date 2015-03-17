@@ -227,9 +227,13 @@ class Minesweeper():
                 self.endAnim = EndAnimation(False, self.display, (self.lastMove.row, self.lastMove.col), self.board.list_mines())
                 self.animatingEnd = True
         elif self.animatingEnd:
-            EndAnimation.animation.play(self.display)
+            frame = self.endAnim.getFrame()
+            if frame:
+                #update display of each tile
+                self.display.setFrame(frame)
             if self.endAnim.ended:
                 print("ended")
+                self.endAnim.animation.play(self.display)
                 self.ended = True
         #push changed tiles to display
 
@@ -274,27 +278,36 @@ class EndAnimation:
         if win:
             redDash = (1, 0, 0)
             greenDash = (0, 1, 0)
-            blueDash = (0, 0, 126)
+            blueDash = (0, 0, 1)
+            redMine = (Shapes.H, 0, 0)
+            greenMine = (0, Shapes.H, 0)
+            blueMine = (0, 0, Shapes.H)
 
             winningAnimation = lsanimate.LSAnimation()
 
             frame = lsanimate.LSFrameGen(3,3)
             
-            for _ in range(0,100):
+            for _ in range(0,15):
                 for i in range(0,3):
                     frame.edit(0,i,redDash)
                     frame.edit(1,i,greenDash)
                     frame.edit(2,i,blueDash)
+                for mine in mines:
+                    frame.edit(mine[0],mine[1],redMine)
                 winningAnimation.addFrame(frame.get())
                 for i in range(0,3):
-                    frame.edit(0,i,redDash)
-                    frame.edit(1,i,greenDash)
-                    frame.edit(2,i,blueDash)
+                    frame.edit(1,i,redDash)
+                    frame.edit(2,i,greenDash)
+                    frame.edit(0,i,blueDash)
+                for mine in mines:
+                    frame.edit(mine[0],mine[1],greenMine)
                 winningAnimation.addFrame(frame.get())
                 for i in range(0,3):
-                    frame.edit(0,i,redDash)
+                    frame.edit(2,i,redDash)
                     frame.edit(1,i,greenDash)
-                    frame.edit(2,i,blueDash)
+                    frame.edit(0,i,blueDash)
+                for mine in mines:
+                    frame.edit(mine[0],mine[1],blueMine)
                 winningAnimation.addFrame(frame.get())
 
                 self.animation = winningAnimation
