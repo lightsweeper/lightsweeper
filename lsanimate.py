@@ -71,6 +71,7 @@ class LSAnimation:
         f = 0
         for frame in Frame:
             display.simulatedFloor.renderFrame(frame)
+            display.realFloor.renderFrame(frame)
             display.heartbeat()
             #d.pollSensors()
             time.sleep(.1)
