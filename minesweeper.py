@@ -152,7 +152,7 @@ class Board():
     def list_mines(self):
         r = 0
         c = 0
-        out = list()
+        out = []
         for row in self.board:
             for cell in row:
                 if cell.is_mine is True:
@@ -160,6 +160,7 @@ class Board():
                     out.append(rowCol)
                 c += 1
             r += 1
+            c = 0
         return out
                     
 
