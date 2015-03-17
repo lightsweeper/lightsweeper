@@ -285,24 +285,24 @@ class EndAnimation:
 
             winningAnimation = lsanimate.LSAnimation()
 
-            frame = lsanimate.LSFrameGen(3,3)
+            frame = lsanimate.LSFrameGen(self.rows,self.cols)
             
             for _ in range(0,15):
-                for i in range(0,3):
+                for i in range(0,self.cols):
                     frame.edit(0,i,redDash)
                     frame.edit(1,i,greenDash)
                     frame.edit(2,i,blueDash)
                 for mine in mines:
                     frame.edit(mine[0],mine[1],redMine)
                 winningAnimation.addFrame(frame.get())
-                for i in range(0,3):
+                for i in range(0,self.cols):
                     frame.edit(1,i,redDash)
                     frame.edit(2,i,greenDash)
                     frame.edit(0,i,blueDash)
                 for mine in mines:
                     frame.edit(mine[0],mine[1],greenMine)
                 winningAnimation.addFrame(frame.get())
-                for i in range(0,3):
+                for i in range(0,self.cols):
                     frame.edit(2,i,redDash)
                     frame.edit(1,i,greenDash)
                     frame.edit(0,i,blueDash)
