@@ -99,7 +99,7 @@ class MidiSoundboard():
         print("Test code goes here")
 
 def main():
-    gameEngine = LSGameEngine(Soundboard)
+    gameEngine = LSGameEngine(MidiSoundboard)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':
