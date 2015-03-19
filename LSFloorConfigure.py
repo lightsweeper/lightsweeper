@@ -357,8 +357,8 @@ def main():
             for port in tilepile.lsMatrix:
                 totaltiles += len(tilepile.lsMatrix[port])
 
-            if len(availPorts) > 0:  # default to the first port in the list
-                defaultPort = availPorts[0]
+#            if len(availPorts) > 0:  # default to the first port in the list
+#                defaultPort = availPorts[0]
 
             # It's the little details that count
             question = "Would you like this to be a virtual floor?"
@@ -405,7 +405,6 @@ def main():
 
     elif config.cells is 0:     # Start a new configuration with a pre-existing filename
         config = interactiveConfig(config)
-        ourfile = config.fileName
 
     else:                       # Load an existing configuration for editing
         print("\nThis is the configuration saved in " + config.fileName + ":\n")
