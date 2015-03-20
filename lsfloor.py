@@ -30,8 +30,8 @@ class LSFloor():
             conf (LSFloorConfig):   An LSFloorConfig object containing the floor's configuration
             rows (int):             The number of rows
             cols (int):             The number of columns
-            tileList (list):        A single array of tile objects
-            tiles (list):           A double array of LSTile objects
+            tileList (list):        A single array of LSTile objects
+            tiles (list):           A double array of LSTile objects, e.g.: tiles[row][column]
 
     """
     def __init__(self, rows=None, cols=None, conf=None, eventCallback=None):
@@ -49,7 +49,6 @@ class LSFloor():
         
         self.rows = conf.rows
         self.cols = conf.cols
-        
 
         self.eventCallback = eventCallback
         print("LSFloor event callback:", eventCallback)
@@ -60,14 +59,13 @@ class LSFloor():
         self.calibrationMap = dict()
         
         self._addressToRowColumn = {}
-        self.tileAddresses = []
 
         for row in range(0,self.rows):
             self.tiles.append([])
             for col in range(0, self.cols):
                 (port, address) = self.conf.board[row][col]
                 tile = self._returnTile(row, col, port)
-                tile.comNumber = port
+                tile.port = port                                # Todo, tile class should set this locally
                 self.calibrationMap[address] = [127,127]
                 self._addressToRowColumn[(address,port)] = (row, col)
                 tile.assignAddress(address)
@@ -157,13 +155,23 @@ class LSFloor():
             tile.blank()
         return
 
-#    def clear(self, row, col):
-#        tile = self.tiles[row][col]
-#        tile.set()
+    def renderFrame(self, frame):
+    # TODO: LSRealTile, should optimize tile calls
 
-#    def clearAll(self):
-#        for tile in self.tileList:
-#            tile.set()
+        cols = frame.pop(0)
+        row = 0
+        col = 0
+        for _ in itertools.repeat(None, int(len(frame)/3)):
+            if col is cols:
+                row += 1
+                col = 0
+            rMask = frame.pop(0)
+            gMask = frame.pop(0)
+            bMask = frame.pop(0)
+            if rMask is not 128:
+                self.tiles[row][col].setSegments((rMask,gMask,bMask))
+           #     print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
+            col += 1
 
     def pollSensors(self):
         pass
@@ -174,46 +182,52 @@ class LSFloor():
     def showBoard(self):
         pass
 
-    def refreshBoard(self):
-        for tile in self.tileList:
-            tile.update('CLOCK')
-        return
+#    def refreshBoard(self):    # Deprecated
+#        for tile in self.tileList:
+#            tile.update('CLOCK')
+#        return
 
     def resetBoard(self):
         for tile in self.tileList:
             tile.reset()
         return
 
-    def purgeTile(self,tile):
-        return False
 
-    def clock(self):
-        for tile in self.tileList:
-            try:
-                tile.read()
-            except:
-                print ("unexpected error on tile", self.tileAddresses[tile.getAddress()])
-        self.refreshBoard()
-        return True
+#    def purgeTile(self,tile):  # Deprecated
+#        return False
 
-    def _flushQueue(self):  # What should this do?
-        pass
+#    def clock(self): # Deprecated
+#        for tile in self.tileList:
+#            try:
+#                tile.read()
+#            except:
+#                print ("unexpected error on tile", self.tileAddresses[tile.getAddress()])
+#        self.refreshBoard()
+#        return True
 
-    def handleTileSensed(self, row, col):
-        pass
+    def _flushQueue(self, row, col):
+        # Calls flushQueue() on the given tile (underlying functionality not currently implemented)
+        tile = self.tiles[row][col]
+        tile.flushQueue()
+
+#    def handleTileSensed(self, row, col): # Deprecated
+#        pass
 
     # How is this different from pollSensors?
-    def getSensors(self):
-        activeSensors = []
-        for row in self.tiles:
-            for tile in row:
-                sensorChecked = tile.getSensors()
-                if sensorChecked:
-                    activeSensors.append(sensorChecked)
-        return activeSensors
+#    def getSensors(self):  # Deprecated
+#        activeSensors = []
+#        for row in self.tiles:
+#            for tile in row:
+#                sensorChecked = tile.getSensors()
+#                if sensorChecked:
+#                    activeSensors.append(sensorChecked)
+#        return activeSensors
 
 
     def RAINBOWMODE(self, updateFrequency = 0.4):
+        '''
+            OMG! Double rainbow!!! What does this mean?!
+        '''
         self.setAllShape(Shapes.EIGHT)
         RAINBOW = [Colors.RED,
                 Colors.YELLOW,
@@ -306,13 +320,23 @@ class LSRealFloor(LSFloor):
             zeroTile.assignAddress(0)
             zeroTile.blank()
 
-    def printAddresses(self):
-        s = ""
-        for row in range(0,self.rows):
-            for col in range(0, self.cols):
-                s += str(self.tiles[row][col].getAddress()) + " "
-            #print(s)
-            s = ""
+    def latch(self, row, col):
+        tile = self.tiles[row][col]
+        tile.latch()
+
+    def latchAll(self):
+        for port in self.realTiles.sharedSerials.keys():
+            zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
+            zeroTile.assignAddress(0)
+            zeroTile.latch()
+
+#    def printAddresses(self):      # Deprecated, use conf.lsMatrix
+#        s = ""
+#        for row in range(0,self.rows):
+#            for col in range(0, self.cols):
+#                s += str(self.tiles[row][col].getAddress()) + " "
+#            #print(s)
+#            s = ""
 
 
     def pollSensors(self, sensitivity=.95):
@@ -339,7 +363,7 @@ class LSRealFloor(LSFloor):
                 if tile.active <= 0:
                     tile.active = 1
                     print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
-                    rowCol = self._addressToRowColumn[(tile.address, tile.comNumber)]
+                    rowCol = self._addressToRowColumn[(tile.address, tile.port)]
                     move = Move(rowCol[0], rowCol[1], reading)
                     sensorsChanged.append(move)
                     self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
