@@ -54,6 +54,7 @@ class LSFloor():
         print("LSFloor event callback:", eventCallback)
         self.tiles = []
         self.tileList = []
+        self._virtualTileList = []
         
         # Initialize calibration map
         self.calibrationMap = dict()
@@ -75,6 +76,8 @@ class LSFloor():
                 wait(.05)
                 self.tiles[row].append(tile)
                 self.tileList.append(tile)
+                if port == "virtual":
+                    self._virtualTileList.append(tile)
         if self.conf.cells is 0:
             print("Loaded {:d} virtual rows and {:d} virtual columns".format(self.rows, self.cols))
         else:
@@ -108,12 +111,12 @@ class LSFloor():
         tile.setShape(shape)
 
     def setAllColor(self, color):
-        for tile in self.tileList:
+        for tile in self._virtualTileList:
             self.setColor(tile.row, tile.col, color)
 
 
     def setAllShape(self, shape):
-        for tile in self.tileList:
+        for tile in self._virtualTileList:
             self.setShape(tile.row, tile.col, shape)
 
 # TODO
@@ -131,7 +134,7 @@ class LSFloor():
         tile.set(shape, color)
 
     def setAll(self, shape, color):
-        for tile in self.tileList:
+        for tile in self._virtualTileList:
             self.set(tile.row, tile.col, shape, color)
 
     #segments is a list of seven colors in A,...,G order of segments
@@ -140,7 +143,7 @@ class LSFloor():
         tile.setSegments(segments)
 
     def setSegmentsAll(self, segments):
-        for tile in self.tileList:
+        for tile in self._virtualTileList:
             self.setSegments(tile.row, tile.col, segments)
 
     def blank(self, row, col):
