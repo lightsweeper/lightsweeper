@@ -1,3 +1,5 @@
+""" Contains methods related to LightSweeper games """
+
 import os
 import random
 import time
@@ -85,7 +87,6 @@ class LSGameEngine():
         else:
             self.REAL_FLOOR = True
 
-
         self.ROWS = conf.rows
         self.COLUMNS = conf.cols
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -110,11 +111,10 @@ class LSGameEngine():
             self.enterFrame()
 
     def handleTileStepEvent(self, row, col, val):
-        if self.game.handlesEvents is not False:
-            try:
-                self.game.handleTileStepEvent(row, col, val)
-            except:
-                print("Game has no event handler, but that's okay") # debugging
+        try:
+            self.game.handleTileStepEvent(row, col, val)
+        except:
+            print("Game has no event handler, but that's okay") # debugging
 
     def beginEmulatorLoop(self):
         pass

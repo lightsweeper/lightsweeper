@@ -23,7 +23,8 @@ Tile commands:
     reset       Causes the tile to reset
 '''
 from docopt import docopt
-from LSRealTile import *
+from LSRealTile import LSOpen
+from LSRealTile import LSRealTile
 
 if __name__ == '__main__':
     args = docopt(__doc__)

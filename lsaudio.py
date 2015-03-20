@@ -1,3 +1,6 @@
+""" Contains wrappers for various audio backends """
+
+import atexit
 import random
 
 class _lsAudio:
@@ -39,16 +42,24 @@ class _lsAudio:
         pass
 
     def setSoundVolume(self, vol):
-        pass
+        self.soundVolume = vol
 
 
 class _pygameAudio(_lsAudio):
-
+    import pygame.midi
     def __init__(self, initSound=True):
         print("Using pygame for Audio...")
         self.SONG_END = pygame.USEREVENT + 1
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+        pygame.midi.init()
+        self.midiPort = pygame.midi.get_default_output_id()
+        self.midi_out = pygame.midi.Output(self.midiPort, 0)
+        atexit.register(self._cleanup)
         _lsAudio.__init__(self)
+
+    def _cleanup(self):
+        del self.midi_out       # Prevents "Bad pointer" error on exit
+        pygame.midi.quit()
 
     def heartbeat(self):
         #for event in pygame.event.get():
@@ -63,7 +74,6 @@ class _pygameAudio(_lsAudio):
 
     def playSong(self, filename, loops=0):
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=256)
-  #      sound = pygame.mixer.Sound('Time_to_coffee.wav').play()
         pygame.mixer.music.load("sounds/" + filename)
         pygame.mixer.music.play(loops)
         pass
@@ -106,6 +116,10 @@ class _pygameAudio(_lsAudio):
 
     def stopSounds(self):
         pass
+
+    def midiSoundOn(self, instrument=19, note=72):
+        self.midi_out.set_instrument(instrument)
+        self.midi_out.note_on(note,int(self.soundVolume * 127))
 
     def setSoundVolume(self, vol):
         #print("setting sound vol:" + str(vol))

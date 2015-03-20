@@ -1,14 +1,15 @@
+""" The main point of interface to the LightSweeper API. Launches simulated and real floors (if available) and keeps them in sync """
+
 from lsfloor import LSRealFloor
 from lsemulate import LSPygameFloor
 from LSFloorConfigure import LSFloorConfig
-import lsfloor
 
 import Shapes
 import Colors
-import random
 import time
 
 wait = time.sleep
+
 EmulateFloor = LSPygameFloor # Use pygame as the emulator
 
 class Move():
@@ -50,7 +51,7 @@ class LSDisplay():
         self.console = console
         if simulatedFloor:
             print("Display instantiating simulated floor")
-            self.simulatedFloor = EmulateFloor(self.rows, self.cols)
+            self.simulatedFloor = EmulateFloor(self.rows, self.cols, eventCallback = eventCallback)
         else:
             self.simulatedFloor = None
         if initScreen is True:
@@ -68,7 +69,7 @@ class LSDisplay():
             self.set(0, 1, Shapes.L, Colors.RED)
             self.set(0, 2, Shapes.I, Colors.YELLOW)
             self.set(0, 3, Shapes.G, Colors.GREEN)
-            self.set(0, 4, Shapes.H, Colors.BLUE)
+            self.set(0, 4, Shapes.h, Colors.BLUE)
             self.set(0, 5, Shapes.T, Colors.MAGENTA)
             self.set(1, 0, Shapes.S, Colors.RED)
             self.set(1, 1, Shapes.u, Colors.YELLOW)
@@ -92,6 +93,7 @@ class LSDisplay():
         pass
 
     def handleTileStepEvent(self, row, col, val):
+        print("LSDisplay handling tile event")
         if self.eventCallback is not None:
             self.eventCallback(row, col, val)
 
@@ -163,6 +165,7 @@ class LSDisplay():
             self.simulatedFloor.setAllShape(shape)
 
     def setMessage(self, row, message, color = Colors.WHITE, start = 0, cutoff = -1):
+        #TODO: ability to right-justify
         if cutoff is -1:
             cutoff = self.cols
         shapes = Shapes.stringToShapes(message)
@@ -171,22 +174,28 @@ class LSDisplay():
             self.set(row, col, shapes.pop(0), color)
             col += 1
 
-    def setMessageSplit(self, row, message1, message2, color = Colors.WHITE):
+    def setMessageSplit(self, row, message1, message2, color1 = Colors.WHITE, color2 = Colors.YELLOW, middle=-1):
         #first determine which tile is the middle--this one must be left blank
-        middle = int(self.cols / 2)
-        self.setMessage(row, message1, color, cutoff=middle)
-        self.setMessage(row, message2, color, start=middle+1)
-        #fill left side of middle with message1, left side with message2
+        if middle == -1:
+            middle = int(self.cols / 2)
+        self.setMessage(row, message1, color1, cutoff=middle)
+        self.setMessage(row, message2, color2, start=middle)
+        #fill left side of middle with message1, right side with message2
         #TODO: ability to favor one message or the other, preferentially cutting off the less-favored one
 
-    def showHighScores(self, highScores):
+    def showHighScores(self, highScores, label=True):
         self.setAll(Shapes.ZERO, Colors.BLACK)
-        self.setMessage(0,"HIGH", color=Colors.BLUE)
-        self.setMessage(1,"SCORES", color=Colors.GREEN)
-        row = 2
+        if label:
+            self.setMessage(0,"HIGH", color=Colors.BLUE)
+            self.setMessage(1,"SCORES", color=Colors.GREEN)
+            row = 2
+        else:
+            row = 0
         while row < self.rows and len(highScores) > 0:
             score = highScores.pop(0)
-            self.setMessageSplit(row, score[0], score[1])
+            self.setMessageSplit(row, score[0], score[1], middle=4)
+            # self.setMessage(row, score[0])
+            # self.setMessage(row + 1, score[1], color=Colors.YELLOW, start=self.cols - 3)
             row += 1
 
     def clear(self, row, col):
