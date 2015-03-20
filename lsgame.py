@@ -87,7 +87,6 @@ class LSGameEngine():
         else:
             self.REAL_FLOOR = True
 
-
         self.ROWS = conf.rows
         self.COLUMNS = conf.cols
         os.system('cls' if os.name == 'nt' else 'clear')

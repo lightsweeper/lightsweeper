@@ -1,5 +1,6 @@
 """ Contains wrappers for various audio backends """
 
+import atexit
 import random
 
 class _lsAudio:
@@ -53,7 +54,12 @@ class _pygameAudio(_lsAudio):
         pygame.midi.init()
         self.midiPort = pygame.midi.get_default_output_id()
         self.midi_out = pygame.midi.Output(self.midiPort, 0)
+        atexit.register(self._cleanup)
         _lsAudio.__init__(self)
+
+    def _cleanup(self):
+        del self.midi_out       # Prevents "Bad pointer" error on exit
+        pygame.midi.quit()
 
     def heartbeat(self):
         #for event in pygame.event.get():
@@ -68,7 +74,6 @@ class _pygameAudio(_lsAudio):
 
     def playSong(self, filename, loops=0):
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=256)
-  #      sound = pygame.mixer.Sound('Time_to_coffee.wav').play()
         pygame.mixer.music.load("sounds/" + filename)
         pygame.mixer.music.play(loops)
         pass

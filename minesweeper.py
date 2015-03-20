@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
 from lsgame import LSGameEngine
 import lsanimate
 import lsexplosion
