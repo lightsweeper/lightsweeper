@@ -295,7 +295,7 @@ class LSRealFloor(LSFloor):
         self.sharedSerials = dict()
         
         # Call parent init
-        LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
+        super().__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
 
     def setAllColor(self, color):
         super().setAllColor(color)
