@@ -132,6 +132,15 @@ class LSFloor():
         tile = self.tiles[row][col]
         tile.set(shape, color)
 
+    def setRow(self, row, shape, color):
+        for tile in self.tiles[row]:
+            tile.set(shape, color)
+
+    def setColumn(self, col, shape, color):
+        tiles = list(zip(*self.tiles[::-1]))
+        for tile in tiles[col]:
+            tile.set(shape, color)
+
     def setAll(self, shape, color):
         for tile in self._virtualTileList:
             self.set(tile.row, tile.col, shape, color)
@@ -214,38 +223,6 @@ class LSFloor():
             self.setAllColor(COLOR)
             wait(updateFrequency)
 
-    def _getTileList(self,row,column):
-    # __init__ makes this for us now:
-    # Unused functionality of this method should be split into _getRow and _getCol methods (perhaps public?)
-#        tileList = []
-#        #whole floor
-#        # whole floor
-#        if row < 1 and column < 1:
-#            for tileRow in self.tileRows:
-#                for tile in tileRow:
-#                    tileList.append(tile)
-#                    count = len(tileList)
-#        # whole row
-#        elif column < 1:
-#            tileRow = self.tileRows[row-1]
-#            for tile in tileRow:
-#                tileList.append(tile)
-#                count = len(tileList)
-#        # whole column
-#        elif row < 1:
-#            for tileRow in self.tileRows:
-#                tile = tileRow[column-1]
-#                tileList.append(tile)
-#                count = len(tileList)
-#        # single tile
-#        else:
-#            tileRow = self.tileRows[row-1]
-#            tileList = [tileRow[column-1]]
-#        return tileList
-        return self.tileList
-
-
-
 
 #handles all communications with RealTile objects, serving as the interface to the
 #actual lightsweeper floor. thus updates are pushed to it (display) and also pulled from it
@@ -300,7 +277,6 @@ class LSRealFloor(LSFloor):
 
     def pollSensors(self, sensitivity=.95):
         sensorsChanged = []
-        #tiles = self._getTileList(0,0)
         tiles = self.tileList
         #sensorPoll = 0
         for tile in tiles:
