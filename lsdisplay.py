@@ -136,9 +136,9 @@ class LSDisplay():
 
     def setAllCustom(self, segColors):
         if self.simulatedFloor:
-            self.simulatedFloor.setSegmentsAll(Colors.segmentsToRgb(segColors))
+            self.simulatedFloor.setAllSegments(Colors.segmentsToRgb(segColors))
         if self.realFloor:
-            self.realFloor.setSegmentsAll(Colors.segmentsToRgb(segColors))
+            self.realFloor.setAllSegments(Colors.segmentsToRgb(segColors))
 
     def setColor(self, row, col, color):
         if self.realFloor:

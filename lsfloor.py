@@ -142,7 +142,7 @@ class LSFloor():
         tile = self.tiles[row][col]
         tile.setSegments(segments)
 
-    def setSegmentsAll(self, segments):
+    def setAllSegments(self, segments):
         for tile in self._virtualTileList:
             self.setSegments(tile.row, tile.col, segments)
 
@@ -313,8 +313,8 @@ class LSRealFloor(LSFloor):
             zeroTile.setShape(shape)
 
 
-    def setSegmentsAll(self, segments):
-        super().setSegmentsAll(segments)
+    def setAllSegments(self, segments):
+        super().setAllSegment(segments)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
