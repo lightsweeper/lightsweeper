@@ -31,6 +31,7 @@ class LSDisplay():
             else:
                 conf = LSFloorConfig(rows=rows, cols=cols)
 
+
         if conf.containsVirtual() is True:
             realFloor = False
 
@@ -43,11 +44,7 @@ class LSDisplay():
             self.realFloor = LSRealFloor(conf=conf, eventCallback=self.handleTileStepEvent)
         else:
             self.realFloor = None
-        self.floor = []
-        for r in range(self.rows):
-            self.floor.append([])
-            for c in range(self.cols):
-                self.floor[r].append('-')
+
         self.console = console
         if simulatedFloor:
             print("Display instantiating simulated floor")
@@ -59,7 +56,7 @@ class LSDisplay():
 
             if self.simulatedFloor:
                 self.simulatedFloor.heartbeat()
-         #   wait(6.0)
+
 
 
     def splash(self):

@@ -1,5 +1,7 @@
 """ Contains descriptions of and methods for interfacing with LightSweeper floors """
 
+#TODO: Untangle pollSensors() so they work with mixed floors
+
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from lstile import LSTile
@@ -50,6 +52,10 @@ class LSFloor():
         self.rows = conf.rows
         self.cols = conf.cols
 
+        if self.conf.containsReal is True:
+            self.__class__ = LSRealFloor        # Become a LSRealFloor object
+            self._initRealFloor()
+
         self.eventCallback = eventCallback
         print("LSFloor event callback:", eventCallback)
         self.tiles = []
@@ -66,7 +72,7 @@ class LSFloor():
             for col in range(0, self.cols):
                 (port, address) = self.conf.board[row][col]
                 tile = self._returnTile(row, col, port)
-                tile.port = port                                # Todo, tile class should set this locally
+                tile.port = port                                # TODO: tile class should set this locally
                 self.calibrationMap[address] = [127,127]
                 self._addressToRowColumn[(address,port)] = (row, col)
                 tile.assignAddress(address)
@@ -78,7 +84,7 @@ class LSFloor():
                 self.tileList.append(tile)
                 if port == "virtual":
                     self._virtualTileList.append(tile)
-        if self.conf.cells is 0:
+        if self.conf.cells is 0:                                # TODO: Remove this silly hack in favor of more robust checking
             print("Loaded {:d} virtual rows and {:d} virtual columns".format(self.rows, self.cols))
         else:
             print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
@@ -188,47 +194,15 @@ class LSFloor():
     def showBoard(self):
         pass
 
-#    def refreshBoard(self):    # Deprecated
-#        for tile in self.tileList:
-#            tile.update('CLOCK')
-#        return
-
     def resetBoard(self):
         for tile in self.tileList:
             tile.reset()
         return
 
-
-#    def purgeTile(self,tile):  # Deprecated
-#        return False
-
-#    def clock(self): # Deprecated
-#        for tile in self.tileList:
-#            try:
-#                tile.read()
-#            except:
-#                print ("unexpected error on tile", self.tileAddresses[tile.getAddress()])
-#        self.refreshBoard()
-#        return True
-
     def _flushQueue(self, row, col):
         # Calls flushQueue() on the given tile (underlying functionality not currently implemented)
         tile = self.tiles[row][col]
         tile.flushQueue()
-
-#    def handleTileSensed(self, row, col): # Deprecated
-#        pass
-
-    # How is this different from pollSensors?
-#    def getSensors(self):  # Deprecated
-#        activeSensors = []
-#        for row in self.tiles:
-#            for tile in row:
-#                sensorChecked = tile.getSensors()
-#                if sensorChecked:
-#                    activeSensors.append(sensorChecked)
-#        return activeSensors
-
 
     def RAINBOWMODE(self, updateFrequency = 0.4):
         '''
@@ -288,14 +262,10 @@ class LSRealFloor(LSFloor):
         This class extends LSFloor with methods specific to interacting with real Lightsweeper hardware
     """
 
-    def __init__(self, rows=None, cols=None, serials=None, conf=None, eventCallback=None):
-
+    def _initRealFloor(self):
         # Initialize the serial ports
         self.realTiles = LSOpen()
         self.sharedSerials = dict()
-        
-        # Call parent init
-        super().__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
 
     def setAllColor(self, color):
         super().setAllColor(color)
@@ -304,14 +274,12 @@ class LSRealFloor(LSFloor):
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
 
-
     def setAllShape(self, shape):
         super().setAllShape(shape)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
-
 
     def setAllSegments(self, segments):
         super().setAllSegment(segments)
@@ -328,7 +296,7 @@ class LSRealFloor(LSFloor):
             zeroTile.blank()
 
     def latch(self, row, col):
-        tile = self.tiles[row][col]
+        tile = self.tiles[row][col]         # TODO: Check if tile is virtual
         tile.latch()
 
     def latchAll(self):
@@ -336,15 +304,6 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.latch()
-
-#    def printAddresses(self):      # Deprecated, use conf.lsMatrix
-#        s = ""
-#        for row in range(0,self.rows):
-#            for col in range(0, self.cols):
-#                s += str(self.tiles[row][col].getAddress()) + " "
-#            #print(s)
-#            s = ""
-
 
     def pollSensors(self, sensitivity=.95):
         sensorsChanged = []
