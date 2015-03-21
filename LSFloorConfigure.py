@@ -16,6 +16,8 @@ class FileExistsError(IOError):
         and overwrite=False
     """
     pass
+
+class CannotParseError(IOError):
     """ Custom exception returned when the config file is present but cannot be parsed. """
     pass
 
@@ -39,14 +41,14 @@ class LSFloorConfig:
                             containing a tuple of the corresponding tile's port and address
     """
 
-    fileName = None
-    cells = 0
-    rows = 0
-    cols = 0
-    config = list()
-    board = defaultdict(lambda: defaultdict(int))
-
     def __init__(self, configFile=None, rows=None, cols=None):
+
+        self.fileName = None
+        self.cells = 0
+        self.rows = 0
+        self.cols = 0
+        self.config = list()
+        self.board = defaultdict(lambda: defaultdict(int))
 
         if configFile is not None:
             self.fileName = self._formatFileName(configFile)
@@ -77,6 +79,7 @@ class LSFloorConfig:
         """
         self.cells = self.rows * self.cols
         self.config = self._createVirtualConfig(self.rows, self.cols)
+        self._parseConfig(self.config)
 
     def loadConfig(self, fileName):
         """

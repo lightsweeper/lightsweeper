@@ -30,8 +30,9 @@ class LSDisplay():
                 conf.selectConfig()
             else:
                 conf = LSFloorConfig(rows=rows, cols=cols)
+                conf.makeVirtual()
 
-        self.floor = EmulateFloor(conf.rows, conf.cols, conf=conf, eventCallback = eventCallback)
+        self.floor = EmulateFloor(conf, eventCallback = eventCallback)
         self.floor._initEmulateFloor()
 
 #        if conf.containsVirtual() is True:

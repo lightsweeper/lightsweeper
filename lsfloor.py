@@ -36,19 +36,12 @@ class LSFloor():
             tiles (list):           A double array of LSTile objects, e.g.: tiles[row][column]
 
     """
-    def __init__(self, rows=None, cols=None, conf=None, eventCallback=None):
-        # Load the configuration, if provided
-        if conf is None:
-            if rows is None or cols is None:
-                conf = LSFloorConfig()
-                conf.selectConfig()
-            else:
-                self.rows = rows
-                self.cols = cols
-                conf = LSFloorConfig(rows=rows, cols=cols)
+    def __init__(self, conf, eventCallback=None):
 
         self.conf = conf
-        
+
+        self.conf.printConfig() #Debugging
+
         self.rows = conf.rows
         self.cols = conf.cols
 
@@ -362,7 +355,7 @@ def main():
     print("Importing LSDisplay")
     import lsdisplay
 
-    d = lsdisplay.LSDisplay(realFloor = useRealFloor, simulatedFloor = True, initScreen=False)
+    d = lsdisplay.LSDisplay()
 
     input("Press return to begin tests")
 
