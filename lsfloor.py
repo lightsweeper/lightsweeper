@@ -84,8 +84,11 @@ class LSFloor():
             print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
         self.clearBoard()
     
-    def _returnTile(self, row, col, port=None):
-        return(LSTile(row, col))
+    def _returnTile(self, row, col, port):
+        if port == "virtual":
+            return(LSTile(row, col))
+        else:
+            return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
 
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
@@ -154,7 +157,7 @@ class LSFloor():
         """
             Blanks the whole floor.
         """
-        for tile in self.tileList:
+        for tile in self._virtualTileList:
             tile.blank()
         return
 
@@ -293,11 +296,9 @@ class LSRealFloor(LSFloor):
         
         # Call parent init
         LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
-        
-    def _returnTile(self, row, col, port):
-        return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
 
     def setAllColor(self, color):
+        super().setAllColor(color)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
@@ -305,6 +306,7 @@ class LSRealFloor(LSFloor):
 
 
     def setAllShape(self, shape):
+        super().setAllShape(shape)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
@@ -312,12 +314,14 @@ class LSRealFloor(LSFloor):
 
 
     def setSegmentsAll(self, segments):
+        super().setSegmentsAll(segments)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setSegments(segments)
 
     def clearBoard(self):
+        super().clearBoard()
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
