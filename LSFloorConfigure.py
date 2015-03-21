@@ -112,7 +112,17 @@ class LSFloorConfig:
             virtual tiles.
         """
         for cell in self.config:
-            if cell[2].find("virtual") is not -1:
+            if "virtual" in cell[2]:
+                return True
+        return False
+
+    def containsReal(self):
+        """
+            This function returns true if the configuration contains any
+            real tiles.
+        """
+        for cell in self.config:
+            if "virtual" not in cell[2]:
                 return True
         return False
 
