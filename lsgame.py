@@ -94,8 +94,7 @@ class LSGameEngine():
             
         self.GAME = GAME
         self.audio = LSAudio(initSound=True)
-        self.display = LSDisplay(self.ROWS, self.COLUMNS, self.REAL_FLOOR, self.SIMULATED_FLOOR, self.CONSOLE,
-                               eventCallback = self.handleTileStepEvent, initScreen=True, conf=conf)
+        self.display = LSDisplay(conf=conf, eventCallback = self.handleTileStepEvent, initScreen=True)
         self.newGame()
 
         #these are for bookkeeping

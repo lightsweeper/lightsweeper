@@ -23,7 +23,7 @@ class Move():
 #any combination thereof
 class LSDisplay():
 
-    def __init__(self, rows=None, cols=None, realFloor = False, simulatedFloor = False, console = False, eventCallback=None, initScreen=True, conf=None):
+    def __init__(self, rows=None, cols=None, conf=None, eventCallback=None, initScreen=True):
         if conf is None:
             if rows is None or cols is None:
                 conf = LSFloorConfig()
@@ -31,31 +31,32 @@ class LSDisplay():
             else:
                 conf = LSFloorConfig(rows=rows, cols=cols)
 
+        self.floor = EmulateFloor(conf.rows, conf.cols, conf=conf, eventCallback = eventCallback)
+        self.floor._initEmulateFloor()
 
-        if conf.containsVirtual() is True:
-            realFloor = False
+#        if conf.containsVirtual() is True:
+#            realFloor = False
 
         self.rows = conf.rows
         self.cols = conf.cols
         self.eventCallback = eventCallback
         self.lastTileSetTimestamp = time.time()
-        if realFloor:
-            print("Display instantiating real floor")
-            self.realFloor = LSRealFloor(conf=conf, eventCallback=self.handleTileStepEvent)
-        else:
-            self.realFloor = None
+#        if realFloor:
+#            print("Display instantiating real floor")
+#            self.realFloor = LSRealFloor(conf=conf, eventCallback=self.handleTileStepEvent)
+#        else:
+#            self.realFloor = None
 
-        self.console = console
-        if simulatedFloor:
-            print("Display instantiating simulated floor")
-            self.simulatedFloor = EmulateFloor(self.rows, self.cols, eventCallback = eventCallback)
-        else:
-            self.simulatedFloor = None
+#        self.console = console
+#        if simulatedFloor:
+#           print("Display instantiating simulated floor")
+#            self.simulatedFloor = EmulateFloor(self.rows, self.cols, eventCallback = eventCallback)
+#        else:
+#            self.simulatedFloor = None
+
         if initScreen is True:
             self.splash()
-
-            if self.simulatedFloor:
-                self.simulatedFloor.heartbeat()
+            self.floor.heartbeat()
 
 
 
@@ -82,10 +83,7 @@ class LSDisplay():
     #this is to handle display functions only
     def heartbeat(self):
         #print("Display heartbeat")
-        if self.simulatedFloor:
-            self.simulatedFloor.heartbeat()
-        if self.realFloor:
-            self.realFloor.heartbeat()
+        self.floor.heartbeat()
         #check pygame for position and click ness of mouse
         pass
 
@@ -96,16 +94,13 @@ class LSDisplay():
 
     def pollSensors(self):
         sensorsChanged = []
-        if self.realFloor:
-            sensorsChanged += self.realFloor.pollSensors()
-        if self.simulatedFloor:
-            sensorsChanged += self.simulatedFloor.pollSensors()
-        if self.console and not self.realFloor:
-            self.printFloor()
-            consoleIn = input("Type in the next move")
-            consoleIn = consoleIn.split(',')
-            move = Move(int(consoleIn[0]), int(consoleIn[1]), 0)
-            sensorsChanged.append(move)
+        sensorsChanged += self.floor.pollSensors()
+#        if self.console and not self.realFloor:
+#            self.printFloor()
+#            consoleIn = input("Type in the next move")
+#            consoleIn = consoleIn.split(',')
+#            move = Move(int(consoleIn[0]), int(consoleIn[1]), 0)
+#            sensorsChanged.append(move)
         #we want to ensure we never return a NoneType
         if sensorsChanged is None:
             return []
@@ -113,53 +108,29 @@ class LSDisplay():
 
 
     def set(self, row, col, shape, color):
-        if self.realFloor:
-            self.realFloor.set(row, col, shape, color)
-        if self.simulatedFloor:
-            self.simulatedFloor.set(row, col, shape, color)
+        self.floor.set(row, col, shape, color)
 
     def setAll(self, shape, color):
-        if self.realFloor:
-            self.realFloor.setAll(shape, color)
-        if self.simulatedFloor:
-            self.simulatedFloor.setAll(shape, color)
+        self.floor.setAll(shape, color)
 
     #segColors is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segColors):
-        if self.simulatedFloor:
-            self.simulatedFloor.setSegments(row, col, Colors.segmentsToRgb(segColors)) # Below this level segments are set by RGB color mask
-        if self.realFloor:
-            self.realFloor.setSegments(row, col, Colors.segmentsToRgb(segColors))
+        self.floor.setSegments(row, col, Colors.segmentsToRgb(segColors))
 
     def setAllCustom(self, segColors):
-        if self.simulatedFloor:
-            self.simulatedFloor.setAllSegments(Colors.segmentsToRgb(segColors))
-        if self.realFloor:
-            self.realFloor.setAllSegments(Colors.segmentsToRgb(segColors))
+        self.floor.setAllSegments(Colors.segmentsToRgb(segColors))
 
     def setColor(self, row, col, color):
-        if self.realFloor:
-            self.realFloor.setColor(row, col, color)
-        if self.simulatedFloor:
-            self.simulatedFloor.setColor(row, col, color)
+        self.floor.setColor(row, col, color)
 
     def setAllColor(self, color):
-        if self.realFloor:
-            self.realFloor.setAllColor(color)
-        if self.simulatedFloor:
-            self.simulatedFloor.setAllColor(color)
+        self.floor.setAllColor(color)
 
     def setShape(self, row, col, shape):
-        if self.realFloor:
-            self.realFloor.setShape(row, col, shape)
-        if self.simulatedFloor:
-            self.simulatedFloor.setShape(row, col, shape)
+        self.floor.setShape(row, col, shape)
 
     def setAllShape(self, shape):
-        if self.realFloor:
-            self.realFloor.setAllShape(shape)
-        if self.simulatedFloor:
-            self.simulatedFloor.setAllShape(shape)
+        self.floor.setAllShape(shape)
 
     def setMessage(self, row, message, color = Colors.WHITE, start = 0, cutoff = -1):
         #TODO: ability to right-justify
@@ -196,19 +167,10 @@ class LSDisplay():
             row += 1
 
     def clear(self, row, col):
-        if self.realFloor:
-            self.realFloor.blank(row, col)
-        if self.simulatedFloor:
-            self.simulatedFloor.blank(row, col)
+        self.floor.blank(row, col)
 
     def clearAll(self):
-        if self.realFloor:
-            self.realFloor.clearBoard()
-        if self.simulatedFloor:
-            self.simulatedFloor.clearBoard()
-
-#    def setSegmentsCustom(self, row, col, colors):
-#        pass
+        self.floor.clearBoard()
 
     def setFrame(self, frame):
         for row in range(self.rows):
@@ -231,7 +193,7 @@ class LSDisplay():
 
 def main():
     print("Testing LSDisplay realfloor and emulatedfloor")
-    display = LSDisplay(3, 8, True, True, False)
+    display = LSDisplay(3,8)
 
     for j in range(8):
         display.setColor(0, j, Colors.RED)
