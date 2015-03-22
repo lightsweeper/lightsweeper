@@ -3,6 +3,7 @@
 import lsfloor
 import Colors
 
+import sys
 import time
 import types
 
@@ -19,7 +20,6 @@ class Move():
 wait = time.sleep
 
 def loadImage(self):
- #   self.segments += [Colors.BLACK] * (7 - len(self.segments))
     image = pygame.image.load("images/segments.png")
     horizontal = (42,10)
     vertical = (10,30)
@@ -34,9 +34,10 @@ def loadImage(self):
     return image
 
 # Tweaks LSFloor to update pygame emulator
-class LSPygameFloor(lsfloor.LSFloor):
-
-    def _initEmulateFloor(self):
+class LSPygameFloor():
+    
+    def _initEmulator(self):
+        print("Using Pygame emulator...")
         width=self.cols*100
         height=self.rows*100
         print("Making the screen ({:d}x{:d})".format(width,height))
@@ -50,7 +51,7 @@ class LSPygameFloor(lsfloor.LSFloor):
         #gets the images from the individual tiles, blits them in succession
         #print("heartbeat drawing floor")
         background = pygame.Surface(((self.cols*100), (self.rows*100)))
-        background.fill(Colors.BLACK)
+   #     background.fill(Colors.BLACK)
         self.screen.blit(background, (0,0))
         for r in range(self.rows):
             for c in range(self.cols):
@@ -58,17 +59,18 @@ class LSPygameFloor(lsfloor.LSFloor):
                 image = tile.loadImage()
                 self.screen.blit(image, (100 * c, 100 * r))
         pygame.display.update()
+        super().heartbeat()
 
 
-    def pollSensors(self):
+    def pollEvents(self):
         sensorsChanged = []
         reading = 1
         for event in pygame.event.get():
             rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
             if event.type == QUIT:
-                exit()
+                sys.exit()
             if event.type == KEYDOWN and event.key == K_ESCAPE:
-                exit()
+                sys.exit()
             if event.type == MOUSEBUTTONUP:
                 print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
             if event.type == MOUSEBUTTONDOWN:

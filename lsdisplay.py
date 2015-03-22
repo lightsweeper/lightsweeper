@@ -1,6 +1,6 @@
 """ The main point of interface to the LightSweeper API. Launches simulated and real floors (if available) and keeps them in sync """
 
-from lsfloor import LSRealFloor
+from lsfloor import LSFloor
 from lsemulate import LSPygameFloor
 from LSFloorConfigure import LSFloorConfig
 
@@ -9,8 +9,6 @@ import Colors
 import time
 
 wait = time.sleep
-
-EmulateFloor = LSPygameFloor # Use pygame as the emulator
 
 class Move():
     def __init__(self, row, col, val):
@@ -32,8 +30,8 @@ class LSDisplay():
                 conf = LSFloorConfig(rows=rows, cols=cols)
                 conf.makeVirtual()
 
-        self.floor = EmulateFloor(conf, eventCallback = eventCallback)
-        self.floor._initEmulateFloor()
+        self.floor = LSFloor(conf, eventCallback = eventCallback)
+        self.floor.register(LSPygameFloor)
 
 #        if conf.containsVirtual() is True:
 #            realFloor = False

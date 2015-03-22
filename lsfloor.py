@@ -39,18 +39,16 @@ class LSFloor():
     def __init__(self, conf, eventCallback=None):
 
         self.conf = conf
-
-        self.conf.printConfig() #Debugging
-
+        
         self.rows = conf.rows
         self.cols = conf.cols
 
-        if self.conf.containsReal is True:
+        if self.conf.containsReal() is True:
             self.__class__ = LSRealFloor        # Become a LSRealFloor object
             self._initRealFloor()
 
         self.eventCallback = eventCallback
-        print("LSFloor event callback:", eventCallback)
+       # print("LSFloor event callback:", eventCallback)
         self.tiles = []
         self.tileList = []
         self._virtualTileList = []
@@ -88,6 +86,19 @@ class LSFloor():
             return(LSTile(row, col))
         else:
             return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
+            
+        # Emulator is an emulator class
+    def register(self, emulator):
+        class CompositeClass(emulator, self.__class__):
+            def __init__(self):
+                pass
+        compositeFloor = CompositeClass()
+        print(self.__class__)
+        self.__class__ = compositeFloor.__class__
+        print(self.__class__)
+        self._initEmulator()
+            
+        print("Registering emulator")
 
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
@@ -276,7 +287,11 @@ class LSRealFloor(LSFloor):
             zeroTile.latch()
 
     def pollSensors(self, sensitivity=.95):
-        sensorsChanged = []
+        try:
+            sensorsChanged = self.pollEvents()
+        except Exception as e:
+            print(e)
+            sensorsChanged = []
         tiles = self.tileList
         #sensorPoll = 0
         for tile in tiles:
