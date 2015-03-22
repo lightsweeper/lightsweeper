@@ -19,6 +19,24 @@ class Move():
 
 wait = time.sleep
 
+class LSEmulateFloor:
+    
+    def heartbeat(self):
+        """
+            This function gets called at the end of each heartbeat. Use this
+            to update your display.
+        """
+        pass
+        
+    def pollEvents(self):
+        """
+            This method gets called before every heartbeat. Trigger your touch
+            events here. Should return a list of tiles that were activated.
+        """
+        pass
+    
+    
+
 def loadImage(self):
     image = pygame.image.load("images/segments.png")
     horizontal = (42,10)
@@ -34,7 +52,7 @@ def loadImage(self):
     return image
 
 # Tweaks LSFloor to update pygame emulator
-class LSPygameFloor():
+class LSPygameFloor(LSEmulateFloor):
     
     def _initEmulator(self):
         print("Using Pygame emulator...")
