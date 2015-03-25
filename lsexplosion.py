@@ -262,7 +262,7 @@ class LSExplosion:
     def inWavefront(self, tile):
         for mine in self.explosionStarts.keys():
             if self.distToMine(tile,mine) == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
-                #print(repr(tile) + " is in wavefront of " + repr(mine)) 
+                #print(repr(tile) + " is in wavefront of " + repr(mine))
                 return True
         return False
 
