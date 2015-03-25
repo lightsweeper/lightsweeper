@@ -49,21 +49,27 @@ class LSExplosion:
     #diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
     redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
     yellowZero = (Shapes.ZERO, Shapes.ZERO, 0)
+    violetZero = (Shapes.ZERO, 0, Shapes.ZERO)
     whiteZero = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
     greenZero = (0, Shapes.ZERO, 0)
     blueZero = (0, 0, 126)
+    cyanZero = (0, Shapes.ZERO, Shapes.ZERO)
+    cyanZero = (0, Shapes.ZERO, Shapes.ZERO)
     redH = (Shapes.H, Shapes.OFF, Shapes.OFF)
     redEight = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
     whiteEight = (Shapes.EIGHT, Shapes.EIGHT, Shapes.EIGHT)
     yellowEight = (Shapes.EIGHT, Shapes.EIGHT, Shapes.OFF)
     redDash = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
+    violetDash = (Shapes.DASH, Shapes.OFF, Shapes.DASH)
     greenDash = (Shapes.OFF, Shapes.DASH, Shapes.OFF)
     blueDash = (Shapes.OFF, Shapes.OFF, Shapes.DASH)
+    cyanDash = (Shapes.OFF, Shapes.DASH, Shapes.DASH)
     redX = (Shapes.H, 0, 0)
     yellowEightPlus = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
 
     waves = (whiteZero, redZero, yellowZero)
     waves = (greenDash, greenZero, blueZero, blueDash)
+    waves = (cyanDash, cyanZero, violetZero, violetDash)
 
     #bomb0 = (Shapes.DASH, 0,0)
     #bomb1 = (Shapes.H, Shapes.DASH,0)
@@ -303,10 +309,13 @@ def main():
 
     # HACK - pretend to initialize per existing display
     # TODO - add init function or arg to constructor
-    frame.edit(mine[0],mine[1]-1, LSExplosion.yellowEight)
-    frame.edit(mine[0],mine[1]-2, LSExplosion.yellowEight)
-    frame.edit(mine[0]-1,mine[1], LSExplosion.yellowEight)
-    frame.edit(mine[0]-2,mine[1], LSExplosion.yellowEight)
+    #frame.edit(mine[0],mine[1]-1, LSExplosion.yellowEight)
+    #frame.edit(mine[0],mine[1]-2, LSExplosion.yellowEight)
+    #frame.edit(mine[0]-1,mine[1], LSExplosion.yellowEight)
+    #frame.edit(mine[0]-2,mine[1], LSExplosion.yellowEight)
+    for row in range(rows):
+        for col in range(cols):
+            frame.edit(row,col, LSExplosion.greenZero)
     
     #for frameNum in range(0,50):
     for frameNum in range(0,40):
