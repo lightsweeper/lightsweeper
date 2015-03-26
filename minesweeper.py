@@ -282,6 +282,7 @@ class EndAnimation:
             redDash = (1, 0, 0)
             greenDash = (0, 1, 0)
             blueDash = (0, 0, 1)
+            dashes = [redDash, greenDash, blueDash]
             redMine = (Shapes.H, 0, 0)
             greenMine = (0, Shapes.H, 0)
             blueMine = (0, 0, Shapes.H)
@@ -292,23 +293,34 @@ class EndAnimation:
             
             for _ in range(0,15):
                 for i in range(0,self.cols):
-                    frame.edit(0,i,redDash)
-                    frame.edit(1,i,greenDash)
-                    frame.edit(2,i,blueDash)
+                    #frame.edit(0,i,redDash)
+                    #frame.edit(1,i,greenDash)
+                    #frame.edit(2,i,blueDash)
+                    for row in range(0,self.rows):
+                        idx = (0+row) % 3
+                        frame.edit(row,i,dashes[idx])
                 for mine in mines:
                     frame.edit(mine[0],mine[1],redMine)
                 winningAnimation.addFrame(frame.get())
+
                 for i in range(0,self.cols):
-                    frame.edit(1,i,redDash)
-                    frame.edit(2,i,greenDash)
-                    frame.edit(0,i,blueDash)
+                    #frame.edit(1,i,redDash)
+                    #frame.edit(2,i,greenDash)
+                    #frame.edit(0,i,blueDash)
+                    for row in range(0,self.rows):
+                        idx = (1+row) % 3
+                        frame.edit(row,i,dashes[idx])
                 for mine in mines:
                     frame.edit(mine[0],mine[1],greenMine)
                 winningAnimation.addFrame(frame.get())
+
                 for i in range(0,self.cols):
-                    frame.edit(2,i,redDash)
-                    frame.edit(1,i,greenDash)
-                    frame.edit(0,i,blueDash)
+                    #frame.edit(2,i,redDash)
+                    #frame.edit(1,i,greenDash)
+                    #frame.edit(0,i,blueDash)
+                    for row in range(0,self.rows):
+                        idx = (2+row) % 3
+                        frame.edit(row,i,dashes[idx])
                 for mine in mines:
                     frame.edit(mine[0],mine[1],blueMine)
                 winningAnimation.addFrame(frame.get())
