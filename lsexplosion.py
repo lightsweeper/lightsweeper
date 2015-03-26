@@ -49,29 +49,62 @@ class LSExplosion:
     #diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
     redZero = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
     yellowZero = (Shapes.ZERO, Shapes.ZERO, 0)
+    violetZero = (Shapes.ZERO, 0, Shapes.ZERO)
     whiteZero = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
     greenZero = (0, Shapes.ZERO, 0)
     blueZero = (0, 0, 126)
+    cyanZero = (0, Shapes.ZERO, Shapes.ZERO)
+    cyanZero = (0, Shapes.ZERO, Shapes.ZERO)
+    redH = (Shapes.H, Shapes.OFF, Shapes.OFF)
+    redEight = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
+    whiteEight = (Shapes.EIGHT, Shapes.EIGHT, Shapes.EIGHT)
+    yellowEight = (Shapes.EIGHT, Shapes.EIGHT, Shapes.OFF)
+    redDash = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
+    violetDash = (Shapes.DASH, Shapes.OFF, Shapes.DASH)
+    greenDash = (Shapes.OFF, Shapes.DASH, Shapes.OFF)
+    blueDash = (Shapes.OFF, Shapes.OFF, Shapes.DASH)
+    cyanDash = (Shapes.OFF, Shapes.DASH, Shapes.DASH)
     redX = (Shapes.H, 0, 0)
-    bomb0 = (Shapes.DASH, 0,0)
-    bomb1 = (Shapes.H, Shapes.DASH,0)
-    bomb2 = (Shapes.EIGHT, Shapes.H, Shapes.DASH)
-    bomb3 = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
-    bomb4 = (Shapes.EIGHT, Shapes.EIGHT, Shapes.EIGHT)
-    bomb5 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
-    bomb6 = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
-    bomb7 = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
-    bomb8 = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
-    bombs = [bomb0, bomb0, bomb1, bomb2, bomb3, bomb4, bomb7, bomb6]
+    yellowEightPlus = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
 
-    bombThrob0 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
+    waves = (whiteZero, redZero, yellowZero)
+    waves = (greenDash, greenZero, blueZero, blueDash)
+    waves = (cyanDash, cyanZero, violetZero, violetDash)
+
+    #bomb0 = (Shapes.DASH, 0,0)
+    #bomb1 = (Shapes.H, Shapes.DASH,0)
+    #bomb2 = (Shapes.EIGHT, Shapes.H, Shapes.DASH)
+    #bomb3 = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
+    #bomb4 = whiteEight # (Shapes.EIGHT, Shapes.EIGHT, Shapes.EIGHT)
+    #bomb5 = redEight # (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
+    #bomb6 = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
+    #bomb7 = (Shapes.ZERO, Shapes.ZERO, Shapes.ZERO)
+    #bomb8 = (Shapes.OFF, Shapes.OFF, Shapes.OFF)
+    #bombs = [bomb0, bomb0, bomb1, bomb2, bomb3, bomb4, bomb7, bomb6]
+    #explosion = [bomb0, bomb1, bomb2, bomb3, bomb4, bomb5, bomb6, bomb7]
+    explosion = [redDash, redZero, redEight, yellowEightPlus, whiteEight, redEight, yellowEight, whiteZero]
+
     bombThrob0 = (Shapes.EIGHT, Shapes.OFF, Shapes.OFF)
     bombThrob1 = (Shapes.H, Shapes.OFF, Shapes.OFF)
     bombThrob2 = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
     bombThrobs = [bombThrob0, bombThrob1, bombThrob2]
 
     bombThrob0 = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
-    bombThrob1 = (Shapes.H, Shapes.OFF, Shapes.OFF)
+    bombThrob1 = (Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D, Shapes.OFF, Shapes.OFF)
+    bombThrob2 = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    bombThrob3 = (Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A, Shapes.OFF, Shapes.OFF)
+    bombThrobs = [bombThrob0,bombThrob1,  bombThrob2, bombThrob3]
+
+    bombThrob0 = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    bombThrob1 = (Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D, Shapes.OFF, Shapes.OFF)
+    bombThrob2 = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    bombThrob3 = (Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F, Shapes.OFF, Shapes.OFF)
+    bombThrob4 = (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    bombThrob5 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B, Shapes.OFF, Shapes.OFF)
+    bombThrobs = [bombThrob0,bombThrob1,bombThrob2,bombThrob3,bombThrob4,bombThrob5]
+
+    bombThrob0 = redZero # (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
+    bombThrob1 = redH # (Shapes.H, Shapes.OFF, Shapes.OFF)
     bombThrobs = [bombThrob0, bombThrob1]
 
     def __init__(self, rows, cols, mine, mines):
@@ -91,6 +124,11 @@ class LSExplosion:
             for col in range(self.cols):
                 rowCol = (row, col)
                 self.allCells.append(rowCol)
+                self.edit(row,col, self.blank) # TODO - init to last display
+        #self.phase = 0  # phase of wavefronts
+        self.explosionStarts = {} # track when each mine starts explosion
+        self.explosionStarts[mine] = self.frameNum
+        self.wavefrontPassed = set() # track tiles passed by wavefront
 
     # Allows you to edit an existing frame structure, if no colormask is set
     # then the tile will keep its current colormask
@@ -129,6 +167,10 @@ class LSExplosion:
                           # subsequent tile's red, green, and blue colormasks
 
     def flamefront(self):
+        if True:
+            self.newflamefront()
+        else:
+
             if self.stage is 1:
                 if self.wi == 0:
                     self.thisWave = next(self.wavefront)
@@ -181,6 +223,65 @@ class LSExplosion:
             self.frameNum = self.frameNum + 1
             #print("Computed frame " + repr(self.frameNum))
 
+    def newflamefront(self):
+            print("Computing frame " + repr(self.frameNum))
+            self.phasePerWave = len(self.waves)
+            wavePhase = self.frameNum % self.phasePerWave
+            throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
+            for tile in self.allCells:
+                row = tile[0]
+                col = tile[1]
+                # run explosion animation for explosion in-process
+                if tile in self.explosionStarts.keys():
+                    animIdx = self.frameNum - self.explosionStarts[tile]
+                    # mine cells blow up
+                    if animIdx < len(self.explosion):
+                        mask = self.explosion[animIdx] # TODO - merge explosion with exploder() animation
+                        #print(repr(tile) + " is exploding") 
+                    # then throb forever
+                    else:
+                        mask = self.bombThrobs[throbPhase]
+                        #print(repr(tile) + " is throbbing") 
+                    self.edit(row,col,mask)
+
+                # animation for wavefront passing tile
+                elif self.inWavefront(tile):
+                    if tile in self.allMines:
+                        self.explosionStarts[tile] = self.frameNum
+                        mask = self.explosion[0]
+                        #print(repr(tile) + " just exploded!")
+                    else:
+                        mask = self.waves[wavePhase]
+                        self.wavefrontPassed.add(tile) # can always add to set
+                        #print(repr(tile) + " is in wavefront") 
+                    self.edit(row,col,mask)
+
+                # if wavefront has passed tile, it should be blank
+                elif tile in self.wavefrontPassed:
+                    self.edit(row,col,self.blank)
+
+                else:
+                    pass
+
+            self.frameNum = self.frameNum + 1
+
+    def inWavefront(self, tile):
+        for mine in self.explosionStarts.keys():
+            if self.distToMine(tile,mine) == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
+                #print(repr(tile) + " is in wavefront of " + repr(mine))
+                return True
+        return False
+
+    def distToMine(self, tile, mine):
+        rowDist = abs(tile[0] - mine[0])
+        colDist = abs(tile[1] - mine[1])
+        # round off wavefront by noting the corners of the square are farther out
+        if rowDist == colDist and rowDist >= 2:
+            dist = rowDist + 1
+            return dist
+        dist = max(rowDist, colDist)
+        #print(repr(tile) + " to " + repr(mine) + " = " + repr(dist)) 
+        return dist
 
 def main():
     print("TODO: testing lsexplosion")
@@ -198,14 +299,26 @@ def main():
     ourAnimation = lsanimate.LSAnimation()
 
     #frame = lsanimate.LSFrameGen(rows,cols)
-    mine = (4,5)   # this mine is the first to blow
-    mines = [(0,1), (1,2), (2,4), (3,1), mine]  # all the mines in the floor
+    mine = (2,3)   # this mine is the first to blow
+    #mines = [(0,1), (1,2), (2,4), (3,1), mine]  # all the mines in the floor
+    mines = [(0,1), (1,2), (3,0), mine]  # all the mines in the floor
     # TODO - should initialize the frame from the existing floor
     # and not modify tiles until the wavefront reaches them
     print(mines)
     frame = LSExplosion(rows,cols, mine, mines)
+
+    # HACK - pretend to initialize per existing display
+    # TODO - add init function or arg to constructor
+    #frame.edit(mine[0],mine[1]-1, LSExplosion.yellowEight)
+    #frame.edit(mine[0],mine[1]-2, LSExplosion.yellowEight)
+    #frame.edit(mine[0]-1,mine[1], LSExplosion.yellowEight)
+    #frame.edit(mine[0]-2,mine[1], LSExplosion.yellowEight)
+    for row in range(rows):
+        for col in range(cols):
+            frame.edit(row,col, LSExplosion.greenZero)
     
-    for frameNum in range(0,50):
+    #for frameNum in range(0,50):
+    for frameNum in range(0,40):
         frame.flamefront()
         ourAnimation.addFrame(frame.get())
 

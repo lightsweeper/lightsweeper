@@ -9,6 +9,7 @@ import Shapes
 
 import random
 import time
+import pygame # pygame.event
 
 wait=time.sleep
 
@@ -258,6 +259,7 @@ class Minesweeper():
                         break
                     else:
                         self.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
+        pygame.event.pump # HACK TEMP - should be a better place
         return
 
     def ended(self):
