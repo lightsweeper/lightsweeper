@@ -191,7 +191,7 @@ def main():
     except Exception as e:
         useRealFloor = False
 
-    d = lsdisplay.LSDisplay(realFloor = False, simulatedFloor = True, initScreen=False)
+    d = lsdisplay.LSDisplay(realFloor = True, simulatedFloor = True, initScreen=False)
     rows = d.rows
     cols = d.cols
 
