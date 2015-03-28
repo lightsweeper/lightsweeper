@@ -67,9 +67,22 @@ class LSExplosion:
     redX = (Shapes.H, 0, 0)
     yellowEightPlus = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
 
+    # weaker wavefront farther from explosion
+    pipes = Shapes.SEG_B + Shapes.SEG_C + Shapes.SEG_E + Shapes.SEG_F # pipes is ||
+    cyanPipes = (0, pipes, pipes)
+    violetPipes = (pipes, 0, pipes)
+    weakWaves = (cyanDash, cyanPipes, violetPipes, violetDash)
+
+    # weaker wavefront farther from explosion
+    zig = Shapes.SEG_B + Shapes.SEG_G + Shapes.SEG_E
+    zag = Shapes.SEG_C + Shapes.SEG_G + Shapes.SEG_F
+    cyanZig = (0, zig, zig)
+    violetZag = (zag, 0, zag)
+    weakWaves = (cyanDash, cyanZig, violetZag, violetDash) # pretty good
+
     waves = (whiteZero, redZero, yellowZero)
     waves = (greenDash, greenZero, blueZero, blueDash)
-    waves = (cyanDash, cyanZero, violetZero, violetDash)
+    waves = (cyanDash, cyanZero, violetZero, violetDash) # pretty good
 
     #bomb0 = (Shapes.DASH, 0,0)
     #bomb1 = (Shapes.H, Shapes.DASH,0)
@@ -231,29 +244,39 @@ class LSExplosion:
             for tile in self.allCells:
                 row = tile[0]
                 col = tile[1]
+
                 # run explosion animation for explosion in-process
                 if tile in self.explosionStarts.keys():
                     animIdx = self.frameNum - self.explosionStarts[tile]
                     # mine cells blow up
                     if animIdx < len(self.explosion):
                         mask = self.explosion[animIdx] # TODO - merge explosion with exploder() animation
-                        #print(repr(tile) + " is exploding") 
+                        #print(repr(tile) + " is exploding")
                     # then throb forever
                     else:
                         mask = self.bombThrobs[throbPhase]
-                        #print(repr(tile) + " is throbbing") 
+                        #print(repr(tile) + " is throbbing")
                     self.edit(row,col,mask)
+                    continue # to avoid having to mess with dist assignment in elif
 
                 # animation for wavefront passing tile
-                elif self.inWavefront(tile):
+                dist = self.inWavefront(tile)
+                if dist > 0:
+                    # mine explodes when wavefront reaches it
                     if tile in self.allMines:
                         self.explosionStarts[tile] = self.frameNum
                         mask = self.explosion[0]
                         #print(repr(tile) + " just exploded!")
-                    else:
+                    # strong wavefront
+                    elif dist <= 2: # 2 rings of strong wavefront
                         mask = self.waves[wavePhase]
                         self.wavefrontPassed.add(tile) # can always add to set
-                        #print(repr(tile) + " is in wavefront") 
+                        #print(repr(tile) + " is in strong wavefront")
+                    # weaker wavefront farther away
+                    else:
+                        mask = self.weakWaves[wavePhase]
+                        self.wavefrontPassed.add(tile) # can always add to set
+                        #print(repr(tile) + " is in weak wavefront")
                     self.edit(row,col,mask)
 
                 # if wavefront has passed tile, it should be blank
@@ -265,12 +288,14 @@ class LSExplosion:
 
             self.frameNum = self.frameNum + 1
 
+    # returns distance from mine if in wavefront or -1 if not
     def inWavefront(self, tile):
         for mine in self.explosionStarts.keys():
-            if self.distToMine(tile,mine) == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
+            dist = self.distToMine(tile,mine)
+            if dist == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
                 #print(repr(tile) + " is in wavefront of " + repr(mine))
-                return True
-        return False
+                return dist
+        return -1
 
     def distToMine(self, tile, mine):
         rowDist = abs(tile[0] - mine[0])
@@ -280,7 +305,7 @@ class LSExplosion:
             dist = rowDist + 1
             return dist
         dist = max(rowDist, colDist)
-        #print(repr(tile) + " to " + repr(mine) + " = " + repr(dist)) 
+        #print(repr(tile) + " to " + repr(mine) + " = " + repr(dist))
         return dist
 
 def main():
@@ -316,7 +341,7 @@ def main():
     for row in range(rows):
         for col in range(cols):
             frame.edit(row,col, LSExplosion.greenZero)
-    
+
     #for frameNum in range(0,50):
     for frameNum in range(0,40):
         frame.flamefront()
