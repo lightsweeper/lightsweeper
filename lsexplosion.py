@@ -39,6 +39,21 @@ def exploder():
     for mask in explosionSequence:
         yield mask
 
+def explodeThenThrob():
+# This generator returns a sequence of masks that makes a tile look as though it is exploding
+    idx = 0
+    throb = 0
+    while True:
+        if idx < len(LSExplosion.explosion):
+            mask = LSExplosion.explosion[idx]
+            #print("  explodeThenThrob yields " + repr(mask))
+            idx = idx + 1
+        else:
+            mask = LSExplosion.bombThrobs[throb]
+            throb = (throb+1) % 2
+            #print("  explodeThenThrob throbs " + repr(mask))
+        yield mask
+
 
 # TODO - decide if this should subclass LSFrameGen
 class LSExplosion:
@@ -180,10 +195,13 @@ class LSExplosion:
                           # subsequent tile's red, green, and blue colormasks
 
     def flamefront(self):
-        if True:
-            self.newflamefront()
-        else:
+            # wavefront triggers mine explosions
+            return self.newflamefront()
 
+            # use generators for explosions and wavefronts
+            return self.genflamefront()
+
+            # original explosion animation
             if self.stage is 1:
                 if self.wi == 0:
                     self.thisWave = next(self.wavefront)
@@ -237,7 +255,7 @@ class LSExplosion:
             #print("Computed frame " + repr(self.frameNum))
 
     def newflamefront(self):
-            print("Computing frame " + repr(self.frameNum))
+            #print("Computing frame " + repr(self.frameNum))
             self.phasePerWave = len(self.waves)
             wavePhase = self.frameNum % self.phasePerWave
             throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
@@ -287,6 +305,55 @@ class LSExplosion:
                     pass
 
             self.frameNum = self.frameNum + 1
+
+    def genflamefront(self):
+    # use generators for explosions and wavefronts
+        print("Gen frame " + repr(self.frameNum))
+        if self.frameNum == 0:
+            self.explosionGens = {} # store explosion generators
+            self.explosionGens[self.firstMine] = explodeThenThrob()
+        self.phasePerWave = len(self.waves)
+        wavePhase = self.frameNum % self.phasePerWave
+        #throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
+        for tile in self.allCells:
+            row = tile[0]
+            col = tile[1]
+
+            # run explosion animation generator
+            if tile in self.explosionGens.keys():
+                mask = next(self.explosionGens[tile])
+                self.edit(row,col,mask)
+                continue # to avoid having to mess with dist assignment in elif
+
+            # animation for wavefront passing tile
+            dist = self.inWavefront(tile)
+            if dist > 0:
+                # mine explodes when wavefront reaches it
+                if tile in self.allMines:
+                    self.explosionStarts[tile] = self.frameNum # still used by inWavefront()
+                    self.explosionGens[tile] = explodeThenThrob()
+                    mask = next(self.explosionGens[tile]) # first explosion animation
+                    #print(repr(tile) + " just exploded!")
+                # strong wavefront
+                elif dist <= 2: # 2 rings of strong wavefront
+                    mask = self.waves[wavePhase]
+                    self.wavefrontPassed.add(tile) # can always add to set
+                    #print(repr(tile) + " is in strong wavefront")
+                # weaker wavefront farther away
+                else:
+                    mask = self.weakWaves[wavePhase]
+                    self.wavefrontPassed.add(tile) # can always add to set
+                    #print(repr(tile) + " is in weak wavefront")
+                self.edit(row,col,mask)
+
+            # if wavefront has passed tile, it should be blank
+            elif tile in self.wavefrontPassed:
+                self.edit(row,col,self.blank)
+
+            else:
+                pass
+
+        self.frameNum = self.frameNum + 1
 
     # returns distance from mine if in wavefront or -1 if not
     def inWavefront(self, tile):
@@ -342,10 +409,17 @@ def main():
         for col in range(cols):
             frame.edit(row,col, LSExplosion.greenZero)
 
+    starttime = time.time()
+
     #for frameNum in range(0,50):
     for frameNum in range(0,40):
         frame.flamefront()
         ourAnimation.addFrame(frame.get())
+
+    endtime = time.time()
+    gentime = endtime - starttime
+    # newflamefront, with no printing, 6x8 38 frames <= .09 sec
+    print("frame calcs took {:f} seconds".format(gentime))
 
     ourAnimation.deleteFrame(7) # Because I'm too lazy to do it right
     ourAnimation.deleteFrame(7) # Yes, we need both of these
