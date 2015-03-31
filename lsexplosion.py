@@ -54,6 +54,24 @@ def explodeThenThrob():
             #print("  explodeThenThrob throbs " + repr(mask))
         yield mask
 
+def animateWavefront(dist = 1):
+# This generator returns a sequence of masks to animate a wavefront
+# strength of wavefront depends on dist
+    idx = 0
+    strongWave = dist<=2
+    while True:
+        if idx < len(LSExplosion.waves):
+            if strongWave:
+                mask = LSExplosion.waves[idx]
+            else:
+                mask = LSExplosion.weakWaves[idx]
+            #print("  animateWavefront yields " + repr(mask))
+            idx = idx + 1
+        else:
+            mask = LSExplosion.blank
+            #print("  animateWavefront blanking now")
+        yield mask
+
 
 # TODO - decide if this should subclass LSFrameGen
 class LSExplosion:
@@ -158,7 +176,7 @@ class LSExplosion:
         #self.phase = 0  # phase of wavefronts
         self.explosionStarts = {} # track when each mine starts explosion
         self.explosionStarts[mine] = self.frameNum
-        self.unblasted.remove(mine) # remove known mine from other list
+        self.unblasted.remove(mine) # remove known mine from undisturbed list
         self.wavefrontPassed = set() # track tiles passed by wavefront
 
     # Allows you to edit an existing frame structure, if no colormask is set
@@ -199,7 +217,7 @@ class LSExplosion:
 
     def flamefront(self):
             # wavefront triggers mine explosions
-            return self.newflamefront()
+            #return self.newflamefront()
 
             # use generators for explosions and wavefronts
             return self.genflamefront()
@@ -294,14 +312,13 @@ class LSExplosion:
                 self.edit(tile[0],tile[1],mask)
 
             # process cells that have not been blasted
-            # TODO - much dupe code in wavefront
-            for tile in self.unblasted:
+            for tile in self.unblasted[:]: # use slice so remove during iterate works
                 if wavePhase == 0: # wavefront moves into tile in first phase
                     continue; # no need to check for changes
                 # animation for wavefront passing tile
                 dist = self.inWavefront(tile)
                 if dist > 0:
-                    self.unblasted.remove(tile) # remove blasted tile from other list
+                    self.unblasted.remove(tile) # remove blasted tile
                     # mine explodes when wavefront reaches it
                     if tile in self.allMines:
                         self.explosionStarts[tile] = self.frameNum
@@ -327,41 +344,63 @@ class LSExplosion:
         if self.frameNum == 0:
             self.explosionGens = {} # store explosion generators
             self.explosionGens[self.firstMine] = explodeThenThrob()
+            self.wavefrontGens = {} # store wavefront generators
         self.phasePerWave = len(self.waves)
         wavePhase = self.frameNum % self.phasePerWave
-        for tile in self.allCells:
 
-            # run explosion animation generator
-            if tile in self.explosionGens.keys():
-                mask = next(self.explosionGens[tile])
-                self.edit(tile[0],tile[1],mask)
-                continue # to avoid having to mess with dist assignment in elif
+        # run explosion animation generator on exploded mines
+        # exploded mines stay in explosionGens forever
+        for tile in self.explosionGens.keys():
+            mask = next(self.explosionGens[tile])
+            self.edit(tile[0],tile[1],mask)
 
-            # animation for wavefront passing tile
-            dist = self.inWavefront(tile)
-            if dist > 0:
-                # mine explodes when wavefront reaches it
-                if tile in self.allMines:
-                    self.explosionStarts[tile] = self.frameNum # still used by inWavefront()
-                    self.explosionGens[tile] = explodeThenThrob()
-                    mask = next(self.explosionGens[tile]) # first explosion animation
-                    #print(repr(tile) + " just exploded!")
-                # strong wavefront
-                elif dist <= 2: # 2 rings of strong wavefront
-                    mask = self.waves[wavePhase]
-                    self.wavefrontPassed.add(tile) # can always add to set
-                    #print(repr(tile) + " is in strong wavefront")
-                # weaker wavefront farther away
-                else:
-                    mask = self.weakWaves[wavePhase]
-                    self.wavefrontPassed.add(tile) # can always add to set
-                    #print(repr(tile) + " is in weak wavefront")
-                self.edit(tile[0],tile[1],mask)
+        # run wavefront passing tile animation generator
+        # mines in wavefront stay in wavefrontGens forever
+        for tile in self.wavefrontGens.keys():
+            # wavefront moves into tile in first phase
+            # no need to check for changes in other phases
+            if wavePhase == 0:
+                dist = self.inWavefront(tile)
+                if dist > 0:
+                    #print(repr(tile) + " is back in wavefront")
+                    # mine explodes when wavefront reaches it
+                    # SHOULD NOT HAPPEN HERE - remove when satisfied
+                    if tile in self.allMines:
+                        self.explosionStarts[tile] = self.frameNum # used by inWavefront()
+                        self.explosionGens[tile] = explodeThenThrob()
+                        mask = next(self.explosionGens[tile]) # first explosion animation
+                        print(repr(tile) + " exploded, but was already in wavefrontGens!")
+                    else:
+                        # tile in wavefront again, set new generator
+                        self.wavefrontGens[tile] = animateWavefront(dist)
 
-            # if wavefront has passed tile, it should be blank
-            elif tile in self.wavefrontPassed:
-                self.edit(tile[0],tile[1],self.blank)
+            # generate wavefront animation each phase
+            mask = next(self.wavefrontGens[tile])
+            self.edit(tile[0],tile[1],mask)
 
+        # test undisturbed tiles to see if in wavefront
+        # wavefront moves into tile in first phase
+        # no need to check for changes in other phases
+        # tiles do not change until hit by a wavefront
+        if wavePhase == 0:
+            for tile in self.unblasted[:]: # use slice so remove during iterate works
+                dist = self.inWavefront(tile)
+                if dist > 0:
+                    self.unblasted.remove(tile) # remove disturbed tile
+                    # mine explodes when wavefront reaches it
+                    if tile in self.allMines:
+                        self.explosionStarts[tile] = self.frameNum # used by inWavefront()
+                        self.explosionGens[tile] = explodeThenThrob()
+                        mask = next(self.explosionGens[tile]) # first explosion animation
+                        #print(repr(tile) + " just exploded!")
+                    # tile is in wavefront
+                    else:
+                        self.wavefrontGens[tile] = animateWavefront(dist)
+                        mask = next(self.wavefrontGens[tile]) # first wavefront animation
+                        #print(repr(tile) + " is in wavefront")
+                    self.edit(tile[0],tile[1],mask)
+
+        # genflamefront is done with this frame
         self.frameNum = self.frameNum + 1
 
     # returns distance from mine if in wavefront or -1 if not
@@ -443,8 +482,8 @@ def main():
     # newflamefront, with no printing, 6x8 38 frames <= .09 sec
     print("frame calcs took {:f} seconds".format(gentime))
 
-    ourAnimation.deleteFrame(7) # Because I'm too lazy to do it right
-    ourAnimation.deleteFrame(7) # Yes, we need both of these
+    #ourAnimation.deleteFrame(7) # Because I'm too lazy to do it right
+    #ourAnimation.deleteFrame(7) # Yes, we need both of these
 
     ourAnimation.play(d)
 
