@@ -54,17 +54,31 @@ def explodeThenThrob():
             #print("  explodeThenThrob throbs " + repr(mask))
         yield mask
 
-def animateWavefront(dist = 1):
+def animateWavefront(dist = 1, mine = (0,0)):
 # This generator returns a sequence of masks to animate a wavefront
 # strength of wavefront depends on dist
+#
+# This generator can make several "random" styles of wavefronts
+# that stay consistent for each mine, to represent different kinds of mines.
+# This is disabled because the variety makes the wavefronts too confusing.
     idx = 0
     strongWave = dist<=2
+    style = 0 # 1
+    #style = (mine[0] + mine[1]) % 3 # comment out for single style wavefronts
+    #print("  animateWavefront making style " + repr(style))
     while True:
         if idx < len(LSExplosion.waves):
             if strongWave:
-                mask = LSExplosion.waves[idx]
+                if style == 0:
+                    mask = LSExplosion.waves[idx]
+                else:
+                    mask = LSExplosion.waves2[idx]
             else:
-                mask = LSExplosion.weakWaves[idx]
+                if style == 0:
+                    mask = LSExplosion.weakWaves[idx]
+                else:
+                    mask = LSExplosion.weakWaves2[idx]
+
             #print("  animateWavefront yields " + repr(mask))
             idx = idx + 1
         else:
@@ -95,13 +109,17 @@ class LSExplosion:
     redDash = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
     violetDash = (Shapes.DASH, Shapes.OFF, Shapes.DASH)
     greenDash = (Shapes.OFF, Shapes.DASH, Shapes.OFF)
+    yellowDash = (Shapes.DASH, Shapes.DASH, Shapes.OFF)
     blueDash = (Shapes.OFF, Shapes.OFF, Shapes.DASH)
     cyanDash = (Shapes.OFF, Shapes.DASH, Shapes.DASH)
     redX = (Shapes.H, 0, 0)
     yellowEightPlus = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
 
-    # weaker wavefront farther from explosion
+    # more shapes
     pipes = Shapes.SEG_B + Shapes.SEG_C + Shapes.SEG_E + Shapes.SEG_F # pipes is ||
+    dashX3 = Shapes.SEG_A + Shapes.SEG_D + Shapes.SEG_G # three horizontal dashes
+
+    # weaker wavefront farther from explosion
     cyanPipes = (0, pipes, pipes)
     violetPipes = (pipes, 0, pipes)
     weakWaves = (cyanDash, cyanPipes, violetPipes, violetDash)
@@ -112,10 +130,18 @@ class LSExplosion:
     cyanZig = (0, zig, zig)
     violetZag = (zag, 0, zag)
     weakWaves = (cyanDash, cyanZig, violetZag, violetDash) # pretty good
+    yellowZig = (zig, zig, 0)
+    yellowZag = (zag, zag, 0)
+    weakWaves2 = (yellowDash, yellowZig, yellowZag, yellowDash)
+    weakWaves2 = (yellowDash, yellowDash, yellowDash, yellowDash)
 
     waves = (whiteZero, redZero, yellowZero)
     waves = (greenDash, greenZero, blueZero, blueDash)
     waves = (cyanDash, cyanZero, violetZero, violetDash) # pretty good
+
+    yellowDashX3 = (dashX3, dashX3, 0)
+    waves2 = (yellowDash, yellowZero, yellowZero, yellowDash)
+    waves2 = (yellowDash, yellowDashX3, yellowDashX3, yellowDash) # pretty good
 
     #bomb0 = (Shapes.DASH, 0,0)
     #bomb1 = (Shapes.H, Shapes.DASH,0)
@@ -296,7 +322,7 @@ class LSExplosion:
 
             # animation for wavefront passing tile
             for tile in self.wavefrontPassed:
-                dist = self.inWavefront(tile)
+                dist = self.inWavefront(tile)[0] # dist is first val in tuple
 
                 # if wavefront has passed tile, it should be blank
                 if dist == -1:
@@ -316,7 +342,7 @@ class LSExplosion:
                 if wavePhase == 0: # wavefront moves into tile in first phase
                     continue; # no need to check for changes
                 # animation for wavefront passing tile
-                dist = self.inWavefront(tile)
+                dist = self.inWavefront(tile)[0] # dist is first val in tuple
                 if dist > 0:
                     self.unblasted.remove(tile) # remove blasted tile
                     # mine explodes when wavefront reaches it
@@ -360,7 +386,9 @@ class LSExplosion:
             # wavefront moves into tile in first phase
             # no need to check for changes in other phases
             if wavePhase == 0:
-                dist = self.inWavefront(tile)
+                waveTuple = self.inWavefront(tile)
+                dist = waveTuple[0] # dist is first val in tuple
+                waveMine = waveTuple[1] # active mine is second val in tuple
                 if dist > 0:
                     #print(repr(tile) + " is back in wavefront")
                     # mine explodes when wavefront reaches it
@@ -372,7 +400,7 @@ class LSExplosion:
                         print(repr(tile) + " exploded, but was already in wavefrontGens!")
                     else:
                         # tile in wavefront again, set new generator
-                        self.wavefrontGens[tile] = animateWavefront(dist)
+                        self.wavefrontGens[tile] = animateWavefront(dist, waveMine)
 
             # generate wavefront animation each phase
             mask = next(self.wavefrontGens[tile])
@@ -384,7 +412,9 @@ class LSExplosion:
         # tiles do not change until hit by a wavefront
         if wavePhase == 0:
             for tile in self.unblasted[:]: # use slice so remove during iterate works
-                dist = self.inWavefront(tile)
+                waveTuple = self.inWavefront(tile)
+                dist = waveTuple[0] # dist is first val in tuple
+                waveMine = waveTuple[1] # active mine is second val in tuple
                 if dist > 0:
                     self.unblasted.remove(tile) # remove disturbed tile
                     # mine explodes when wavefront reaches it
@@ -395,7 +425,7 @@ class LSExplosion:
                         #print(repr(tile) + " just exploded!")
                     # tile is in wavefront
                     else:
-                        self.wavefrontGens[tile] = animateWavefront(dist)
+                        self.wavefrontGens[tile] = animateWavefront(dist, waveMine)
                         mask = next(self.wavefrontGens[tile]) # first wavefront animation
                         #print(repr(tile) + " is in wavefront")
                     self.edit(tile[0],tile[1],mask)
@@ -406,24 +436,27 @@ class LSExplosion:
     # returns distance from mine if in wavefront or -1 if not
     # client indicates the minimum distance it cares about,
     #   typically the max distance for closest-in wavefront
+    # returns tuple (distance, active mine)
     def inWavefront(self, tile, distThresh=2):
         waves = 0
-        minDist = 999
+        closeDist = 999
+        closeMine = None
         for mine in self.explosionStarts.keys():
             dist = self.distToMine(tile,mine)
             if dist == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
                 #print(repr(tile) + " is in wavefront of " + repr(mine))
                 waves = waves + 1
-                if minDist > dist:
-                    minDist = dist
+                if closeDist > dist:
+                    closeDist = dist
+                    closeMine = mine
                 # stop looking if explosion is as close as we care about
                 if dist <= distThresh:
                     break
         # return the closest wavefront we found
         if waves > 0:
             #if waves > 1: print(repr(tile) + " is in " + repr(waves) + " wavefronts")
-            return minDist
-        return -1
+            return (closeDist, closeMine)
+        return (-1, closeMine)
 
     def distToMine(self, tile, mine):
         rowDist = abs(tile[0] - mine[0])
