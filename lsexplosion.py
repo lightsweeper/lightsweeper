@@ -42,15 +42,13 @@ def exploder():
 def explodeThenThrob():
 # This generator returns a sequence of masks that makes a tile look as though it is exploding
     idx = 0
-    throb = 0
     while True:
         if idx < len(LSExplosion.explosion):
             mask = LSExplosion.explosion[idx]
             #print("  explodeThenThrob yields " + repr(mask))
             idx = idx + 1
         else:
-            mask = LSExplosion.bombThrobs[throb]
-            throb = (throb+1) % 2
+            mask = LSExplosion.bombThrobs[LSExplosion.throbPhase]
             #print("  explodeThenThrob throbs " + repr(mask))
         yield mask
 
@@ -175,9 +173,26 @@ class LSExplosion:
     bombThrob5 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B, Shapes.OFF, Shapes.OFF)
     bombThrobs = [bombThrob0,bombThrob1,bombThrob2,bombThrob3,bombThrob4,bombThrob5]
 
-    bombThrob0 = redZero # (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
-    bombThrob1 = redH # (Shapes.H, Shapes.OFF, Shapes.OFF)
-    bombThrobs = [bombThrob0, bombThrob1]
+    # spinning red circle segments
+    throb0 = (Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D, Shapes.OFF, Shapes.OFF)
+    throb1 = (Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E, Shapes.OFF, Shapes.OFF)
+    throb2 = (Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F, Shapes.OFF, Shapes.OFF)
+    throb3 = (Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A, Shapes.OFF, Shapes.OFF)
+    throb4 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B, Shapes.OFF, Shapes.OFF)
+    throb5 = (Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C, Shapes.OFF, Shapes.OFF)
+    bombThrobs = [throb0,throb1,throb2,throb3,throb4,throb5]
+
+    # spinning red circle with one segment missing
+    throb0 = (Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E, Shapes.OFF, Shapes.OFF)
+    throb1 = (Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A, Shapes.OFF, Shapes.OFF)
+    throb2 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C, Shapes.OFF, Shapes.OFF)
+    bombThrobs = [throb0,throb1,throb2]
+
+    # alternating red H and 0
+    bombThrobs = [redZero, redH] # not bad, have been using a while
+    bombThrobs = [redZero, redDash] # maybe better, more throbby
+
+    throbPhase = 0 # mines throb together after exploding - class vble for generators to use
 
     def __init__(self, rows, cols, mine, mines):
         self.rows = rows
@@ -305,7 +320,7 @@ class LSExplosion:
             #print("Computing frame " + repr(self.frameNum))
             self.phasePerWave = len(self.waves)
             wavePhase = self.frameNum % self.phasePerWave
-            throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
+            LSExplosion.throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
 
             # run explosion animation
             for tile in self.explosionStarts.keys():
@@ -316,7 +331,7 @@ class LSExplosion:
                     #print(repr(tile) + " is exploding")
                 # then throb forever
                 else:
-                    mask = self.bombThrobs[throbPhase]
+                    mask = self.bombThrobs[LSExplosion.throbPhase]
                     #print(repr(tile) + " is throbbing")
                 self.edit(tile[0],tile[1],mask)
 
@@ -373,6 +388,7 @@ class LSExplosion:
             self.wavefrontGens = {} # store wavefront generators
         self.phasePerWave = len(self.waves)
         wavePhase = self.frameNum % self.phasePerWave
+        LSExplosion.throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
 
         # run explosion animation generator on exploded mines
         # exploded mines stay in explosionGens forever
