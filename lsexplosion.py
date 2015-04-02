@@ -39,6 +39,51 @@ def exploder():
     for mask in explosionSequence:
         yield mask
 
+def explodeThenThrob():
+# This generator returns a sequence of masks that makes a tile look as though it is exploding
+    idx = 0
+    while True:
+        if idx < len(LSExplosion.explosion):
+            mask = LSExplosion.explosion[idx]
+            #print("  explodeThenThrob yields " + repr(mask))
+            idx = idx + 1
+        else:
+            mask = LSExplosion.bombThrobs[LSExplosion.throbPhase]
+            #print("  explodeThenThrob throbs " + repr(mask))
+        yield mask
+
+def animateWavefront(dist = 1, mine = (0,0)):
+# This generator returns a sequence of masks to animate a wavefront
+# strength of wavefront depends on dist
+#
+# This generator can make several "random" styles of wavefronts
+# that stay consistent for each mine, to represent different kinds of mines.
+# This is disabled because the variety makes the wavefronts too confusing.
+    idx = 0
+    strongWave = dist<=2
+    style = 0 # 1
+    #style = (mine[0] + mine[1]) % 3 # comment out for single style wavefronts
+    #print("  animateWavefront making style " + repr(style))
+    while True:
+        if idx < len(LSExplosion.waves):
+            if strongWave:
+                if style == 0:
+                    mask = LSExplosion.waves[idx]
+                else:
+                    mask = LSExplosion.waves2[idx]
+            else:
+                if style == 0:
+                    mask = LSExplosion.weakWaves[idx]
+                else:
+                    mask = LSExplosion.weakWaves2[idx]
+
+            #print("  animateWavefront yields " + repr(mask))
+            idx = idx + 1
+        else:
+            mask = LSExplosion.blank
+            #print("  animateWavefront blanking now")
+        yield mask
+
 
 # TODO - decide if this should subclass LSFrameGen
 class LSExplosion:
@@ -62,14 +107,39 @@ class LSExplosion:
     redDash = (Shapes.DASH, Shapes.OFF, Shapes.OFF)
     violetDash = (Shapes.DASH, Shapes.OFF, Shapes.DASH)
     greenDash = (Shapes.OFF, Shapes.DASH, Shapes.OFF)
+    yellowDash = (Shapes.DASH, Shapes.DASH, Shapes.OFF)
     blueDash = (Shapes.OFF, Shapes.OFF, Shapes.DASH)
     cyanDash = (Shapes.OFF, Shapes.DASH, Shapes.DASH)
     redX = (Shapes.H, 0, 0)
     yellowEightPlus = (Shapes.EIGHT, Shapes.EIGHT, Shapes.H)
 
+    # more shapes
+    pipes = Shapes.SEG_B + Shapes.SEG_C + Shapes.SEG_E + Shapes.SEG_F # pipes is ||
+    dashX3 = Shapes.SEG_A + Shapes.SEG_D + Shapes.SEG_G # three horizontal dashes
+
+    # weaker wavefront farther from explosion
+    cyanPipes = (0, pipes, pipes)
+    violetPipes = (pipes, 0, pipes)
+    weakWaves = (cyanDash, cyanPipes, violetPipes, violetDash)
+
+    # weaker wavefront farther from explosion
+    zig = Shapes.SEG_B + Shapes.SEG_G + Shapes.SEG_E
+    zag = Shapes.SEG_C + Shapes.SEG_G + Shapes.SEG_F
+    cyanZig = (0, zig, zig)
+    violetZag = (zag, 0, zag)
+    weakWaves = (cyanDash, cyanZig, violetZag, violetDash) # pretty good
+    yellowZig = (zig, zig, 0)
+    yellowZag = (zag, zag, 0)
+    weakWaves2 = (yellowDash, yellowZig, yellowZag, yellowDash)
+    weakWaves2 = (yellowDash, yellowDash, yellowDash, yellowDash)
+
     waves = (whiteZero, redZero, yellowZero)
     waves = (greenDash, greenZero, blueZero, blueDash)
-    waves = (cyanDash, cyanZero, violetZero, violetDash)
+    waves = (cyanDash, cyanZero, violetZero, violetDash) # pretty good
+
+    yellowDashX3 = (dashX3, dashX3, 0)
+    waves2 = (yellowDash, yellowZero, yellowZero, yellowDash)
+    waves2 = (yellowDash, yellowDashX3, yellowDashX3, yellowDash) # pretty good
 
     #bomb0 = (Shapes.DASH, 0,0)
     #bomb1 = (Shapes.H, Shapes.DASH,0)
@@ -103,9 +173,26 @@ class LSExplosion:
     bombThrob5 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B, Shapes.OFF, Shapes.OFF)
     bombThrobs = [bombThrob0,bombThrob1,bombThrob2,bombThrob3,bombThrob4,bombThrob5]
 
-    bombThrob0 = redZero # (Shapes.ZERO, Shapes.OFF, Shapes.OFF)
-    bombThrob1 = redH # (Shapes.H, Shapes.OFF, Shapes.OFF)
-    bombThrobs = [bombThrob0, bombThrob1]
+    # spinning red circle segments
+    throb0 = (Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D, Shapes.OFF, Shapes.OFF)
+    throb1 = (Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E, Shapes.OFF, Shapes.OFF)
+    throb2 = (Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F, Shapes.OFF, Shapes.OFF)
+    throb3 = (Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A, Shapes.OFF, Shapes.OFF)
+    throb4 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B, Shapes.OFF, Shapes.OFF)
+    throb5 = (Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C, Shapes.OFF, Shapes.OFF)
+    bombThrobs = [throb0,throb1,throb2,throb3,throb4,throb5]
+
+    # spinning red circle with one segment missing
+    throb0 = (Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E, Shapes.OFF, Shapes.OFF)
+    throb1 = (Shapes.SEG_C+Shapes.SEG_D+Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A, Shapes.OFF, Shapes.OFF)
+    throb2 = (Shapes.SEG_E+Shapes.SEG_F+Shapes.SEG_A+Shapes.SEG_B+Shapes.SEG_C, Shapes.OFF, Shapes.OFF)
+    bombThrobs = [throb0,throb1,throb2]
+
+    # alternating red H and 0
+    bombThrobs = [redZero, redH] # not bad, have been using a while
+    bombThrobs = [redZero, redDash] # maybe better, more throbby
+
+    throbPhase = 0 # mines throb together after exploding - class vble for generators to use
 
     def __init__(self, rows, cols, mine, mines):
         self.rows = rows
@@ -120,14 +207,17 @@ class LSExplosion:
         self.throbbing = False
         self.wi = 0  # A cyclic iterator, each wavefront stays active for 3 frames
         self.allCells = list()
+        self.unblasted = list()
         for row in range(self.rows):
             for col in range(self.cols):
                 rowCol = (row, col)
                 self.allCells.append(rowCol)
+                self.unblasted.append(rowCol)
                 self.edit(row,col, self.blank) # TODO - init to last display
         #self.phase = 0  # phase of wavefronts
         self.explosionStarts = {} # track when each mine starts explosion
         self.explosionStarts[mine] = self.frameNum
+        self.unblasted.remove(mine) # remove known mine from undisturbed list
         self.wavefrontPassed = set() # track tiles passed by wavefront
 
     # Allows you to edit an existing frame structure, if no colormask is set
@@ -167,10 +257,13 @@ class LSExplosion:
                           # subsequent tile's red, green, and blue colormasks
 
     def flamefront(self):
-        if True:
-            self.newflamefront()
-        else:
+            # wavefront triggers mine explosions
+            #return self.newflamefront()
 
+            # use generators for explosions and wavefronts
+            return self.genflamefront()
+
+            # original explosion animation
             if self.stage is 1:
                 if self.wi == 0:
                     self.thisWave = next(self.wavefront)
@@ -224,53 +317,162 @@ class LSExplosion:
             #print("Computed frame " + repr(self.frameNum))
 
     def newflamefront(self):
-            print("Computing frame " + repr(self.frameNum))
+            #print("Computing frame " + repr(self.frameNum))
             self.phasePerWave = len(self.waves)
             wavePhase = self.frameNum % self.phasePerWave
-            throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
-            for tile in self.allCells:
-                row = tile[0]
-                col = tile[1]
-                # run explosion animation for explosion in-process
-                if tile in self.explosionStarts.keys():
-                    animIdx = self.frameNum - self.explosionStarts[tile]
-                    # mine cells blow up
-                    if animIdx < len(self.explosion):
-                        mask = self.explosion[animIdx] # TODO - merge explosion with exploder() animation
-                        #print(repr(tile) + " is exploding") 
-                    # then throb forever
-                    else:
-                        mask = self.bombThrobs[throbPhase]
-                        #print(repr(tile) + " is throbbing") 
-                    self.edit(row,col,mask)
+            LSExplosion.throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
 
+            # run explosion animation
+            for tile in self.explosionStarts.keys():
+                animIdx = self.frameNum - self.explosionStarts[tile]
+                # mine cells blow up
+                if animIdx < len(self.explosion):
+                    mask = self.explosion[animIdx]
+                    #print(repr(tile) + " is exploding")
+                # then throb forever
+                else:
+                    mask = self.bombThrobs[LSExplosion.throbPhase]
+                    #print(repr(tile) + " is throbbing")
+                self.edit(tile[0],tile[1],mask)
+
+            # animation for wavefront passing tile
+            for tile in self.wavefrontPassed:
+                dist = self.inWavefront(tile)[0] # dist is first val in tuple
+
+                # if wavefront has passed tile, it should be blank
+                if dist == -1:
+                    mask = self.blank
+                # strong wavefront
+                elif dist <= 2: # 2 rings of strong wavefront
+                    mask = self.waves[wavePhase]
+                    #print(repr(tile) + " is in strong wavefront")
+                # weaker wavefront farther away
+                else:
+                    mask = self.weakWaves[wavePhase]
+                    #print(repr(tile) + " is in weak wavefront")
+                self.edit(tile[0],tile[1],mask)
+
+            # process cells that have not been blasted
+            for tile in self.unblasted[:]: # use slice so remove during iterate works
+                if wavePhase == 0: # wavefront moves into tile in first phase
+                    continue; # no need to check for changes
                 # animation for wavefront passing tile
-                elif self.inWavefront(tile):
+                dist = self.inWavefront(tile)[0] # dist is first val in tuple
+                if dist > 0:
+                    self.unblasted.remove(tile) # remove blasted tile
+                    # mine explodes when wavefront reaches it
                     if tile in self.allMines:
                         self.explosionStarts[tile] = self.frameNum
                         mask = self.explosion[0]
                         #print(repr(tile) + " just exploded!")
-                    else:
+                    # strong wavefront
+                    elif dist <= 2: # 2 rings of strong wavefront
                         mask = self.waves[wavePhase]
                         self.wavefrontPassed.add(tile) # can always add to set
-                        #print(repr(tile) + " is in wavefront") 
-                    self.edit(row,col,mask)
-
-                # if wavefront has passed tile, it should be blank
-                elif tile in self.wavefrontPassed:
-                    self.edit(row,col,self.blank)
-
-                else:
-                    pass
+                        #print(repr(tile) + " is in strong wavefront")
+                    # weaker wavefront farther away
+                    else:
+                        mask = self.weakWaves[wavePhase]
+                        self.wavefrontPassed.add(tile) # can always add to set
+                        #print(repr(tile) + " is in weak wavefront")
+                    self.edit(tile[0],tile[1],mask)
 
             self.frameNum = self.frameNum + 1
 
-    def inWavefront(self, tile):
+    def genflamefront(self):
+    # use generators for explosions and wavefronts
+        #print("Gen frame " + repr(self.frameNum))
+        if self.frameNum == 0:
+            self.explosionGens = {} # store explosion generators
+            self.explosionGens[self.firstMine] = explodeThenThrob()
+            self.wavefrontGens = {} # store wavefront generators
+        self.phasePerWave = len(self.waves)
+        wavePhase = self.frameNum % self.phasePerWave
+        LSExplosion.throbPhase = self.frameNum % len(self.bombThrobs) # all throb together
+
+        # run explosion animation generator on exploded mines
+        # exploded mines stay in explosionGens forever
+        for tile in self.explosionGens.keys():
+            mask = next(self.explosionGens[tile])
+            self.edit(tile[0],tile[1],mask)
+
+        # run wavefront passing tile animation generator
+        # mines in wavefront stay in wavefrontGens forever
+        for tile in self.wavefrontGens.keys():
+            # wavefront moves into tile in first phase
+            # no need to check for changes in other phases
+            if wavePhase == 0:
+                waveTuple = self.inWavefront(tile)
+                dist = waveTuple[0] # dist is first val in tuple
+                waveMine = waveTuple[1] # active mine is second val in tuple
+                if dist > 0:
+                    #print(repr(tile) + " is back in wavefront")
+                    # mine explodes when wavefront reaches it
+                    # SHOULD NOT HAPPEN HERE - remove when satisfied
+                    if tile in self.allMines:
+                        self.explosionStarts[tile] = self.frameNum # used by inWavefront()
+                        self.explosionGens[tile] = explodeThenThrob()
+                        mask = next(self.explosionGens[tile]) # first explosion animation
+                        print(repr(tile) + " exploded, but was already in wavefrontGens!")
+                    else:
+                        # tile in wavefront again, set new generator
+                        self.wavefrontGens[tile] = animateWavefront(dist, waveMine)
+
+            # generate wavefront animation each phase
+            mask = next(self.wavefrontGens[tile])
+            self.edit(tile[0],tile[1],mask)
+
+        # test undisturbed tiles to see if in wavefront
+        # wavefront moves into tile in first phase
+        # no need to check for changes in other phases
+        # tiles do not change until hit by a wavefront
+        if wavePhase == 0:
+            for tile in self.unblasted[:]: # use slice so remove during iterate works
+                waveTuple = self.inWavefront(tile)
+                dist = waveTuple[0] # dist is first val in tuple
+                waveMine = waveTuple[1] # active mine is second val in tuple
+                if dist > 0:
+                    self.unblasted.remove(tile) # remove disturbed tile
+                    # mine explodes when wavefront reaches it
+                    if tile in self.allMines:
+                        self.explosionStarts[tile] = self.frameNum # used by inWavefront()
+                        self.explosionGens[tile] = explodeThenThrob()
+                        mask = next(self.explosionGens[tile]) # first explosion animation
+                        #print(repr(tile) + " just exploded!")
+                    # tile is in wavefront
+                    else:
+                        self.wavefrontGens[tile] = animateWavefront(dist, waveMine)
+                        mask = next(self.wavefrontGens[tile]) # first wavefront animation
+                        #print(repr(tile) + " is in wavefront")
+                    self.edit(tile[0],tile[1],mask)
+
+        # genflamefront is done with this frame
+        self.frameNum = self.frameNum + 1
+
+    # returns distance from mine if in wavefront or -1 if not
+    # client indicates the minimum distance it cares about,
+    #   typically the max distance for closest-in wavefront
+    # returns tuple (distance, active mine)
+    def inWavefront(self, tile, distThresh=2):
+        waves = 0
+        closeDist = 999
+        closeMine = None
         for mine in self.explosionStarts.keys():
-            if self.distToMine(tile,mine) == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
+            dist = self.distToMine(tile,mine)
+            if dist == ((self.frameNum - self.explosionStarts[mine]) // self.phasePerWave):
                 #print(repr(tile) + " is in wavefront of " + repr(mine))
-                return True
-        return False
+                waves = waves + 1
+                if closeDist > dist:
+                    closeDist = dist
+                    closeMine = mine
+                # stop looking if explosion is as close as we care about
+                if dist <= distThresh:
+                    break
+        # return the closest wavefront we found
+        if waves > 0:
+            #if waves > 1: print(repr(tile) + " is in " + repr(waves) + " wavefronts")
+            return (closeDist, closeMine)
+        return (-1, closeMine)
 
     def distToMine(self, tile, mine):
         rowDist = abs(tile[0] - mine[0])
@@ -280,7 +482,7 @@ class LSExplosion:
             dist = rowDist + 1
             return dist
         dist = max(rowDist, colDist)
-        #print(repr(tile) + " to " + repr(mine) + " = " + repr(dist)) 
+        #print(repr(tile) + " to " + repr(mine) + " = " + repr(dist))
         return dist
 
 def main():
@@ -316,14 +518,21 @@ def main():
     for row in range(rows):
         for col in range(cols):
             frame.edit(row,col, LSExplosion.greenZero)
-    
+
+    starttime = time.time()
+
     #for frameNum in range(0,50):
     for frameNum in range(0,40):
         frame.flamefront()
         ourAnimation.addFrame(frame.get())
 
-    ourAnimation.deleteFrame(7) # Because I'm too lazy to do it right
-    ourAnimation.deleteFrame(7) # Yes, we need both of these
+    endtime = time.time()
+    gentime = endtime - starttime
+    # newflamefront, with no printing, 6x8 38 frames <= .09 sec
+    print("frame calcs took {:f} seconds".format(gentime))
+
+    #ourAnimation.deleteFrame(7) # Because I'm too lazy to do it right
+    #ourAnimation.deleteFrame(7) # Yes, we need both of these
 
     ourAnimation.play(d)
 

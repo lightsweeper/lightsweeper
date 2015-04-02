@@ -71,10 +71,11 @@ class LSAnimation:
         f = 0
         for frame in Frame:
             display.simulatedFloor.renderFrame(frame)
-            display.realFloor.renderFrame(frame)
+            #display.realFloor.renderFrame(frame)
             display.heartbeat()
             #d.pollSensors()
             time.sleep(.1)
+            time.sleep(.5)
             #input("Press return to step")
             f += 1
             if (time.time() - stime > 1):
