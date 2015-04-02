@@ -19,7 +19,7 @@ class Move():
 
 wait = time.sleep
 
-class LSEmulateFloor:
+class LSEmulateFloor(lsfloor.LSFloor):
     
     def heartbeat(self):
         """
@@ -69,10 +69,11 @@ class LSPygameFloor(LSEmulateFloor):
         #gets the images from the individual tiles, blits them in succession
         #print("heartbeat drawing floor")
         background = pygame.Surface(((self.cols*100), (self.rows*100)))
-   #     background.fill(Colors.BLACK)
+        background.fill(Colors.BLACK)
         self.screen.blit(background, (0,0))
         for r in range(self.rows):
             for c in range(self.cols):
+                print("update {:d}.{:d}".format(r,c))
                 tile = self.tiles[r][c]
                 image = tile.loadImage()
                 self.screen.blit(image, (100 * c, 100 * r))
@@ -80,7 +81,9 @@ class LSPygameFloor(LSEmulateFloor):
         super().heartbeat()
 
 
-    def pollEvents(self):
+ #   def pollEvents(self):
+    def pollSensors(self):
+        print("Pollevents")
         sensorsChanged = []
         reading = 1
         for event in pygame.event.get():

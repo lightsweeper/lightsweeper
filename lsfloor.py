@@ -44,7 +44,7 @@ class LSFloor():
         self.cols = conf.cols
 
         if self.conf.containsReal() is True:
-            self.__class__ = LSRealFloor        # Become a LSRealFloor object
+            self.register(LSRealFloor)        # Become a LSRealFloor object
             self._initRealFloor()
 
         self.eventCallback = eventCallback
@@ -90,13 +90,20 @@ class LSFloor():
         # Emulator is an emulator class
     def register(self, emulator):
         class CompositeClass(emulator, self.__class__):
-            def __init__(self):
-                pass
-        compositeFloor = CompositeClass()
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+        compositeFloor = CompositeClass(self.conf)
         print(self.__class__)
         self.__class__ = compositeFloor.__class__
+        self.__dict__ = compositeFloor.__dict__
         print(self.__class__)
-        self._initEmulator()
+        try:
+            self._initEmulator()
+        except AttributeError as e:
+            if self.conf.containsReal() is True:
+                print("Registering real floor...")
+            else:
+                print("Emulator has no initialization")
             
         print("Registering emulator")
 
@@ -263,7 +270,7 @@ class LSRealFloor(LSFloor):
             zeroTile.setShape(shape)
 
     def setAllSegments(self, segments):
-        super().setAllSegment(segments)
+        super().setAllSegments(segments)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
