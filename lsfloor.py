@@ -34,6 +34,7 @@ class LSFloor():
             cols (int):             The number of columns
             tileList (list):        A single array of LSTile objects
             tiles (list):           A double array of LSTile objects, e.g.: tiles[row][column]
+            displays (dict):        A dictionary of displays bound to this floor
 
     """
     def __init__(self, conf, eventCallback=None):
@@ -44,13 +45,15 @@ class LSFloor():
         self.cols = conf.cols
 
         if self.conf.containsReal() is True:
-            self.__class__ = LSRealFloor        # Become a LSRealFloor object
-            self._initRealFloor()
+  #          self.__class__ = LSRealFloor        # Become a LSRealFloor object
+            self.register(LSRealFloor)
+      #      self._initRealFloor()
 
         self.eventCallback = eventCallback
        # print("LSFloor event callback:", eventCallback)
         self.tiles = []
         self.tileList = []
+        self.displays = dict()
         self._virtualTileList = []
         
         # Initialize calibration map
@@ -84,21 +87,42 @@ class LSFloor():
     def _returnTile(self, row, col, port):
         if port == "virtual":
             return(LSTile(row, col))
-        else:
+        elif self.conf.containsReal() is True:
             return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
+        else:
+            print("Real tile requested, but we are not a real floor.")
+            return(LSTile(row, col))
             
-        # Emulator is an emulator class
-    def register(self, emulator):
-        class CompositeClass(emulator, self.__class__):
-            def __init__(self):
-                pass
-        compositeFloor = CompositeClass()
+        # Emulator is an LSEmulator class
+    def register(self, Emulator):
+        displayKey = len(self.displays)
+        newDisplay = Emulator(self.conf)
+        print("Registering new display")  #Debugging
+        self.displays[displayKey] = newDisplay
+
+        class MetaFloor(type):
+            def __new__(cls, name, bases, attributes):
+                for attrName, attrVal in attributes.iteritems():
+                    if isinstance(attrVal, types.FunctionType):
+                        attrs[attrName] = cls.mirrorDisplay(attrVal)
+                return super(MetaFloor, cls).__new__(cls, name, bases, attrs)
+
+            def mirrorDisplay (cls, method):
+                def callDisplay(*args, **kwargs):
+                    if method.__name__ not in "register":
+                        self.displays[displayKey](*args, **kwargs)
+                    return(method(*args, **kwargs))
+                return callDisplay
+
+        class CompositeClass(self.__class__):
+            __metaclass__ = MetaFloor
+
+        compositeFloor = CompositeClass(self.conf)
         print(self.__class__)
         self.__class__ = compositeFloor.__class__
-        print(self.__class__)
-        self._initEmulator()
-            
-        print("Registering emulator")
+        print(self.__class__)     
+
+
 
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
@@ -199,7 +223,7 @@ class LSFloor():
             col += 1
 
     def pollSensors(self):
-        pass
+        return(list())
 
     def heartbeat(self):
         pass
@@ -243,7 +267,8 @@ class LSRealFloor(LSFloor):
         This class extends LSFloor with methods specific to interacting with real Lightsweeper hardware
     """
 
-    def _initRealFloor(self):
+    def __init__(self, conf):
+        super().__init__(conf)
         # Initialize the serial ports
         self.realTiles = LSOpen()
         self.sharedSerials = dict()
