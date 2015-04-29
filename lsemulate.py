@@ -73,7 +73,6 @@ class LSPygameFloor(LSEmulateFloor):
         self.screen.blit(background, (0,0))
         for r in range(self.rows):
             for c in range(self.cols):
-                print("update {:d}.{:d}".format(r,c))
                 tile = self.tiles[r][c]
                 image = tile.loadImage()
                 self.screen.blit(image, (100 * c, 100 * r))
