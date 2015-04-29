@@ -20,10 +20,18 @@ class Move():
 wait = time.sleep
 
 class LSEmulateFloor(lsfloor.LSFloor):
+
+    def __init__(self, config):
+        """
+            This method gets called once when the emulator becomes initialized.
+            Use this to set up any environment your emulator needs to operate.
+            config is an LSFloorConfig object.
+        """
+        super().__init__(config)
     
     def heartbeat(self):
         """
-            This function gets called at the end of each heartbeat. Use this
+            This method gets called at the end of each heartbeat. Use this
             to update your display.
         """
         pass
@@ -54,7 +62,8 @@ def loadImage(self):
 # Tweaks LSFloor to update pygame emulator
 class LSPygameFloor(LSEmulateFloor):
     
-    def _initEmulator(self):
+    def __init__(self, conf):
+        super().__init__(conf)
         print("Using Pygame emulator...")
         width=self.cols*100
         height=self.rows*100
