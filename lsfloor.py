@@ -159,7 +159,10 @@ class LSFloor():
     def renderFrame(self, frame):
     # TODO: LSRealTile, should optimize tile calls
 
-        cols = frame.pop(0)
+        try:
+            cols = frame.pop(0)
+        except:
+            pass
         row = 0
         col = 0
         for _ in itertools.repeat(None, int(len(frame)/3)):
@@ -341,9 +344,10 @@ class LSRealFloor(LSFloor):
 #            s = ""
 
     def heartbeat(self):
-        self.latchAll()     # Should update floor with latched commands
+  #      self.latchAll()     # Should update floor with latched commands
                             # but firmware doesn't support? All set updates are
                             # currently instantaneous
+        pass
 
 
     def pollSensors(self, sensitivity=.95):
