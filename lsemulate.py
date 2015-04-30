@@ -3,6 +3,7 @@
 import lsfloor
 import Colors
 
+import sys
 import time
 import types
 
@@ -43,7 +44,7 @@ class LSPygameFloor(lsfloor.LSFloor):
         width=cols*100
         height=rows*100
         print("Making the screen ({:d}x{:d})".format(width,height))
-        pygame.init()
+        pygame.display.init()
         self.screen = pygame.display.set_mode((width, height))
         self.eventCallback = eventCallback
         for tile in self.tileList:
@@ -70,9 +71,9 @@ class LSPygameFloor(lsfloor.LSFloor):
         for event in pygame.event.get():
             rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
             if event.type == QUIT:
-                exit()
+                sys.exit()
             if event.type == KEYDOWN and event.key == K_ESCAPE:
-                exit()
+                sys.exit()
             if event.type == MOUSEBUTTONUP:
                 print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
             if event.type == MOUSEBUTTONDOWN:

@@ -1,10 +1,13 @@
 """ Contains wrappers for various audio backends """
 
 import atexit
+import os
 import random
 
+from LSFloorConfigure import userSelect
+
 class _lsAudio:
-    def __init__(self, initSound=True):
+    def __init__(self, initSound=True, useMidi=False):
         self.soundVolume = 1.0
         self.loadedSongs = []
         self.soundDictionary = {}
@@ -47,19 +50,48 @@ class _lsAudio:
 
 class _pygameAudio(_lsAudio):
     import pygame.midi
-    def __init__(self, initSound=True):
+    def __init__(self, initSound=True, useMidi = False):
+        self.useMidi = useMidi
         print("Using pygame for Audio...")
         self.SONG_END = pygame.USEREVENT + 1
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-        pygame.midi.init()
-        self.midiPort = pygame.midi.get_default_output_id()
-        self.midi_out = pygame.midi.Output(self.midiPort, 0)
+        if useMidi is True:
+            self._initMidi()
         atexit.register(self._cleanup)
         _lsAudio.__init__(self)
 
+    def _initMidi(self):
+        print("Initializing MIDI subsystem...")
+        pygame.midi.init()
+        
+        midiOpts = dict()
+        for i in range( pygame.midi.get_count() ):
+            r = pygame.midi.get_device_info(i)
+            (interface, name, inp, outp, opened) = r
+            if outp:
+                midiPortString = "{:s} ({:s})".format(name.decode("utf-8"), interface.decode("utf-8"))
+                midiOpts[midiPortString] = i
+        if len(midiOpts) == 0:
+            print("Cannot play midi, WEEPWEEPWEEPWEP")
+            sys.exit()
+        elif len(midiOpts) == 1:
+            midiPort = 0
+        else:
+            print("Multiple targets found:")
+            midiSelect = userSelect(list(midiOpts.keys()), "\nSelect a midi port:")
+            midiPort = midiOpts[midiSelect]
+        self.midi_out = pygame.midi.Output(midiPort, 0)
+
     def _cleanup(self):
-        del self.midi_out       # Prevents "Bad pointer" error on exit
-        pygame.midi.quit()
+        print("Cleaning up...")
+        if self.useMidi is True:
+         #   del self.midi_out       # Prevents "Bad pointer" error on exit
+            pygame.midi.quit()
+     #   pygame.mixer.quit()
+        os._exit(1)                 # Ugly, but pygame.mixer.quit() hangs debian (due to an SDL bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=708760)
+        mypid = os.getpid()
+        print(mypid)
+        
 
     def heartbeat(self):
         #for event in pygame.event.get():
