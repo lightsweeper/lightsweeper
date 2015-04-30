@@ -62,6 +62,7 @@ def animateWavefront(dist = 1, mine = (0,0)):
     idx = 0
     strongWave = dist<=2
     style = 0 # 1
+    #style = 1
     #style = (mine[0] + mine[1]) % 3 # comment out for single style wavefronts
     #print("  animateWavefront making style " + repr(style))
     while True:
@@ -69,6 +70,7 @@ def animateWavefront(dist = 1, mine = (0,0)):
             if strongWave:
                 if style == 0:
                     mask = LSExplosion.waves[idx]
+                    mask = LSExplosion.wiggleWaves[idx]
                 else:
                     mask = LSExplosion.waves2[idx]
             else:
@@ -125,14 +127,17 @@ class LSExplosion:
     # weaker wavefront farther from explosion
     zig = Shapes.SEG_B + Shapes.SEG_G + Shapes.SEG_E
     zag = Shapes.SEG_C + Shapes.SEG_G + Shapes.SEG_F
+    cyanZag = (0, zag, zag)
     cyanZig = (0, zig, zig)
     violetZag = (zag, 0, zag)
+    violetZig = (zig, 0, zig)
     weakWaves = (cyanDash, cyanZig, violetZag, violetDash) # pretty good
     yellowZig = (zig, zig, 0)
     yellowZag = (zag, zag, 0)
     weakWaves2 = (yellowDash, yellowZig, yellowZag, yellowDash)
     weakWaves2 = (yellowDash, yellowDash, yellowDash, yellowDash)
 
+    # strong wavefronts
     waves = (whiteZero, redZero, yellowZero)
     waves = (greenDash, greenZero, blueZero, blueDash)
     waves = (cyanDash, cyanZero, violetZero, violetDash) # pretty good
@@ -140,6 +145,13 @@ class LSExplosion:
     yellowDashX3 = (dashX3, dashX3, 0)
     waves2 = (yellowDash, yellowZero, yellowZero, yellowDash)
     waves2 = (yellowDash, yellowDashX3, yellowDashX3, yellowDash) # pretty good
+
+    #wiggleWaves = (cyanZag, cyanZig, violetZag, violetZig) # looks much like weakWaves
+    cyanFive = (0, Shapes.FIVE, Shapes.FIVE)
+    cyanTwo = (0, Shapes.TWO, Shapes.TWO)
+    violetFive = (Shapes.FIVE, 0, Shapes.FIVE)
+    violetTwo = (Shapes.TWO, 0, Shapes.TWO)
+    wiggleWaves = (cyanFive, cyanTwo, violetFive, violetTwo) # more flash than weakWaves
 
     #bomb0 = (Shapes.DASH, 0,0)
     #bomb1 = (Shapes.H, Shapes.DASH,0)
@@ -194,6 +206,8 @@ class LSExplosion:
 
     throbPhase = 0 # mines throb together after exploding - class vble for generators to use
 
+    version = 0;
+
     def __init__(self, rows, cols, mine, mines):
         self.rows = rows
         self.cols = cols
@@ -219,6 +233,11 @@ class LSExplosion:
         self.explosionStarts[mine] = self.frameNum
         self.unblasted.remove(mine) # remove known mine from undisturbed list
         self.wavefrontPassed = set() # track tiles passed by wavefront
+
+        LSExplosion.version = (LSExplosion.version + 1) % 3
+        #LSExplosion.version = 1
+        print("Animation version " + repr(LSExplosion.version))
+
 
     # Allows you to edit an existing frame structure, if no colormask is set
     # then the tile will keep its current colormask
@@ -257,11 +276,14 @@ class LSExplosion:
                           # subsequent tile's red, green, and blue colormasks
 
     def flamefront(self):
+
             # wavefront triggers mine explosions
-            #return self.newflamefront()
+            if LSExplosion.version == 1:
+                return self.newflamefront()
 
             # use generators for explosions and wavefronts
-            return self.genflamefront()
+            elif LSExplosion.version == 2:
+                return self.genflamefront()
 
             # original explosion animation
             if self.stage is 1:
