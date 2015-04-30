@@ -10,7 +10,7 @@ from AnimTestbed import AnimTestbed
 from WhackAMole import WhackAMole
 
 from lsgame import LSGameEngine
-from LSFloorConfigure import userSelect
+from lsconfig import userSelect
 
 
 availableGames = dict([

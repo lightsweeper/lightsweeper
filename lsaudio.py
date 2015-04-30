@@ -4,7 +4,7 @@ import atexit
 import os
 import random
 
-from LSFloorConfigure import userSelect
+from lsconfig import userSelect
 
 class _lsAudio:
     def __init__(self, initSound=True, useMidi=False):
@@ -83,7 +83,7 @@ class _pygameAudio(_lsAudio):
         self.midi_out = pygame.midi.Output(midiPort, 0)
 
     def _cleanup(self):
-        print("Cleaning up...")
+        print("\nCleaning up...")
         if self.useMidi is True:
          #   del self.midi_out       # Prevents "Bad pointer" error on exit
             pygame.midi.quit()

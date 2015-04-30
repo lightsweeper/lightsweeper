@@ -3,8 +3,8 @@
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from lstile import LSTile
-from LSFloorConfigure import LSFloorConfig
-from LSFloorConfigure import userSelect
+from lsconfig import LSFloorConfig
+from lsconfig import userSelect
 
 import Colors
 import Shapes
