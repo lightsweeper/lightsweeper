@@ -15,6 +15,8 @@ class FileExistsError(IOError):
         and overwrite=False
     """
     pass
+    
+class CannotParseError(IOError):
     """ Custom exception returned when the config file is present but cannot be parsed. """
     pass
 
