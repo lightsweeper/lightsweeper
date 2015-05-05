@@ -68,7 +68,7 @@ class LSPygameFloor(LSEmulateFloor):
         width=self.cols*100
         height=self.rows*100
         print("Making the screen ({:d}x{:d})".format(width,height))
-        pygame.init()
+        pygame.display.init()
         self.screen = pygame.display.set_mode((width, height))
         for tile in self.tileList:
             tile.loadImage = types.MethodType(loadImage, tile) # Bind the loadImage function to each tile

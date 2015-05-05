@@ -2,7 +2,7 @@
 
 from lsfloor import LSFloor
 from lsemulate import LSPygameFloor
-from LSFloorConfigure import LSFloorConfig
+from lsconfig import LSFloorConfig
 
 import Shapes
 import Colors

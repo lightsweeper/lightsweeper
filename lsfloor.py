@@ -5,12 +5,13 @@
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from lstile import LSTile
-from LSFloorConfigure import LSFloorConfig
-from LSFloorConfigure import userSelect
+from lsconfig import LSFloorConfig
+from lsconfig import userSelect
 
 import Colors
 import Shapes
 
+import atexit
 import sys
 import time
 import os
@@ -57,7 +58,7 @@ class LSFloor():
         self._virtualTileList = []
         
         # Initialize calibration map
-        self.calibrationMap = dict()
+        self.calibrationMap = conf.calibrationMap
         
         self._addressToRowColumn = {}
 
@@ -66,8 +67,8 @@ class LSFloor():
             for col in range(0, self.cols):
                 (port, address) = self.conf.board[row][col]
                 tile = self._returnTile(row, col, port)
-                tile.port = port                                # TODO: tile class should set this locally
-                self.calibrationMap[address] = [127,127]
+                tile.port = port                                # Todo, tile class should set this locally
+        #        self.calibrationMap[(address,port)] = [127,127]   # Remove me
                 self._addressToRowColumn[(address,port)] = (row, col)
                 tile.assignAddress(address)
                 tile.setColor(Colors.WHITE)
@@ -293,6 +294,20 @@ class LSRealFloor(LSFloor):
         # Initialize the serial ports
         self.realTiles = LSOpen()
         self.sharedSerials = dict()
+        
+        # Save changes to self.config (namely the most recent calibrationMap)
+        atexit.register(self._saveState)
+        
+        # Call parent init
+        LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
+        
+    def _returnTile(self, row, col, port):
+        return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
+        
+    def _saveState(self):
+        print("Saving calibration state.")
+        self.conf.calibrationMap = self.calibrationMap
+        self.conf.writeConfig(overwrite=True)
 
     def setAllColor(self, color):
         super().setAllColor(color)
@@ -344,7 +359,7 @@ class LSRealFloor(LSFloor):
             #currentTime = time.time()
             reading = tile.sensorStatus()
             #sensorPoll = sensorPoll + time.time() - currentTime
-            cMap = self.calibrationMap[tile.address]
+            cMap = self.calibrationMap[(tile.address,tile.port)]
             lowest = cMap[0]
             highest = cMap[1]
             if reading < lowest:
@@ -353,7 +368,7 @@ class LSRealFloor(LSFloor):
             elif reading > highest:
                 highest = reading
                 cMap[1] = highest
-            self.calibrationMap[tile.address] = cMap
+            self.calibrationMap[(tile.address,tile.port)] = cMap
             
             if reading < (((highest-lowest) * sensitivity) + lowest) and lowest < 127:
                 if tile.active <= 0:
