@@ -11,7 +11,7 @@ def main():
 
     print("\nLightsweeper Configuration utility")
 
-    config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
+    config = pickFile("\nEnter the name of the configuration you would like to edit or leave blank to create a new file: ")
  #   config = None
 
     if config is None:                              # Start a new configuration
