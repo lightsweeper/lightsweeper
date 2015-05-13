@@ -12,6 +12,8 @@ import Colors
 import Shapes
 
 import atexit
+import copy
+import inspect
 import sys
 import time
 import os
@@ -35,7 +37,7 @@ class LSFloor():
             cols (int):             The number of columns
             tileList (list):        A single array of LSTile objects
             tiles (list):           A double array of LSTile objects, e.g.: tiles[row][column]
-            displays (dict):        A dictionary of displays bound to this floor
+            displays (list):        A list of displays bound to this floor
 
     """
     def __init__(self, conf, eventCallback=None):
@@ -46,16 +48,15 @@ class LSFloor():
         self.cols = conf.cols
 
         if self.conf.containsReal() is True:
-  #          self.__class__ = LSRealFloor        # Become a LSRealFloor object
             self.register(LSRealFloor)
-      #      self._initRealFloor()
 
         self.eventCallback = eventCallback
        # print("LSFloor event callback:", eventCallback)
         self.tiles = []
         self.tileList = []
-        self.displays = dict()
+        self.displays = list()
         self._virtualTileList = []
+
         
         # Initialize calibration map
         self.calibrationMap = conf.calibrationMap
@@ -68,7 +69,6 @@ class LSFloor():
                 (port, address) = self.conf.board[row][col]
                 tile = self._returnTile(row, col, port)
                 tile.port = port                                # Todo, tile class should set this locally
-        #        self.calibrationMap[(address,port)] = [127,127]   # Remove me
                 self._addressToRowColumn[(address,port)] = (row, col)
                 tile.assignAddress(address)
                 tile.setColor(Colors.WHITE)
@@ -79,11 +79,11 @@ class LSFloor():
                 self.tileList.append(tile)
                 if port == "virtual":
                     self._virtualTileList.append(tile)
-        if self.conf.cells is 0:                                # TODO: Remove this silly hack in favor of more robust checking
-            print("Loaded {:d} virtual rows and {:d} virtual columns".format(self.rows, self.cols))
-        else:
-            print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.conf.cells))
         self.clearBoard()
+
+        # Setup root display
+        self.displays.append(copy.deepcopy(self))
+        self._patchFrom(self)
     
     def _returnTile(self, row, col, port):
         if port == "virtual":
@@ -96,54 +96,28 @@ class LSFloor():
             
         # Emulator is an LSEmulator class
     def register(self, Emulator):
-        displayKey = len(self.displays)
-        newDisplay = Emulator(self.conf)
-        print("Registering new display")  #Debugging
-        self.displays[displayKey] = newDisplay
+        print("Registering: " + Emulator.__name__)
+        baseFloor = MetaFloor(self.displays[0])
+        newFloor = Emulator(self.conf)
+        baseFloor.__class__ = newFloor.__class__
+        baseFloor.init()
+        self.displays.append(baseFloor)
+        self._patchFrom(baseFloor)
 
-        class MetaFloor(type):
-            def __new__(cls, name, bases, attributes):
-                for attrName, attrVal in attributes.iteritems():
-                    if isinstance(attrVal, types.FunctionType):
-                        attrs[attrName] = cls.mirrorDisplay(attrVal)
-                return super(MetaFloor, cls).__new__(cls, name, bases, attrs)
-
-            def mirrorDisplay (cls, method):
-                def callDisplay(*args, **kwargs):
-                    if method.__name__ not in "register":
-                        self.displays[displayKey](*args, **kwargs)
-                    return(method(*args, **kwargs))
-                return callDisplay
-
-        class CompositeClass(self.__class__):
-            __metaclass__ = MetaFloor
-
-        compositeFloor = CompositeClass(self.conf)
-        print(self.__class__)
-        self.__class__ = compositeFloor.__class__
-        print(self.__class__)     
-
-
-
-        # Emulator is an emulator class
-#    def register(self, emulator):
-#        class CompositeClass(emulator, self.__class__):
-#            def __init__(self, *args, **kwargs):
-#                super().__init__(*args, **kwargs)
-#        compositeFloor = CompositeClass(self.conf)
-#        print(self.__class__)
-#        self.__class__ = compositeFloor.__class__
-#        self.__dict__ = compositeFloor.__dict__
-#        print(self.__class__)
-#        try:
-#            self._initEmulator()
-#        except AttributeError as e:
-#            if self.conf.containsReal() is True:
-#                print("Registering real floor...")
-#            else:
-#                print("Emulator has no initialization")
-#            
-        print("Registering emulator")
+    def _patchFrom(self, target):
+        def makeFunc (method):
+            def funcProxy(*args, **kwargs):
+                for floor in self.displays:
+                    try:
+                        func = getattr(floor, method.__name__)
+                        func(*args, **kwargs)
+                    except AttributeError as e:
+                        print("Warning: {:s}()-> Method not supported by {:s}".format(method.__name__, repr(floor)))
+                        print(e) # Debugging
+            return funcProxy
+        for name, method in inspect.getmembers(target, callable):
+            if name is not "register" and name.startswith("_") is False:
+                setattr(self, name, makeFunc(method))
 
 
     def handleTileStepEvent(self, row, col, val):
@@ -289,17 +263,13 @@ class LSRealFloor(LSFloor):
         This class extends LSFloor with methods specific to interacting with real Lightsweeper hardware
     """
 
-    def __init__(self, conf):
-        super().__init__(conf)
+    def init(self):
         # Initialize the serial ports
         self.realTiles = LSOpen()
         self.sharedSerials = dict()
         
         # Save changes to self.config (namely the most recent calibrationMap)
         atexit.register(self._saveState)
-        
-        # Call parent init
-        LSFloor.__init__(self, rows=rows, cols=cols, conf=conf, eventCallback=eventCallback)
         
     def _returnTile(self, row, col, port):
         return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
@@ -388,6 +358,13 @@ class LSRealFloor(LSFloor):
         return sensorsChanged
             
         #print("sensor polls took " + str(sensorPoll) + "ms")
+
+class MetaFloor(LSFloor):
+    def __init__(self, thisFloor):
+        self.__class__ = type(thisFloor.__class__.__name__,
+                              (self.__class__, thisFloor.__class__),
+                              {})
+        self.__dict__ = thisFloor.__dict__
 
 
 def main():

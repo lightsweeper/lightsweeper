@@ -113,10 +113,11 @@ class LSFloorConfig:
             self.fileName = fileName
             try:
                 self._parseConfig(self.config)
-                return True
             except ValueError:          # Remove from future version
                 print("\nYou are attempting to parse an old-style floor file. Please delete it and create a new copy by running LSFloorConfigure.py")
                 raise CannotParseError(fileName + " is an old-style floor file.")
+            print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.cells))
+            return True
 
     def containsVirtual(self):
         """

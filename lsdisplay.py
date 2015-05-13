@@ -83,7 +83,6 @@ class LSDisplay():
     def heartbeat(self):
         #print("Display heartbeat")
         self.floor.heartbeat()
-        #check pygame for position and click ness of mouse
         pass
 
     def handleTileStepEvent(self, row, col, val):

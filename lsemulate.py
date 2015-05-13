@@ -62,9 +62,7 @@ def loadImage(self):
 # Tweaks LSFloor to update pygame emulator
 class LSPygameFloor(LSEmulateFloor):
     
-    def __init__(self, conf):
-        super().__init__(conf)
-        print("Using Pygame emulator...")
+    def init(self):
         width=self.cols*100
         height=self.rows*100
         print("Making the screen ({:d}x{:d})".format(width,height))
@@ -86,7 +84,6 @@ class LSPygameFloor(LSEmulateFloor):
                 image = tile.loadImage()
                 self.screen.blit(image, (100 * c, 100 * r))
         pygame.display.update()
-        super().heartbeat()
 
 
  #   def pollEvents(self):
