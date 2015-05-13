@@ -6,8 +6,8 @@ import time
 
 from lsdisplay import LSDisplay
 from lsaudio import LSAudio
-from LSFloorConfigure import LSFloorConfig
-from LSFloorConfigure import userSelect
+from lsconfig import LSFloorConfig
+from lsconfig import userSelect
 
 #has a list of changes to the board
 #class Frame():
