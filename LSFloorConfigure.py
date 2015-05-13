@@ -4,12 +4,14 @@ from lsconfig import LSFloorConfig
 from lsconfig import userSelect
 from lsconfig import interactiveConfig
 from lsconfig import pickFile
+from lsconfig import FileExistsError
+from lsconfig import yesNO
 
 def main():
 
     print("\nLightsweeper Configuration utility")
 
-    config = pickFile("\nEnter the name of the configuration you would like to edit [NEW]: ")
+    config = pickFile("\nEnter the name of the configuration you would like to edit or leave blank to create a new file: ")
  #   config = None
 
     if config is None:                              # Start a new configuration
@@ -23,16 +25,27 @@ def main():
         config.printConfig()
 
         print("\nBut the editing code is not here yet. Sorry.")
+        exit()
 
 
     print("\nThis is the configuration: ")
     config.printConfig()
 
-    fileName = input("\nPlease enter a filename for this configuration (or blank to not save): ")
-    if fileName == "":
-        print("OK, not saving this configuration")
+    if config.fileName is None:
+        fileName = input("\nPlease enter a filename for this configuration (or blank to not save): ")
     else:
-        config.writeConfig(fileName)
+        fileName = config.fileName
+    if fileName == "":
+        print("OK, not saving this configuration.")
+    else:
+        try:
+            config.writeConfig(fileName)
+        except FileExistsError:
+            if yesNO("{:s} already exists, would you like to overwrite it?".format(config.fileName)) is True:
+                config.writeConfig(fileName, overwrite=True)
+            else:
+                print("OK, not saving any changes to this configuration.")
+            
 
     input("\nDone - Press the Enter key to exit") # keeps double-click window open
 

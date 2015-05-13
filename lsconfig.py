@@ -242,7 +242,7 @@ class LSFloorConfig:
             
     def _storeCalibration(self):
         for i, (row, col, port, address, cal) in enumerate(self.config):
-            self.config[i] = (row, col, port, address, self.calibrationMap[(address,port)])
+            self.config[i] = (row, col, port, address, self.calibrationMap[address,port])
 
 def userSelect(selectionList, message="Select an option from the list:"):
     def checkInput(selection):
