@@ -11,6 +11,7 @@ from lsconfig import userSelect
 import Colors
 import Shapes
 
+from collections import defaultdict
 import atexit
 import copy
 import inspect
@@ -21,6 +22,15 @@ import random
 
 wait=time.sleep
 
+def examine(floor, attr=None):
+    if attr is None:
+        for name in inspect.getmembers(floor):
+            print(str(name))
+    else:
+        print(getattr(floor, attr))
+    a = input()
+    print("============")
+
 class Move():
     def __init__(self, row, col, val):
         self.row = row
@@ -29,7 +39,8 @@ class Move():
 
 class LSFloor():
     """
-        This class describes an abstract lightsweeper floor.
+        This class describes an abstract lightsweeper floor. It is inherited by both LSRealFloor as well as Lightsweeper
+        emulators via LSEmulateFloor.
 
         Attributes:
             conf (LSFloorConfig):   An LSFloorConfig object containing the floor's configuration
@@ -47,9 +58,6 @@ class LSFloor():
         self.rows = conf.rows
         self.cols = conf.cols
 
-        if self.conf.containsReal() is True:
-            self.register(LSRealFloor)
-
         self.eventCallback = eventCallback
        # print("LSFloor event callback:", eventCallback)
         self.tiles = []
@@ -61,48 +69,67 @@ class LSFloor():
         # Initialize calibration map
         self.calibrationMap = conf.calibrationMap
         
-        self._addressToRowColumn = {}
+        self._addTilesFromConf()
 
-        for row in range(0,self.rows):
+        
+        # Setup root display
+        self._nakedDisplay = copy.deepcopy(self)
+
+        # Become a dispatcher
+        self._patchFrom(self)
+
+        if self.conf.containsReal() is True:
+            self.register(LSRealFloor)
+
+ #   def __deepcopy__(self, memo=None, _nil=[]):
+ #       print("Performing deep copy of " + repr(self))
+ #       result = copy.copy(self)
+ #       for key, val in self.__dict__.items():
+ #           try:
+ #               setattr(result, str(key), copy.deepcopy(getattr(self, str(key))))
+ #               print("Set for " + str(key))
+ #           except Exception as e:
+ #               print(e)
+ #       return(result)
+        
+    def _addTilesFromConf(self):
+        
+        self._addressToRowColumn = {}
+        
+        for (row, col, port, address, calibration) in self.conf.config:
+            tile = self._returnTile(row, col, port)
+            self._addressToRowColumn[(address,port)] = (row, col)
+            tile.assignAddress(address)
+            tile.active=0
+            wait(.05)
+            self.tileList.append(tile)
+            if port == "virtual":
+                self._virtualTileList.append(tile)
+        self.buildTileIndex(self.tileList)
+        self.clearAll()
+        
+    def _returnTile(self, row, col, port):
+        return(LSTile(row, col))
+                    
+    def buildTileIndex(self, tileList):
+        tiles = defaultdict(lambda: defaultdict(int))
+        self.tiles = []
+        for tile in tileList:
+            tiles[tile.row][tile.col] = tile
+        for row in range(0, self.rows):
             self.tiles.append([])
             for col in range(0, self.cols):
-                (port, address) = self.conf.board[row][col]
-                tile = self._returnTile(row, col, port)
-                tile.port = port                                # Todo, tile class should set this locally
-                self._addressToRowColumn[(address,port)] = (row, col)
-                tile.assignAddress(address)
-                tile.setColor(Colors.WHITE)
-                tile.setShape(Shapes.ZERO)
-                tile.active=0
-                wait(.05)
-                self.tiles[row].append(tile)
-                self.tileList.append(tile)
-                if port == "virtual":
-                    self._virtualTileList.append(tile)
-        self.clearBoard()
-
-        # Setup root display
-        self.displays.append(copy.deepcopy(self))
-        self._patchFrom(self)
-    
-    def _returnTile(self, row, col, port):
-        if port == "virtual":
-            return(LSTile(row, col))
-        elif self.conf.containsReal() is True:
-            return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
-        else:
-            print("Real tile requested, but we are not a real floor.")
-            return(LSTile(row, col))
+                self.tiles[row].append(tiles[row][col])
             
         # Emulator is an LSEmulator class
     def register(self, Emulator):
         print("Registering: " + Emulator.__name__)
-        baseFloor = MetaFloor(self.displays[0])
-        newFloor = Emulator(self.conf)
+        baseFloor = MetaFloor(copy.deepcopy(self._nakedDisplay))
+        newFloor = object.__new__(Emulator)  # An instantiation of Emulator without calling __init__
         baseFloor.__class__ = newFloor.__class__
+        baseFloor._root = self
         baseFloor.init()
         self.displays.append(baseFloor)
-        self._patchFrom(baseFloor)
 
     def _patchFrom(self, target):
         def makeFunc (method):
@@ -141,12 +168,17 @@ class LSFloor():
         tile.setShape(shape)
 
     def setAllColor(self, color):
-        for tile in self._virtualTileList:
+        """
+            Sets all tiles to color (they will retain their current shape)
+        """
+        for tile in self.tileList:
             self.setColor(tile.row, tile.col, color)
 
-
     def setAllShape(self, shape):
-        for tile in self._virtualTileList:
+        """
+            Sets all tiles to shape (they will retain their current color)
+        """
+        for tile in self.tileList:
             self.setShape(tile.row, tile.col, shape)
 
 # TODO
@@ -173,7 +205,7 @@ class LSFloor():
             tile.set(shape, color)
 
     def setAll(self, shape, color):
-        for tile in self._virtualTileList:
+        for tile in self.tileList:
             self.set(tile.row, tile.col, shape, color)
 
     #segments is a list of seven colors in A,...,G order of segments
@@ -182,7 +214,7 @@ class LSFloor():
         tile.setSegments(segments)
 
     def setAllSegments(self, segments):
-        for tile in self._virtualTileList:
+        for tile in self.tileList:
             self.setSegments(tile.row, tile.col, segments)
 
     def blank(self, row, col):
@@ -192,13 +224,12 @@ class LSFloor():
         tile = self.tiles[row][col]
         tile.blank()
 
-    def clearBoard(self):
+    def clearAll(self):
         """
             Blanks the whole floor.
         """
-        for tile in self._virtualTileList:
+        for tile in self.tileList:
             tile.blank()
-        return
 
     def renderFrame(self, frame):
     # TODO: LSRealTile, should optimize tile calls
@@ -264,44 +295,45 @@ class LSRealFloor(LSFloor):
     """
 
     def init(self):
+
         # Initialize the serial ports
         self.realTiles = LSOpen()
         self.sharedSerials = dict()
+        self._addTilesFromConf()
+     #   self._addRealTiles()
         
         # Save changes to self.config (namely the most recent calibrationMap)
         atexit.register(self._saveState)
+
+    def _saveState(self):
+        self.conf.calibrationMap = self.calibrationMap
+        self.conf.writeConfig(overwrite=True, message="Saving calibration map...")
         
     def _returnTile(self, row, col, port):
-        return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
-        
-    def _saveState(self):
-        print("Saving calibration state.")
-        self.conf.calibrationMap = self.calibrationMap
-        self.conf.writeConfig(overwrite=True)
+        if port == "virtual":
+            return(LSTile(row, col))
+        else:
+            return(LSRealTile(self.realTiles.sharedSerials[port], row, col))
 
     def setAllColor(self, color):
-        super().setAllColor(color)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
 
     def setAllShape(self, shape):
-        super().setAllShape(shape)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
 
     def setAllSegments(self, segments):
-        super().setAllSegments(segments)
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setSegments(segments)
 
-    def clearBoard(self):
-        super().clearBoard()
+    def clearAll(self):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
@@ -317,45 +349,45 @@ class LSRealFloor(LSFloor):
             zeroTile.assignAddress(0)
             zeroTile.latch()
 
-    def pollSensors(self, sensitivity=.95):
-        try:
-            sensorsChanged = self.pollEvents()
-        except Exception as e:
-            print(e)
-            sensorsChanged = []
-        tiles = self.tileList
-        #sensorPoll = 0
-        for tile in tiles:
-            #currentTime = time.time()
-            reading = tile.sensorStatus()
-            #sensorPoll = sensorPoll + time.time() - currentTime
-            cMap = self.calibrationMap[(tile.address,tile.port)]
-            lowest = cMap[0]
-            highest = cMap[1]
-            if reading < lowest:
-                lowest = reading
-                cMap[0] = lowest
-            elif reading > highest:
-                highest = reading
-                cMap[1] = highest
-            self.calibrationMap[(tile.address,tile.port)] = cMap
-            
-            if reading < (((highest-lowest) * sensitivity) + lowest) and lowest < 127:
-                if tile.active <= 0:
-                    tile.active = 1
-                    print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
-                    rowCol = self._addressToRowColumn[(tile.address, tile.port)]
-                    move = Move(rowCol[0], rowCol[1], reading)
-                    sensorsChanged.append(move)
-                    self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
-                else:
-                    tile.active += 1
-                    print("    {:d} -> {:d}                        ".format(tile.address, reading), end="\r")
-            elif reading is highest:
-                if tile.active > 0:
-                    tile.active = 0
-                    print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
-        return sensorsChanged
+#    def pollSensors(self, sensitivity=.95):
+#        try:
+#            sensorsChanged = self.pollEvents()
+#        except Exception as e:
+#            print(e)
+#            sensorsChanged = []
+#        tiles = self.tileList
+#        #sensorPoll = 0
+#        for tile in tiles:
+#            #currentTime = time.time()
+#            reading = tile.sensorStatus()
+#            #sensorPoll = sensorPoll + time.time() - currentTime
+#            cMap = self.calibrationMap[(tile.address,tile.port)]
+#            lowest = cMap[0]
+#            highest = cMap[1]
+#            if reading < lowest:
+#                lowest = reading
+#                cMap[0] = lowest
+#            elif reading > highest:
+#                highest = reading
+#                cMap[1] = highest
+#            self.calibrationMap[(tile.address,tile.port)] = cMap
+#            
+#            if reading < (((highest-lowest) * sensitivity) + lowest) and lowest < 127:
+#                if tile.active <= 0:
+#                    tile.active = 1
+#                    print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
+#                    rowCol = self._addressToRowColumn[(tile.address, tile.port)]
+#                    move = Move(rowCol[0], rowCol[1], reading)
+#                    sensorsChanged.append(move)
+#                    self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
+#                else:
+#                    tile.active += 1
+#                    print("    {:d} -> {:d}                        ".format(tile.address, reading), end="\r")
+#            elif reading is highest:
+#                if tile.active > 0:
+#                    tile.active = 0
+#                    print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
+#        return sensorsChanged
             
         #print("sensor polls took " + str(sensorPoll) + "ms")
 

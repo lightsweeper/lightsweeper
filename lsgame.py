@@ -122,8 +122,10 @@ class LSGameEngine():
         self.frames += 1
         startEnterFrame = time.time()
         if not self.game.ended:
-            sensorsChanged = self.pollSensors()
-            self.game.heartbeat(sensorsChanged)
+            DUMMYDATA = [Move(0,0,10)]
+            sensorsChanged = DUMMYDATA
+           # sensorsChanged = self.pollSensors
+            self.game.heartbeat(sensorsChanged)  # TODO: Tie this into new sensor polling
             self.display.heartbeat()
             self.audio.heartbeat()
         else:

@@ -21,13 +21,12 @@ wait = time.sleep
 
 class LSEmulateFloor(lsfloor.LSFloor):
 
-    def __init__(self, config):
+    def init(self):
         """
             This method gets called once when the emulator becomes initialized.
             Use this to set up any environment your emulator needs to operate.
-            config is an LSFloorConfig object.
         """
-        super().__init__(config)
+        pass
     
     def heartbeat(self):
         """
@@ -87,24 +86,24 @@ class LSPygameFloor(LSEmulateFloor):
 
 
  #   def pollEvents(self):
-    def pollSensors(self):
-        print("Pollevents")
-        sensorsChanged = []
-        reading = 1
-        for event in pygame.event.get():
-            rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
-            if event.type == QUIT:
-                sys.exit()
-            if event.type == KEYDOWN and event.key == K_ESCAPE:
-                sys.exit()
-            if event.type == MOUSEBUTTONUP:
-                print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
-            if event.type == MOUSEBUTTONDOWN:
-                print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
-                move = Move(rowCol[0], rowCol[1], reading)
-                sensorsChanged.append(move)
-                self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
-        return sensorsChanged
+ #   def pollSensors(self):
+ #       print("Pollevents")
+ #       sensorsChanged = []
+ #       reading = 1
+ #       for event in pygame.event.get():
+ #           rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
+ #           if event.type == QUIT:
+ #               sys.exit()
+ #           if event.type == KEYDOWN and event.key == K_ESCAPE:
+ #               sys.exit()
+ #           if event.type == MOUSEBUTTONUP:
+ #               print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+ #           if event.type == MOUSEBUTTONDOWN:
+ #               print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+ #               move = Move(rowCol[0], rowCol[1], reading)
+ #               sensorsChanged.append(move)
+ #               self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
+ #       return sensorsChanged
 
     def _whereDidIPutMyMouse(self, mousePointer):
         (x, y) = mousePointer

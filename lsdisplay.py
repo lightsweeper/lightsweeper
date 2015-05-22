@@ -31,27 +31,12 @@ class LSDisplay():
                 conf.makeVirtual()
 
         self.floor = LSFloor(conf, eventCallback = eventCallback)
-        self.floor.register(LSPygameFloor)
-
-#        if conf.containsVirtual() is True:
-#            realFloor = False
+        self.floor.register(LSPygameFloor)      # For now it's the only emulator we have
 
         self.rows = conf.rows
         self.cols = conf.cols
         self.eventCallback = eventCallback
         self.lastTileSetTimestamp = time.time()
-#        if realFloor:
-#            print("Display instantiating real floor")
-#            self.realFloor = LSRealFloor(conf=conf, eventCallback=self.handleTileStepEvent)
-#        else:
-#            self.realFloor = None
-
-#        self.console = console
-#        if simulatedFloor:
-#           print("Display instantiating simulated floor")
-#            self.simulatedFloor = EmulateFloor(self.rows, self.cols, eventCallback = eventCallback)
-#        else:
-#            self.simulatedFloor = None
 
         if initScreen is True:
             self.splash()
@@ -77,7 +62,7 @@ class LSDisplay():
             self.set(1, 6, Shapes.E, Colors.MAGENTA)
             self.set(1, 7, Shapes.R, Colors.WHITE)
         else:
-            self.setAllColor(Colors.RANDOM())
+            self.setAll(Shapes.EIGHT, Colors.RANDOM())
 
     #this is to handle display functions only
     def heartbeat(self):
@@ -168,7 +153,7 @@ class LSDisplay():
         self.floor.blank(row, col)
 
     def clearAll(self):
-        self.floor.clearBoard()
+        self.floor.clearAll()
 
     def setFrame(self, frame):
         for row in range(self.rows):

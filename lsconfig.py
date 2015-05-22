@@ -151,7 +151,7 @@ class LSFloorConfig:
             print(repr(cell))
 
 
-    def writeConfig(self, fileName = None, overwrite=False):
+    def writeConfig(self, fileName = None, overwrite=False, message=None):
         """
             This function attempts to write the current configuration to disk
 
@@ -171,10 +171,12 @@ class LSFloorConfig:
             self._storeCalibration()
         with open(self.fileName, 'w') as configFile:
             json.dump(self.config, configFile, sort_keys = True, indent = 4,)
-        if overwrite is True:
-            print("\nOverwriting {:s}...".format(self.fileName))
-        else:
-            print("\nYour configuration was saved in {:s}".format(self.fileName))
+        if message is None:
+            if overwrite is True:
+                message = "Overwriting {:s}...".format(self.fileName)
+            else:
+                message = "Your configuration was saved in {:s}".format(self.fileName)
+        print(message)
 
 
     def selectConfig(self):
