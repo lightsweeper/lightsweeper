@@ -80,6 +80,7 @@ class LSTile():
         self.segments["e"] = c[4]
         self.segments["f"] = c[5]
         self.segments["g"] = c[6]
+        self.shape = rgb[0]|rgb[1]|rgb[2]
         
 
     def setTransition(self, transition):

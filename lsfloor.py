@@ -320,24 +320,34 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setColor(color)
+        for tile in self.tileList:
+            tile.color = color
 
     def setAllShape(self, shape):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setShape(shape)
+        for tile in self.tileList:
+            tile.shape = shape
 
     def setAllSegments(self, segments):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setSegments(segments)
+        print(segments[0]|segments[1]|segments[2])
+        for tile in self.tileList:
+            tile.shape = segments[0] | segments[1] | segments[2]
 
     def clearAll(self):
         for port in self.realTiles.sharedSerials.keys():
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.blank()
+        for tile in self.tileList:
+            tile.shape = 0
+            tile.color = 0
 
     def latch(self, row, col):
         tile = self.tiles[row][col]         # TODO: Check if tile is virtual
