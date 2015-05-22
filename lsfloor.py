@@ -336,9 +336,8 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.setSegments(segments)
-        print(segments[0]|segments[1]|segments[2])
         for tile in self.tileList:
-            tile.shape = segments[0] | segments[1] | segments[2]
+            tile.shape = segments[0]|segments[1]|segments[2]
 
     def clearAll(self):
         for port in self.realTiles.sharedSerials.keys():
