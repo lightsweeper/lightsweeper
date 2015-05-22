@@ -3,6 +3,7 @@
 import lsfloor
 import Colors
 
+import os
 import sys
 import time
 import types
@@ -10,14 +11,8 @@ import types
 import pygame
 from pygame.locals import *
 
-
-class Move():
-    def __init__(self, row, col, val):
-        self.row = row
-        self.col = col
-        self.val = val
-
 wait = time.sleep
+
 
 class LSEmulateFloor(lsfloor.LSFloor):
 
@@ -37,12 +32,11 @@ class LSEmulateFloor(lsfloor.LSFloor):
         
     def pollEvents(self):
         """
-            This method gets called before every heartbeat. Trigger your touch
-            events here. Should return a list of tiles that were activated.
+            This method should be a generator that yields tuples of the form
+            (row, col, sensor-reading)
         """
         pass
-    
-    
+
 
 def loadImage(self):
     image = pygame.image.load("images/segments.png")
@@ -70,7 +64,6 @@ class LSPygameFloor(LSEmulateFloor):
         for tile in self.tileList:
             tile.loadImage = types.MethodType(loadImage, tile) # Bind the loadImage function to each tile
 
-
     def heartbeat(self):
         #gets the images from the individual tiles, blits them in succession
         #print("heartbeat drawing floor")
@@ -84,26 +77,21 @@ class LSPygameFloor(LSEmulateFloor):
                 self.screen.blit(image, (100 * c, 100 * r))
         pygame.display.update()
 
-
- #   def pollEvents(self):
- #   def pollSensors(self):
- #       print("Pollevents")
- #       sensorsChanged = []
- #       reading = 1
- #       for event in pygame.event.get():
- #           rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
- #           if event.type == QUIT:
- #               sys.exit()
- #           if event.type == KEYDOWN and event.key == K_ESCAPE:
- #               sys.exit()
- #           if event.type == MOUSEBUTTONUP:
- #               print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
- #           if event.type == MOUSEBUTTONDOWN:
- #               print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
- #               move = Move(rowCol[0], rowCol[1], reading)
- #               sensorsChanged.append(move)
- #               self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
- #       return sensorsChanged
+    def pollEvents(self):
+        while True:
+            for event in pygame.event.get():
+                rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
+                if event.type == QUIT:
+                    os._exit(0)
+                if event.type == KEYDOWN and event.key == K_ESCAPE:
+                    os._exit(0)
+                if event.type == MOUSEBUTTONUP:
+                 #   print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+                    yield((lastClick[0], lastClick[1], 255))
+                if event.type == MOUSEBUTTONDOWN:
+                 #   print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+                    lastClick = rowCol
+                    yield((rowCol[0], rowCol[1], 1))
 
     def _whereDidIPutMyMouse(self, mousePointer):
         (x, y) = mousePointer

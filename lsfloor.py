@@ -16,15 +16,17 @@ import atexit
 import copy
 import inspect
 import sys
+import threading
 import time
 import os
 import random
 
 wait=time.sleep
 
-def examine(floor, attr=None):
+def examine(instance, attr=None):
+    # A handy tool for looking inside instances
     if attr is None:
-        for name in inspect.getmembers(floor):
+        for name in inspect.getmembers(instance):
             print(str(name))
     else:
         print(getattr(floor, attr))
@@ -81,17 +83,6 @@ class LSFloor():
         if self.conf.containsReal() is True:
             self.register(LSRealFloor)
 
- #   def __deepcopy__(self, memo=None, _nil=[]):
- #       print("Performing deep copy of " + repr(self))
- #       result = copy.copy(self)
- #       for key, val in self.__dict__.items():
- #           try:
- #               setattr(result, str(key), copy.deepcopy(getattr(self, str(key))))
- #               print("Set for " + str(key))
- #           except Exception as e:
- #               print(e)
- #       return(result)
-        
     def _addTilesFromConf(self):
         
         self._addressToRowColumn = {}
@@ -107,29 +98,9 @@ class LSFloor():
                 self._virtualTileList.append(tile)
         self.buildTileIndex(self.tileList)
         self.clearAll()
-        
+
     def _returnTile(self, row, col, port):
         return(LSTile(row, col))
-                    
-    def buildTileIndex(self, tileList):
-        tiles = defaultdict(lambda: defaultdict(int))
-        self.tiles = []
-        for tile in tileList:
-            tiles[tile.row][tile.col] = tile
-        for row in range(0, self.rows):
-            self.tiles.append([])
-            for col in range(0, self.cols):
-                self.tiles[row].append(tiles[row][col])
-            
-        # Emulator is an LSEmulator class
-    def register(self, Emulator):
-        print("Registering: " + Emulator.__name__)
-        baseFloor = MetaFloor(copy.deepcopy(self._nakedDisplay))
-        newFloor = object.__new__(Emulator)  # An instantiation of Emulator without calling __init__
-        baseFloor.__class__ = newFloor.__class__
-        baseFloor._root = self
-        baseFloor.init()
-        self.displays.append(baseFloor)
 
     def _patchFrom(self, target):
         def makeFunc (method):
@@ -146,6 +117,42 @@ class LSFloor():
             if name is not "register" and name.startswith("_") is False:
                 setattr(self, name, makeFunc(method))
 
+    def buildTileIndex(self, tileList):
+        tiles = defaultdict(lambda: defaultdict(int))
+        self.tiles = []
+        for tile in tileList:
+            tiles[tile.row][tile.col] = tile
+        for row in range(0, self.rows):
+            self.tiles.append([])
+            for col in range(0, self.cols):
+                self.tiles[row].append(tiles[row][col])
+
+        # Emulator is an LSEmulator class
+    def register(self, Emulator):
+        print("Registering: " + Emulator.__name__)
+        baseFloor = MetaFloor(copy.deepcopy(self._nakedDisplay))
+        newFloor = object.__new__(Emulator)  # An instantiation of Emulator without calling __init__
+        baseFloor.__class__ = newFloor.__class__
+        baseFloor._root = self
+        baseFloor.init()
+        self.displays.append(baseFloor)
+        viewIndex = len(self.displays)
+        baseFloor.ioLoop = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.displays[viewIndex-1])
+        baseFloor.ioLoop.start()
+
+    class _IOLoop(threading.Thread):
+        def __init__(self, ID, name, view):
+            threading.Thread.__init__(self)
+            self.ID = ID
+            self.name = name
+            self.view = view
+
+        def run(self):
+            print("Starting " + self.name)
+            pollEvents = getattr(self.view, "pollEvents")
+            pollingLoop = pollEvents()
+            while True:
+                print(next(pollingLoop))
 
     def handleTileStepEvent(self, row, col, val):
         if self.eventCallback is not None:
@@ -300,15 +307,14 @@ class LSRealFloor(LSFloor):
         self.realTiles = LSOpen()
         self.sharedSerials = dict()
         self._addTilesFromConf()
-     #   self._addRealTiles()
-        
+
         # Save changes to self.config (namely the most recent calibrationMap)
         atexit.register(self._saveState)
 
     def _saveState(self):
         self.conf.calibrationMap = self.calibrationMap
         self.conf.writeConfig(overwrite=True, message="Saving calibration map...")
-        
+
     def _returnTile(self, row, col, port):
         if port == "virtual":
             return(LSTile(row, col))
@@ -402,9 +408,8 @@ class LSRealFloor(LSFloor):
 
 class MetaFloor(LSFloor):
     def __init__(self, thisFloor):
-        self.__class__ = type(thisFloor.__class__.__name__,
-                              (self.__class__, thisFloor.__class__),
-                              {})
+        className = thisFloor.__class__.__name__
+        self.__class__ = type(className, (self.__class__, thisFloor.__class__), {})
         self.__dict__ = thisFloor.__dict__
 
 
