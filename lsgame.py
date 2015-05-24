@@ -110,7 +110,7 @@ class LSGameEngine():
             self.enterFrame()
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
-        deepTile = self.display.floor.views[0].tiles[row][col]  # views[0] should always be the real floor if it exists
+        deepTile = self.display.floor.tiles[row][col]  # views[0] should always be the real floor if it exists
                                                                 # otherwise it is the first registered emulator
         if sensorPcnt is 0:
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
@@ -118,8 +118,9 @@ class LSGameEngine():
             self.moves.append(Move(row, col, deepTile.sensor))
             try:
                 self.game.handleTileStepEvent(row, col, sensorPcnt)
-            except AttributeError:
-                print("Game has no event handler, but that's okay") # debugging
+            except AttributeError:   # Game has no event handler
+                print("({:d},{:d}): {:d}%".format(row,col,int(sensorPcnt))) # debugging
+                pass
 
     def beginEmulatorLoop(self):
         pass
