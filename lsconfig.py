@@ -272,6 +272,8 @@ def userSelect(selectionList, message="Select an option from the list:"):
     return pick("{:s} ".format(message))
 
 def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
+    print(numTiles)
+    print(rowsOrCols)
     try:
         rowsOrCols = int(rowsOrCols)
     except:
