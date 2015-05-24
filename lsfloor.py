@@ -83,6 +83,7 @@ class LSFloor():
     def _addTilesFromConf(self):
         
         self._addressToRowColumn = {}
+        self.tileList = []
         
         for (row, col, port, address, calibration) in self.conf.config:
             tile = self._returnTile(row, col, port)
@@ -114,14 +115,9 @@ class LSFloor():
                 setattr(self, name, makeFunc(method))
 
     def buildTileIndex(self, tileList):
-        tiles = defaultdict(lambda: defaultdict(int))
-        self.tiles = []
+        self.tiles = defaultdict(lambda: defaultdict(int))
         for tile in tileList:
-            tiles[tile.row][tile.col] = tile
-        for row in range(0, self.rows):
-            self.tiles.append([])
-            for col in range(0, self.cols):
-                self.tiles[row].append(tiles[row][col])
+            self.tiles[tile.row][tile.col] = tile
 
         # Emulator is an LSEmulator class
     def register(self, Emulator):
