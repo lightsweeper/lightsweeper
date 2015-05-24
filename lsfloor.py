@@ -398,8 +398,7 @@ class LSRealFloor(LSFloor):
             zeroTile.assignAddress(0)
             zeroTile.latch()
 
-    def pollEvents(self)
-        sensitvity = .95
+    def pollEvents(self):
         tiles = self.tileList
         while True:
             for tile in tiles:
