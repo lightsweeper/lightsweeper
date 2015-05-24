@@ -10,12 +10,6 @@ import time
 
 wait = time.sleep
 
-class Move():
-    def __init__(self, row, col, val):
-        self.row = row
-        self.col = col
-        self.val = val
-
 #handles animations as well as allowing a common controller for displaying
 #the state of the game on the real floor, on a simulated floor, on the console, or
 #any combination thereof
@@ -35,12 +29,11 @@ class LSDisplay():
 
         self.rows = conf.rows
         self.cols = conf.cols
-        self.eventCallback = eventCallback
         self.lastTileSetTimestamp = time.time()
 
         if initScreen is True:
             self.splash()
-            self.floor.heartbeat()
+            self.heartbeat()
 
 
 
@@ -68,16 +61,15 @@ class LSDisplay():
     def heartbeat(self):
         #print("Display heartbeat")
         self.floor.heartbeat()
-        pass
 
-    def handleTileStepEvent(self, row, col, val):
-        print("LSDisplay handling tile event")
-        if self.eventCallback is not None:
-            self.eventCallback(row, col, val)
+#    def handleTileStepEvent(self, row, col, val):
+#        print("LSDisplay handling tile event")
+#        if self.eventCallback is not None:
+#            self.eventCallback(row, col, val)
 
-    def pollSensors(self):
-        sensorsChanged = []
-        sensorsChanged += self.floor.pollSensors()
+#    def pollSensors(self):
+#        sensorsChanged = []
+#        sensorsChanged += self.floor.pollSensors()
 #        if self.console and not self.realFloor:
 #            self.printFloor()
 #            consoleIn = input("Type in the next move")
@@ -85,9 +77,9 @@ class LSDisplay():
 #            move = Move(int(consoleIn[0]), int(consoleIn[1]), 0)
 #            sensorsChanged.append(move)
         #we want to ensure we never return a NoneType
-        if sensorsChanged is None:
-            return []
-        return sensorsChanged
+#        if sensorsChanged is None:
+#            return []
+#        return sensorsChanged
 
 
     def set(self, row, col, shape, color):

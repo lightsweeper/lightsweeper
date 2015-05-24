@@ -95,6 +95,7 @@ class LSGameEngine():
         self.GAME = GAME
         self.audio = LSAudio(initSound=True)
         self.display = LSDisplay(conf=conf, eventCallback = self.handleTileStepEvent, initScreen=True)
+        self.moves = []
         self.newGame()
 
         #these are for bookkeeping
@@ -109,7 +110,13 @@ class LSGameEngine():
         while True:
             self.enterFrame()
 
-    def handleTileStepEvent(self, row, col, val):
+    def handleTileStepEvent(self, row, col, sensorPcnt):
+        deepTile = self.display.floor.views[0].tiles[row][col]  # views[0] should always be the real floor if it exists
+                                                                # otherwise it is the first registered emulator
+        if sensorPcnt is not 0:
+            self.moves.append(Move(row, col, deepTile.sensor))
+        else:
+            self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         try:
             self.game.handleTileStepEvent(row, col, val)
         except:
@@ -122,8 +129,7 @@ class LSGameEngine():
         self.frames += 1
         startEnterFrame = time.time()
         if not self.game.ended:
-            DUMMYDATA = [Move(0,0,10)]
-            sensorsChanged = DUMMYDATA
+            sensorsChanged = self.moves
            # sensorsChanged = self.pollSensors
             self.game.heartbeat(sensorsChanged)  # TODO: Tie this into new sensor polling
             self.display.heartbeat()

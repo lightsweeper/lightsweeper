@@ -12,6 +12,7 @@ import Colors
 import Shapes
 
 from collections import defaultdict
+from queue import Queue
 import atexit
 import copy
 import inspect
@@ -33,12 +34,6 @@ def examine(instance, attr=None):
     a = input()
     print("============")
 
-class Move():
-    def __init__(self, row, col, val):
-        self.row = row
-        self.col = col
-        self.val = val
-
 class LSFloor():
     """
         This class describes an abstract lightsweeper floor. It is inherited by both LSRealFloor as well as Lightsweeper
@@ -50,35 +45,38 @@ class LSFloor():
             cols (int):             The number of columns
             tileList (list):        A single array of LSTile objects
             tiles (list):           A double array of LSTile objects, e.g.: tiles[row][column]
-            displays (list):        A list of displays bound to this floor
+            views (list):           A list of emulators and displays bound to this floor
 
     """
     def __init__(self, conf, eventCallback=None):
 
         self.conf = conf
-        
         self.rows = conf.rows
         self.cols = conf.cols
 
-        self.eventCallback = eventCallback
-       # print("LSFloor event callback:", eventCallback)
+        if eventCallback is None:
+            print("lsfloor: eventCallback not defined")
+
         self.tiles = []
         self.tileList = []
-        self.displays = list()
+        self.views = []
+        self.sensors = defaultdict(lambda: defaultdict(int))
         self._virtualTileList = []
 
-        
         # Initialize calibration map
         self.calibrationMap = conf.calibrationMap
-        
+
         self._addTilesFromConf()
 
-        
-        # Setup root display
-        self._nakedDisplay = copy.deepcopy(self)
+        # Make a copy of this skeleton
+        self._nakedView = copy.deepcopy(self)
 
         # Become a dispatcher
         self._patchFrom(self)
+
+        self._events = Queue()
+        eventHandler = self._handleEvents(0, "{:s}-io-root", self._events, self.tiles, eventCallback)
+        eventHandler.start()
 
         if self.conf.containsReal() is True:
             self.register(LSRealFloor)
@@ -105,7 +103,7 @@ class LSFloor():
     def _patchFrom(self, target):
         def makeFunc (method):
             def funcProxy(*args, **kwargs):
-                for floor in self.displays:
+                for floor in self.views:
                     try:
                         func = getattr(floor, method.__name__)
                         func(*args, **kwargs)
@@ -130,15 +128,17 @@ class LSFloor():
         # Emulator is an LSEmulator class
     def register(self, Emulator):
         print("Registering: " + Emulator.__name__)
-        baseFloor = MetaFloor(copy.deepcopy(self._nakedDisplay))
+        baseFloor = MetaFloor(copy.deepcopy(self._nakedView)) # Make a new floor instance with a copy of the naked floor
         newFloor = object.__new__(Emulator)  # An instantiation of Emulator without calling __init__
-        baseFloor.__class__ = newFloor.__class__
+        baseFloor.__class__ = newFloor.__class__ # Take the class from Emulator's floor
         baseFloor._root = self
         baseFloor.init()
-        self.displays.append(baseFloor)
-        viewIndex = len(self.displays)
-        baseFloor.ioLoop = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.displays[viewIndex-1])
-        baseFloor.ioLoop.start()
+        self.views.append(baseFloor)
+        viewIndex = len(self.views)
+
+        # Start a polling loop for this floor in a new thread
+        baseFloor.io = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.views[viewIndex-1])
+        baseFloor.io.start()
 
     class _IOLoop(threading.Thread):
         def __init__(self, ID, name, view):
@@ -147,18 +147,54 @@ class LSFloor():
             self.name = name
             self.view = view
 
-        def run(self):
+        def run(self):        
             print("Starting " + self.name)
             pollEvents = getattr(self.view, "pollEvents")
             pollingLoop = pollEvents()
+            staleSensor = 0
             while True:
-                print(next(pollingLoop))
+                event = next(pollingLoop)
+                r,c = event[0], event[1]
+                sensorPcnt = event[2]
+                try:
+                    staleSensor = self.view.tiles[r][c].sensor
+                except AttributeError:
+                    staleSensor = 0
+                if staleSensor != sensorPcnt:
+                    tile = self.view.tiles[r][c]
+                    tile.sensor = sensorPcnt
+                    self.view._root._events.put(event)
 
-    def handleTileStepEvent(self, row, col, val):
-        if self.eventCallback is not None:
-            self.eventCallback(row, col, val)
-        else:
-            print("lsfloor: eventCallback not defined")
+    class _handleEvents(threading.Thread):
+        def __init__(self, ID, name, eventQueue, tiles, eventCallback):
+            threading.Thread.__init__(self)
+            self.ID = ID
+            self.name = name
+            self.queue = eventQueue
+            self.tiles = tiles
+            
+            if eventCallback is None:
+                self.pushEvent = lambda event: None
+            else:
+                self.pushEvent = lambda e: eventCallback(e[0],e[1],e[2])
+
+        def run(self):
+            stale = 0
+            while(True):
+                event = self.queue.get()
+                row,col,sensorPcnt = event
+                tile = self.tiles[row][col]
+                try:
+                    stale = tile.sensor
+                except AttributeError:
+                    print("INFO: The tile at ({:d},{:d}) has been touched for the very first time.".format(row,col))
+                    stale = 0
+                if stale is 0:
+                    print("Stepped on ({:d},{:d})".format(row,col)) # Debugging
+                if sensorPcnt is 0:
+                    print("Stepped off ({:d},{:d})".format(row,col)) # Debugging
+                tile.sensor = sensorPcnt
+                self.pushEvent(event)
 
     def setColor(self, row, col, color):
         """
@@ -256,8 +292,8 @@ class LSFloor():
            #     print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
             col += 1
 
-    def pollSensors(self):
-        return(list())
+#    def pollSensors(self):
+ #       return(list())
 
     def heartbeat(self):
         pass
