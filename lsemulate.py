@@ -85,13 +85,13 @@ class LSPygameFloor(LSEmulateFloor):
                     os._exit(0)
                 if event.type == KEYDOWN and event.key == K_ESCAPE:
                     os._exit(0)
-                if event.type == MOUSEBUTTONUP:
-                 #   print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
-                    yield((lastClick[0], lastClick[1], 0))
                 if event.type == MOUSEBUTTONDOWN:
                  #   print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
                     lastClick = rowCol
                     yield((rowCol[0], rowCol[1], 100))
+                if event.type == MOUSEBUTTONUP:
+                 #   print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
+                    yield((lastClick[0], lastClick[1], 0))
 
     def _whereDidIPutMyMouse(self, mousePointer):
         (x, y) = mousePointer

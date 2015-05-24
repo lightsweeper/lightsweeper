@@ -50,7 +50,6 @@ class Frame():
     def setShape(self, row, col, shape):
         self.shapes[(row, col)] = shape
 
-
     def getShape(self, row, col):
         return self.shapes[(row, col)]
 
@@ -68,6 +67,7 @@ class Move():
         self.row = row
         self.col = col
         self.val = val
+
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():
@@ -105,7 +105,6 @@ class LSGameEngine():
     def newGame(self):
         self.game = self.GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
 
-
     def beginLoop(self):
         while True:
             self.enterFrame()
@@ -119,8 +118,7 @@ class LSGameEngine():
             self.moves.append(Move(row, col, deepTile.sensor))
             try:
                 self.game.handleTileStepEvent(row, col, sensorPcnt)
-            except Exception as e:
-                print(e)
+            except AttributeError:
                 print("Game has no event handler, but that's okay") # debugging
 
     def beginEmulatorLoop(self):
@@ -143,10 +141,6 @@ class LSGameEngine():
         if self.frames % self.FPS == 0:
             print(" [{:f} FPS]".format(1.0 / (self.frameRenderTime / self.FPS)), end="\r")
             self.frameRenderTime = 0
-
- #   def pollSensors(self):
- #       sensorsChanged = self.display.pollSensors()
- #       return sensorsChanged
 
 def main():
     print("TODO: testing lsgame")

@@ -1,7 +1,5 @@
 """ Contains descriptions of and methods for interfacing with LightSweeper floors """
 
-#TODO: Untangle pollSensors() so they work with mixed floors
-
 from LSRealTile import LSRealTile
 from LSRealTile import LSOpen
 from lstile import LSTile
@@ -13,14 +11,15 @@ import Shapes
 
 from collections import defaultdict
 from queue import Queue
+
 import atexit
 import copy
 import inspect
+import os
+import random
 import sys
 import threading
 import time
-import os
-import random
 
 wait=time.sleep
 
@@ -89,7 +88,6 @@ class LSFloor():
             tile = self._returnTile(row, col, port)
             self._addressToRowColumn[(address,port)] = (row, col)
             tile.assignAddress(address)
-            tile.active=0
             wait(.05)
             self.tileList.append(tile)
             if port == "virtual":
@@ -399,6 +397,33 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.latch()
+
+    def pollEvents(self)
+        sensitvity = .95
+        tiles = self.tileList
+        while True:
+            for tile in tiles:
+                reading = tile.sensorStatus()
+
+                cMap = self.calibrationMap[(tile.address,tile.port)]
+                # A higher reading is less weight on the pressure sensor
+                lowest = cMap[0]
+                highest = cMap[1]
+                if reading < lowest:
+                    lowest = reading
+                    cMap[0] = lowest
+                elif reading > highest:
+                    highest = reading
+                    cMap[1] = highest
+                self.calibrationMap[(tile.address,tile.port)] = cMap
+
+                if reading is highest:
+                    yield((tile.row, tile.col, 0))
+                elif reading is lowest and lowest < 127:
+                    yield((tile.row, tile.col, 100))
+                else:
+                    pcntOut = (((reading-highest)*100)/(lowest-highest))
+                    yield((tile.row, tile.col, pcntOut))
 
 #    def pollSensors(self, sensitivity=.95):
 #        try:
