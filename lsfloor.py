@@ -67,7 +67,6 @@ class LSFloor():
                 (port, address) = self.conf.board[row][col]
                 tile = self._returnTile(row, col, port)
                 tile.port = port                                # Todo, tile class should set this locally
-        #        self.calibrationMap[(address,port)] = [127,127]   # Remove me
                 self._addressToRowColumn[(address,port)] = (row, col)
                 tile.assignAddress(address)
                 tile.setColor(Colors.WHITE)
@@ -211,20 +210,6 @@ class LSFloor():
         tile = self.tiles[row][col]
         tile.flushQueue()
 
-#    def handleTileSensed(self, row, col): # Deprecated
-#        pass
-
-    # How is this different from pollSensors?
-#    def getSensors(self):  # Deprecated
-#        activeSensors = []
-#        for row in self.tiles:
-#            for tile in row:
-#                sensorChecked = tile.getSensors()
-#                if sensorChecked:
-#                    activeSensors.append(sensorChecked)
-#        return activeSensors
-
-
     def RAINBOWMODE(self, updateFrequency = 0.4):
         '''
             OMG! Double rainbow!!! What does this mean?!
@@ -340,13 +325,6 @@ class LSRealFloor(LSFloor):
             zeroTile.latch()
 
 #    def printAddresses(self):      # Deprecated, use conf.lsMatrix
-#        s = ""
-#        for row in range(0,self.rows):
-#            for col in range(0, self.cols):
-#                s += str(self.tiles[row][col].getAddress()) + " "
-#            #print(s)
-#            s = ""
-
 
     def pollSensors(self, sensitivity=.95):
         sensorsChanged = []
