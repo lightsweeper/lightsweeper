@@ -89,6 +89,7 @@ class LSFloor():
             tile = self._returnTile(row, col, port)
             self._addressToRowColumn[(address,port)] = (row, col)
             tile.assignAddress(address)
+            tile.port = port
             wait(.05)
             self.tileList.append(tile)
             if port == "virtual":
