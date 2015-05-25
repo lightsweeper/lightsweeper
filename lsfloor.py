@@ -137,6 +137,7 @@ class LSFloor():
 
     class _IOLoop(threading.Thread):
         def __init__(self, ID, name, view):
+            wait(3)
             threading.Thread.__init__(self)
             self.ID = ID
             self.name = name
@@ -163,6 +164,7 @@ class LSFloor():
     class _handleEvents(threading.Thread):
         def __init__(self, ID, name, eventQueue, tiles, eventCallback):
             threading.Thread.__init__(self)
+            wait(2)
             self.ID = ID
             self.name = name
             self.queue = eventQueue
@@ -429,47 +431,6 @@ class LSRealFloor(LSFloor):
                     pcntOut = (((reading-highest)*100)/(lowest-highest))
                     yield((tile.row, tile.col, pcntOut))
 
-#    def pollSensors(self, sensitivity=.95):
-#        try:
-#            sensorsChanged = self.pollEvents()
-#        except Exception as e:
-#            print(e)
-#            sensorsChanged = []
-#        tiles = self.tileList
-#        #sensorPoll = 0
-#        for tile in tiles:
-#            #currentTime = time.time()
-#            reading = tile.sensorStatus()
-#            #sensorPoll = sensorPoll + time.time() - currentTime
-#            cMap = self.calibrationMap[(tile.address,tile.port)]
-#            lowest = cMap[0]
-#            highest = cMap[1]
-#            if reading < lowest:
-#                lowest = reading
-#                cMap[0] = lowest
-#            elif reading > highest:
-#                highest = reading
-#                cMap[1] = highest
-#            self.calibrationMap[(tile.address,tile.port)] = cMap
-#            
-#            if reading < (((highest-lowest) * sensitivity) + lowest) and lowest < 127:
-#                if tile.active <= 0:
-#                    tile.active = 1
-#                    print("Stepped on {:d} ({:d})".format(tile.address,reading)) # Debugging
-#                    rowCol = self._addressToRowColumn[(tile.address, tile.port)]
-#                    move = Move(rowCol[0], rowCol[1], reading)
-#                    sensorsChanged.append(move)
-#                    self.handleTileStepEvent(rowCol[0], rowCol[1], reading)
-#                else:
-#                    tile.active += 1
-#                    print("    {:d} -> {:d}                        ".format(tile.address, reading), end="\r")
-#            elif reading is highest:
-#                if tile.active > 0:
-#                    tile.active = 0
-#                    print ("Stepped off {:d} ({:d})".format(tile.address,reading)) # Debugging
-#        return sensorsChanged
-            
-        #print("sensor polls took " + str(sensorPoll) + "ms")
 
 class MetaFloor(LSFloor):
     def __init__(self, thisFloor):

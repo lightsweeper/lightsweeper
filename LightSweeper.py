@@ -11,6 +11,7 @@ from WhackAMole import WhackAMole
 
 from lsgame import LSGameEngine
 from lsconfig import userSelect
+import lsconfig
 
 
 availableGames = dict([
@@ -21,25 +22,31 @@ availableGames = dict([
                         ("MidiSoundboard", MidiSoundboard)
                       ])
 
+def clearTerm():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def main():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(" L I G H T S W E E P E R ")
+    clearTerm()
+    conf = lsconfig.LSFloorConfig()
+    conf.selectConfig()
+    while True:
+        clearTerm()
+        print(" L I G H T S W E E P E R ")
 
-    games = [ g.__name__ for g in availableGames.values() ]
+        games = [ g.__name__ for g in availableGames.values() ]
 
-    games.append("Random")
+        games.append("Random")
 
-    game = userSelect(games, "\nWhich game do you want?")
+        game = userSelect(games, "\nWhich game do you want?")
 
-    if game is "Random":
-        game = random.choice(list(availableGames.keys()))
+        if game is "Random":
+            game = random.choice(list(availableGames.keys()))
 
-    currentGame = availableGames[game]
+        currentGame = availableGames[game]
 
-    print("\nPlaying {:s}...".format(currentGame.__name__))
-    gameEngine = LSGameEngine(currentGame)
-    gameEngine.beginLoop()
+        print("\nPlaying {:s}...".format(currentGame.__name__))
+        gameEngine = LSGameEngine(currentGame, conf.fileName)
+        gameEngine.beginLoop()
 
 if __name__ == '__main__':
     main()

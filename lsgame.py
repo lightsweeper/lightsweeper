@@ -75,7 +75,8 @@ class LSGameEngine():
     SIMULATED_FLOOR = True
     CONSOLE = False
 
-    def __init__(self, GAME, floorConfig=None):
+    def __init__(self, GAME, floorConfig=None, loop=True):
+        self.loop = loop
         self.wait = time.sleep
         if floorConfig is None:
             conf = LSFloorConfig()
@@ -105,13 +106,21 @@ class LSGameEngine():
     def newGame(self):
         self.game = self.GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
 
-    def beginLoop(self):
+    def beginLoop(self, plays = 0):
+        numPlays = 0
         while True:
-            self.enterFrame()
+            if plays is not 0 and numPlays < plays:
+                if not self.game.ended:
+                    self.enterFrame()
+                else:
+                    numPlays += 1
+            elif plays is 0:
+                self.enterFrame()
+            else:
+                return
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
-   #     deepTile = self.display.floor.tiles[row][col]  # views[0] should always be the real floor if it exists
-                                                                # otherwise it is the first registered emulator
+        sensorPcnt = int(sensorPcnt)
         if sensorPcnt is 0:
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         else:
@@ -119,23 +128,17 @@ class LSGameEngine():
             try:
                 self.game.handleTileStepEvent(row, col, sensorPcnt)
             except AttributeError:   # Game has no event handler
-                print("({:d},{:d}): {:d}%".format(row,col,int(sensorPcnt))) # debugging
+                print("({:d},{:d}): {:d}%".format(row,col,sensorPcnt)) # debugging
                 pass
-
-    def beginEmulatorLoop(self):
-        pass
 
     def enterFrame(self):
         self.frames += 1
         startEnterFrame = time.time()
         if not self.game.ended:
-            sensorsChanged = self.moves
-           # sensorsChanged = self.pollSensors
-            self.game.heartbeat(sensorsChanged)  # TODO: Tie this into new sensor polling
+            sensors = self.moves
+            self.game.heartbeat(sensors)
             self.display.heartbeat()
             self.audio.heartbeat()
-        else:
-            self.newGame()
         # print("enterFrame() took" + str(time.time() - startEnterFrame) + " s\n\tpollSensors():" +
         #       str(endSensorsChanged - startSensorsChanged) + " s")
         self.frameRenderTime += (time.time() - startEnterFrame)
