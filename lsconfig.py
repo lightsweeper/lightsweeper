@@ -285,9 +285,9 @@ def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
     return True
     
 
-def pickRowCol(cells, config, message, isVirtual=True):
+def pickRowCol(cells, message, isVirtual=True):
     x = input(message)
-    while validateRowCol(cells, config, x, isVirtual) is False:
+    while validateRowCol(cells, x, isVirtual) is False:
         x = input(message)
     return x
 
@@ -349,7 +349,7 @@ def configWithKeyboard(floorConfig, tilepile):
             myTile = LSRealTile(tilepile.sharedSerials[port])
             myTile.assignAddress(addr)
             myTile.demo(1)
-            row=int(pickRowCol(floorConfig.cells, floorConfig.config, "Which row?: "))
+            row=int(pickRowCol(floorConfig.cells, "Which row?: "))
             row = row-1
             col=int(pickRowCol(floorConfig.cells, "Which col?: "))
             col = col-1
