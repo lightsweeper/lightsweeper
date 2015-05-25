@@ -190,6 +190,14 @@ class LSFloor():
                     print("Stepped off ({:d},{:d})".format(row,col)) # Debugging
                 tile.sensor = sensorPcnt
                 self.pushEvent(event)
+                
+    def saveAndExit(self, exitCode):
+        try:
+            self._root.views[0]._saveState()
+        except:
+            pass
+        print("Goodbye")
+        os._exit(exitCode)
 
     def setColor(self, row, col, color):
         """

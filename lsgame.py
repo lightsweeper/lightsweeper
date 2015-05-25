@@ -104,23 +104,23 @@ class LSGameEngine():
 
     def newGame(self):
         self.game = self.GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
-        try:
-            self.eventHandler = self.game.handleTileStepEvent
-        except AttributeError:
-            print("{:s} has no event handler, but that's okay.".format(self.GAME.__name__))
-            self.eventHandler = lambda r,c,s: None
 
     def beginLoop(self):
         while True:
             self.enterFrame()
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
-        deepTile = self.display.floor.tiles[row][col]
+   #     deepTile = self.display.floor.tiles[row][col]  # views[0] should always be the real floor if it exists
+                                                                # otherwise it is the first registered emulator
         if sensorPcnt is 0:
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         else:
-            self.moves.append(Move(row, col, int(deepTile.sensor)))
-            self.eventHandler(row, col, sensorPcnt)
+            self.moves.append(Move(row, col, sensorPcnt))
+            try:
+                self.game.handleTileStepEvent(row, col, sensorPcnt)
+            except AttributeError:   # Game has no event handler
+                print("({:d},{:d}): {:d}%".format(row,col,int(sensorPcnt))) # debugging
+                pass
 
     def beginEmulatorLoop(self):
         pass

@@ -426,3 +426,15 @@ def interactiveConfig (config = None):
             configWithKeyboard(config, tilepile)
 
     return config
+
+def main():
+
+    print("TODO: Test lsconfig")
+
+
+    input("Press return to exit")
+
+if __name__ == '__main__':
+
+    main()
+

@@ -82,9 +82,9 @@ class LSPygameFloor(LSEmulateFloor):
             for event in pygame.event.get():
                 rowCol = self._whereDidIPutMyMouse(pygame.mouse.get_pos())
                 if event.type == QUIT:
-                    os._exit(0)
+                    self.saveAndExit(0)
                 if event.type == KEYDOWN and event.key == K_ESCAPE:
-                    os._exit(0)
+                    self.saveAndExit(0)
                 if event.type == MOUSEBUTTONDOWN:
                  #   print("Clicked on {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging
                     lastClick = rowCol
