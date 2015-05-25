@@ -268,7 +268,9 @@ def userSelect(selectionList, message="Select an option from the list:"):
         print("  [{:d}] {:s}".format(optNum, optName))
     return pick("{:s} ".format(message))
 
+
 def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
+
     try:
         rowsOrCols = int(rowsOrCols)
     except:
@@ -281,10 +283,11 @@ def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
             print("There are only " + repr(numTiles) + " tiles!")
             return False
     return True
+    
 
-def pickRowCol(cells, message, isVirtual=True):
+def pickRowCol(cells, config, message, isVirtual=True):
     x = input(message)
-    while validateRowCol(cells, x, isVirtual) is False:
+    while validateRowCol(cells, config, x, isVirtual) is False:
         x = input(message)
     return x
 
@@ -346,7 +349,7 @@ def configWithKeyboard(floorConfig, tilepile):
             myTile = LSRealTile(tilepile.sharedSerials[port])
             myTile.assignAddress(addr)
             myTile.demo(1)
-            row=int(pickRowCol(floorConfig.cells, "Which row?: "))
+            row=int(pickRowCol(floorConfig.cells, floorConfig.config, "Which row?: "))
             row = row-1
             col=int(pickRowCol(floorConfig.cells, "Which col?: "))
             col = col-1
