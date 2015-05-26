@@ -40,11 +40,10 @@ def main():
         game = userSelect(games, "\nWhich game do you want?")
 
         if game is "Random":
-            game = random.choice(list(availableGames.keys()))
+            currentGame = list(availableGames.values())
+        else:
+            currentGame = availableGames[game]
 
-        currentGame = availableGames[game]
-
-        print("\nPlaying {:s}...".format(currentGame.__name__))
         gameEngine = LSGameEngine(currentGame, conf.fileName)
         gameEngine.beginLoop()
 

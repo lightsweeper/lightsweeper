@@ -196,8 +196,8 @@ class LSFloor():
     def saveAndExit(self, exitCode):
         try:
             self._root.views[0]._saveState()
-        except:
-            pass
+        except AttributeError:
+            print("Calibration state not updated.")
         print("Goodbye")
         os._exit(exitCode)
 
@@ -548,6 +548,7 @@ def main():
     d.heartbeat()
 
     input("Press return to exit")
+    d.floor.saveAndExit(0)
 
 if __name__ == '__main__':
 

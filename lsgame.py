@@ -104,7 +104,12 @@ class LSGameEngine():
         self.frameRenderTime = 0
 
     def newGame(self):
-        self.game = self.GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
+        try: # Game is a list of game classes, pick one at random
+            GAME = random.choice(self.GAME)
+        except: # Game was specified
+            GAME = self.GAME
+        self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
+        print("\nPlaying {:s}...".format(GAME.__name__))
 
     def beginLoop(self, plays = 0):
         numPlays = 0
@@ -139,6 +144,9 @@ class LSGameEngine():
             self.game.heartbeat(sensors)
             self.display.heartbeat()
             self.audio.heartbeat()
+        else:
+            self.newGame()
+
         # print("enterFrame() took" + str(time.time() - startEnterFrame) + " s\n\tpollSensors():" +
         #       str(endSensorsChanged - startSensorsChanged) + " s")
         self.frameRenderTime += (time.time() - startEnterFrame)
