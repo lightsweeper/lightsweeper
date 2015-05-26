@@ -74,6 +74,7 @@ class LSGameEngine():
     FPS = 30
     SIMULATED_FLOOR = True
     CONSOLE = False
+    numPlays = 0
 
     def __init__(self, GAME, floorConfig=None, loop=True):
         self.loop = loop
@@ -109,20 +110,18 @@ class LSGameEngine():
         except: # Game was specified
             GAME = self.GAME
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.numPlays += 1
         print("\nPlaying {:s}...".format(GAME.__name__))
 
     def beginLoop(self, plays = 0):
-        numPlays = 0
         while True:
-            if plays is not 0 and numPlays < plays:
-                if not self.game.ended:
-                    self.enterFrame()
-                else:
-                    numPlays += 1
+            if plays is not 0 and self.numPlays <= plays:
+                self.enterFrame()
             elif plays is 0:
                 self.enterFrame()
             else:
-                return
+                print(" G A M E  O V E R ")
+                self.display.floor.saveAndExit(0)
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
         sensorPcnt = int(sensorPcnt)

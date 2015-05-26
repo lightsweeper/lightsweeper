@@ -13,6 +13,8 @@ from lsgame import LSGameEngine
 from lsconfig import userSelect
 import lsconfig
 
+NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
+
 
 availableGames = dict([
                         ("AnimTestbed", AnimTestbed),
@@ -45,7 +47,7 @@ def main():
             currentGame = availableGames[game]
 
         gameEngine = LSGameEngine(currentGame, conf.fileName)
-        gameEngine.beginLoop()
+        gameEngine.beginLoop(plays=NUMPLAYS)
 
 if __name__ == '__main__':
     main()
