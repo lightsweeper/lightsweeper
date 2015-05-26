@@ -23,16 +23,6 @@ import time
 
 wait=time.sleep
 
-def examine(instance, attr=None):
-    # A handy tool for looking inside instances
-    if attr is None:
-        for name in inspect.getmembers(instance):
-            print(str(name))
-    else:
-        print(getattr(floor, attr))
-    a = input()
-    print("============")
-
 class LSFloor():
     """
         This class describes an abstract lightsweeper floor. It is inherited by both LSRealFloor as well as Lightsweeper
@@ -45,7 +35,6 @@ class LSFloor():
             tileList (list):        A single array of LSTile objects
             tiles (list):           A double array of LSTile objects, e.g.: tiles[row][column]
             views (list):           A list of emulators and displays bound to this floor
-
     """
     def __init__(self, conf, eventCallback=None):
 
@@ -65,18 +54,25 @@ class LSFloor():
         # Initialize calibration map
         self.calibrationMap = conf.calibrationMap
 
+        # Setup tiles specified in conf, then populate self.tiles and self.tileList
         self._addTilesFromConf()
 
         # Make a copy of this skeleton
         self._nakedView = copy.deepcopy(self)
 
-        # Become a dispatcher
+        # Become a dispatcher, this root instance of LSFloor will now become the public-facing
+        # interface that relays commands to the LSFloor subclasses in self.views and maps their
+        # outputs into its own datastructures
         self._patchFrom(self)
 
+        # Start a thread to handle tile-stepping events
+        # self._events is a thread-safe queue of events that look like (row, col, touch-sensor-percent)
+        # LSFloor instances put event tuples into the queue
         self._events = Queue()
         eventHandler = self._handleEvents(0, "{:s}-io-root", self._events, self.tiles, eventCallback)
         eventHandler.start()
 
+        # Register an LSRealFloor instance if there are real tiles in the configuration
         if self.conf.containsReal() is True:
             self.register(LSRealFloor)
 
@@ -94,13 +90,23 @@ class LSFloor():
             self.tileList.append(tile)
             if port == "virtual":
                 self._virtualTileList.append(tile)
-        self.buildTileIndex(self.tileList)
+
+        # Build the nested tile index
+        self.tiles = defaultdict(lambda: defaultdict(int))
+        for tile in self.tileList:
+            self.tiles[tile.row][tile.col] = tile
+
+        # Clear the board
         self.clearAll()
 
     def _returnTile(self, row, col, port):
+        # Returns an abstract tile object
         return(LSTile(row, col))
 
     def _patchFrom(self, target):
+        # This method remaps the public methods of LSFloor to fork their outputs to each
+        # LSFloor subclass instance in self.views
+
         def makeFunc (method):
             def funcProxy(*args, **kwargs):
                 for floor in self.views:
@@ -111,34 +117,20 @@ class LSFloor():
                         print("Warning: {:s}()-> Method not supported by {:s}".format(method.__name__, repr(floor)))
                         print(e) # Debugging
             return funcProxy
+
         for name, method in inspect.getmembers(target, callable):
             if name is not "register" and name.startswith("_") is False:
                 setattr(self, name, makeFunc(method))
 
-    def buildTileIndex(self, tileList):
-        self.tiles = defaultdict(lambda: defaultdict(int))
-        for tile in tileList:
-            self.tiles[tile.row][tile.col] = tile
-
-        # Emulator is an LSEmulator class
-    def register(self, Emulator):
-        print("Registering: " + Emulator.__name__)
-        baseFloor = MetaFloor(copy.deepcopy(self._nakedView)) # Make a new floor instance with a copy of the naked floor
-        newFloor = object.__new__(Emulator)  # An instantiation of Emulator without calling __init__
-        baseFloor.__class__ = newFloor.__class__ # Take the class from Emulator's floor
-        baseFloor._root = self
-        baseFloor.init()
-        self.views.append(baseFloor)
-        viewIndex = len(self.views)
-
-        # Start a polling loop for this floor in a new thread
-        baseFloor.io = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.views[viewIndex-1])
-        baseFloor.io.start()
-
     class _IOLoop(threading.Thread):
+        # The _IOLoop class runs as a thread for each registered LSFloor instance
+        # which continously calls the instance's pollEvents() generator and adds
+        # corresponding events to the root LSFloor instance's _event Queue.
+        # An event is a tuple of the form (row, col, tile-sensor-percent)
+
         def __init__(self, ID, name, view):
-            wait(3)
             threading.Thread.__init__(self)
+            wait(3)
             self.ID = ID
             self.name = name
             self.view = view
@@ -162,9 +154,15 @@ class LSFloor():
                     self.view._root._events.put(event)
 
     class _handleEvents(threading.Thread):
+            # The _handleEvents class runs as a single thread from the root LSFloor
+            # dispatching instance and monitors the _event Queue. When new events
+            # arrive to be processed it sets the corresponding tile's sensor attribute
+            # to the value specified by the event and pushes the event to the floor's
+            # event handler if one is specified.
+            # Events are tuples that look like (row, col, sensor-percent)
         def __init__(self, ID, name, eventQueue, tiles, eventCallback):
             threading.Thread.__init__(self)
-            wait(2)
+            wait(1)
             self.ID = ID
             self.name = name
             self.queue = eventQueue
@@ -192,8 +190,44 @@ class LSFloor():
                     print("Stepped off ({:d},{:d})".format(row,col)) # Debugging
                 tile.sensor = sensorPcnt
                 self.pushEvent(event)
+
+    def register(self, Emulator):
+        """
+            Allows you to register additional emulators to this floor.
+
+            Example:
+                >>> import lsfloor, lsconfig, lsemulate
+
+                >>> conf = lsconfig.LSFloorConfig(rows=5, cols=5)
+                >>> conf.makeVirtual()
+                Creating virtual configuration with 5 rows and 5 columns.
+
+                >>> floor = lsfloor.LSFloor(conf)
+                lsfloor: eventCallback not defined
+
+                >>> floor.register(lsemulate.LSPygameFloor)
+                Registering: LSPygameFloor
+                Making the screen (500x500)
+                Starting LSPygameFloor-io
+        """
+        print("Registering: " + Emulator.__name__)
+        baseFloor = MetaFloor(copy.deepcopy(self._nakedView)) # Make a new floor instance with a copy of the naked floor
+        newFloor = object.__new__(Emulator)  # An instantiation of Emulator without calling __init__
+        baseFloor.__class__ = newFloor.__class__ # Take the class from Emulator's floor
+        baseFloor._root = self
+        baseFloor.init()
+        self.views.append(baseFloor)
+        viewIndex = len(self.views)
+
+        # Start a polling loop for this floor in a new thread
+        baseFloor.io = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.views[viewIndex-1])
+        baseFloor.io.start()
                 
     def saveAndExit(self, exitCode):
+        """
+            Allows you to gracefully exit while saving any changes to calibration state.
+        """
+
         try:
             self._root.views[0]._saveState()
         except AttributeError:
@@ -357,6 +391,8 @@ class LSRealFloor(LSFloor):
         self.conf.writeConfig(overwrite=True, message="Saving calibration map...")
 
     def _returnTile(self, row, col, port):
+        # Returns an abstract tile object if the configuration calls for a virtual tile
+        # otherwise returns a real tile object
         if port == "virtual":
             return(LSTile(row, col))
         else:

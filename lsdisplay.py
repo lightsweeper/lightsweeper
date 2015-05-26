@@ -33,7 +33,7 @@ class LSDisplay():
 
         if initScreen is True:
             self.splash()
-            self.heartbeat()
+          #  self.heartbeat()
 
 
 
@@ -57,33 +57,13 @@ class LSDisplay():
         else:
             self.setAll(Shapes.EIGHT, Colors.RANDOM())
 
-    #this is to handle display functions only
     def heartbeat(self):
         #print("Display heartbeat")
         self.floor.heartbeat()
 
-#    def handleTileStepEvent(self, row, col, val):
-#        print("LSDisplay handling tile event")
-#        if self.eventCallback is not None:
-#            self.eventCallback(row, col, val)
-
-#    def pollSensors(self):
-#        sensorsChanged = []
-#        sensorsChanged += self.floor.pollSensors()
-#        if self.console and not self.realFloor:
-#            self.printFloor()
-#            consoleIn = input("Type in the next move")
-#            consoleIn = consoleIn.split(',')
-#            move = Move(int(consoleIn[0]), int(consoleIn[1]), 0)
-#            sensorsChanged.append(move)
-        #we want to ensure we never return a NoneType
-#        if sensorsChanged is None:
-#            return []
-#        return sensorsChanged
-
-
     def set(self, row, col, shape, color):
         self.floor.set(row, col, shape, color)
+        self.heartbeat()
 
     def setAll(self, shape, color):
         self.floor.setAll(shape, color)
