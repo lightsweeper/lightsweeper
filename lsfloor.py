@@ -130,7 +130,6 @@ class LSFloor():
 
         def __init__(self, ID, name, view):
             threading.Thread.__init__(self)
-            wait(3)
             self.ID = ID
             self.name = name
             self.view = view
@@ -162,7 +161,6 @@ class LSFloor():
             # Events are tuples that look like (row, col, sensor-percent)
         def __init__(self, ID, name, eventQueue, tiles, eventCallback):
             threading.Thread.__init__(self)
-            wait(1)
             self.ID = ID
             self.name = name
             self.queue = eventQueue

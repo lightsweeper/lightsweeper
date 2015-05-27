@@ -1,4 +1,4 @@
-""" The main point of interface to the LightSweeper API. Launches simulated and real floors (if available) and keeps them in sync """
+""" The main point of interface to the LightSweeper API. """
 
 from lsfloor import LSFloor
 from lsemulate import LSPygameFloor
@@ -10,10 +10,22 @@ import time
 
 wait = time.sleep
 
-#handles animations as well as allowing a common controller for displaying
-#the state of the game on the real floor, on a simulated floor, on the console, or
-#any combination thereof
 class LSDisplay():
+    """
+        LSDisplay acts as the main interface for LightSweeper games, it wraps the
+        LSFloor object and provides support for animations, text, and higher-level
+        logic.
+
+            Example:
+                >>> import lsdisplay
+
+                >>> d = lsdisplay.LSDisplay()
+
+                >>> d.setMessage(0,"Hello World")
+                >>> d.heartbeat()
+
+
+    """
 
     def __init__(self, rows=None, cols=None, conf=None, eventCallback=None, initScreen=True):
         if conf is None:
@@ -33,29 +45,32 @@ class LSDisplay():
 
         if initScreen is True:
             self.splash()
-          #  self.heartbeat()
+            wait(2)
+            self.clearAll()
 
 
 
     def splash(self):
         if self.rows > 1 and self.cols > 7:
-            self.setAllColor(Colors.BLACK)
+            r = int(self.rows/2)-1 # Row offset
+            c = int(self.cols/2)-4
             #LIGHTSWEEPER
-            self.set(0, 1, Shapes.L, Colors.RED)
-            self.set(0, 2, Shapes.I, Colors.YELLOW)
-            self.set(0, 3, Shapes.G, Colors.GREEN)
-            self.set(0, 4, Shapes.h, Colors.BLUE)
-            self.set(0, 5, Shapes.T, Colors.MAGENTA)
-            self.set(1, 0, Shapes.S, Colors.RED)
-            self.set(1, 1, Shapes.u, Colors.YELLOW)
-            self.set(1, 2, Shapes.V, Colors.YELLOW)
-            self.set(1, 3, Shapes.E, Colors.GREEN)
-            self.set(1, 4, Shapes.E, Colors.CYAN)
-            self.set(1, 5, Shapes.P, Colors.BLUE)
-            self.set(1, 6, Shapes.E, Colors.MAGENTA)
-            self.set(1, 7, Shapes.R, Colors.WHITE)
+            self.set(r+0, c+1, Shapes.L, Colors.RED)
+            self.set(r+0, c+2, Shapes.I, Colors.YELLOW)
+            self.set(r+0, c+3, Shapes.G, Colors.GREEN)
+            self.set(r+0, c+4, Shapes.h, Colors.BLUE)
+            self.set(r+0, c+5, Shapes.T, Colors.MAGENTA)
+            self.set(r+1, c+0, Shapes.S, Colors.RED)
+            self.set(r+1, c+1, Shapes.u, Colors.YELLOW)
+            self.set(r+1, c+2, Shapes.V, Colors.YELLOW)
+            self.set(r+1, c+3, Shapes.E, Colors.GREEN)
+            self.set(r+1, c+4, Shapes.E, Colors.CYAN)
+            self.set(r+1, c+5, Shapes.P, Colors.BLUE)
+            self.set(r+1, c+6, Shapes.E, Colors.MAGENTA)
+            self.set(r+1, c+7, Shapes.R, Colors.WHITE)
         else:
             self.setAll(Shapes.EIGHT, Colors.RANDOM())
+        self.heartbeat()
 
     def heartbeat(self):
         #print("Display heartbeat")
@@ -63,7 +78,6 @@ class LSDisplay():
 
     def set(self, row, col, shape, color):
         self.floor.set(row, col, shape, color)
-        self.heartbeat()
 
     def setAll(self, shape, color):
         self.floor.setAll(shape, color)
@@ -126,6 +140,7 @@ class LSDisplay():
 
     def clearAll(self):
         self.floor.clearAll()
+        self.heartbeat()
 
     def setFrame(self, frame):
         for row in range(self.rows):
