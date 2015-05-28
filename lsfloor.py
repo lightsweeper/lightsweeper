@@ -134,7 +134,8 @@ class LSFloor():
             self.name = name
             self.view = view
 
-        def run(self):        
+        def run(self):
+            wait(3)   
             print("Starting " + self.name)
             pollEvents = getattr(self.view, "pollEvents")
             pollingLoop = pollEvents()
@@ -172,6 +173,7 @@ class LSFloor():
                 self.pushEvent = lambda e: eventCallback(e[0],e[1],e[2])
 
         def run(self):
+            wait(2)
             stale = 0
             while(True):
                 event = self.queue.get()
