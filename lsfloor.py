@@ -24,7 +24,6 @@ import time
 wait=time.sleep
 
 class LSFloor():
-    initLock = threading.Event()
     
     """
         This class describes an abstract lightsweeper floor. It is inherited by both LSRealFloor as well as Lightsweeper
@@ -74,7 +73,7 @@ class LSFloor():
         # self._events is a thread-safe queue of events that look like (row, col, touch-sensor-percent)
         # LSFloor instances put event tuples into the queue
         self._events = Queue()
-        eventHandler = self._handleEvents(0, "{:s}-io-root", self._events, self.tiles, eventCallback, self.initLock)
+        eventHandler = self._handleEvents(0, "{:s}-io-root", self._events, self.tiles, eventCallback)
         eventHandler.start()
 
         # Register an LSRealFloor instance if there are real tiles in the configuration
@@ -133,15 +132,13 @@ class LSFloor():
         # corresponding events to the root LSFloor instance's _event Queue.
         # An event is a tuple of the form (row, col, tile-sensor-percent)
 
-        def __init__(self, ID, name, view, initLock):
+        def __init__(self, ID, name, view):
             threading.Thread.__init__(self)
             self.ID = ID
             self.name = name
             self.view = view
-            self.initLock = initLock
 
-        def run(self):  
-            self.initLock.wait()
+        def run(self):
             print("Starting " + self.name)
             pollEvents = getattr(self.view, "pollEvents")
             pollingLoop = pollEvents()
@@ -166,13 +163,12 @@ class LSFloor():
             # to the value specified by the event and pushes the event to the floor's
             # event handler if one is specified.
             # Events are tuples that look like (row, col, sensor-percent)
-        def __init__(self, ID, name, eventQueue, tiles, eventCallback, initLock):
+        def __init__(self, ID, name, eventQueue, tiles, eventCallback):
             threading.Thread.__init__(self)
             self.ID = ID
             self.name = name
             self.queue = eventQueue
             self.tiles = tiles
-            self.initLock = initLock
             
             if eventCallback is None:
                 self.pushEvent = lambda event: None
@@ -180,7 +176,6 @@ class LSFloor():
                 self.pushEvent = lambda e: eventCallback(e[0],e[1],e[2])
 
         def run(self):
-            self.initLock.wait()
             stale = 0
             while(True):
                 event = self.queue.get()
@@ -227,7 +222,7 @@ class LSFloor():
         viewIndex = len(self.views)
 
         # Start a polling loop for this floor in a new thread
-        baseFloor.io = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.views[viewIndex-1], self.initLock)
+        baseFloor.io = self._IOLoop(viewIndex, "{:s}-io".format(Emulator.__name__), self.views[viewIndex-1])
         baseFloor.io.start()
                 
     def saveAndExit(self, exitCode):

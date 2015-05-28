@@ -2,6 +2,7 @@
 
 import os
 import random
+import threading
 import time
 
 from lsdisplay import LSDisplay
@@ -71,6 +72,7 @@ class Move():
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():
+    initLock = threading.Event()
     FPS = 30
     SIMULATED_FLOOR = True
     CONSOLE = False
@@ -104,7 +106,8 @@ class LSGameEngine():
         self.frames = 0
         self.frameRenderTime = 0
         
-        self.display.floor.initLock.set() # This lock controls the startup of polling and event handling threads
+        # This lock prevents handleTileStepEvent() from being run by polling loops before init is complete
+        self.initLock.set()
 
     def newGame(self):
         try: # Game is a list of game classes, pick one at random
@@ -130,6 +133,7 @@ class LSGameEngine():
                 self.display.floor.saveAndExit(0)
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
+        self.initLock.wait()
         sensorPcnt = int(sensorPcnt)
         if sensorPcnt is 0:
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
