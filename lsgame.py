@@ -103,6 +103,8 @@ class LSGameEngine():
         #these are for bookkeeping
         self.frames = 0
         self.frameRenderTime = 0
+        
+        self.display.floor.initLock.set() # This lock controls the startup of polling and event handling threads
 
     def newGame(self):
         try: # Game is a list of game classes, pick one at random

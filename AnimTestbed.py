@@ -21,6 +21,9 @@ class AnimTestbed():
     def heartbeat(self, sensorsChanged):
 
         self.display.setAllCustom(self.currentColors + [Colors.BLACK])
+  #      for r in range(0,self.rows):
+  #          for c in range(0,self.cols):
+  #              self.display.setCustom(r,c, self.currentColors + [Colors.BLACK])
         color = self.currentColors.pop()
         self.currentColors.insert(0, color)
 
