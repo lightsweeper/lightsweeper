@@ -116,10 +116,9 @@ class LSFloor():
                 for floor in self.views:
                     try:
                         func = getattr(floor, method.__name__)
-                        func(*args, **kwargs)
                     except AttributeError as e:
                         print("Warning: {:s}()-> Method not supported by {:s}".format(method.__name__, repr(floor)))
-                        print(e) # Debugging
+                    func(*args, **kwargs)
             return funcProxy
 
         for name, method in inspect.getmembers(target, callable):
@@ -242,14 +241,20 @@ class LSFloor():
             Sets the color of the selected tile.
         """
         tile = self.tiles[row][col]
-        tile.setColor(color)
+        try:
+            tile.setColor(color)
+        except AttributeError:
+            print("setColor failed: No tile exists at ({:d},{:d}).".format(row, col))
 
     def setShape(self, row, col, shape):
         """
             Sets the shape of the selected tile.
         """
         tile = self.tiles[row][col]
-        tile.setShape(shape)
+        try:
+            tile.setShape(shape)
+        except AttributeError:
+            print("setShape failed: No tile exists at ({:d},{:d}).".format(row, col))
 
     def setAllColor(self, color):
         """
@@ -277,7 +282,12 @@ class LSFloor():
             Sets the color and shape simultaneously.
         """
         tile = self.tiles[row][col]
-        tile.set(shape, color)
+        try:
+            tile.set(shape, color)
+        except AttributeError:
+            print("Set failed: No tile exists at ({:d},{:d}).".format(row, col))  # TODO: move tile = self.tile[row][col] to a utility function
+                                                                                  # that checks tile validity and replace these try/except blocks
+                                                                                  # here and in setColor/setShape
 
     def setRow(self, row, shape, color):
         for tile in self.tiles[row]:
