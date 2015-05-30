@@ -508,7 +508,7 @@ class LSOpen:
         This class probes the LS address space and provides methods for
         for discovering and making use of valid lightsweeper serial objects
     """
-    
+
     def __init__(self):
         try:
             import serial
@@ -531,24 +531,16 @@ class LSOpen:
         self._list_ports = list_ports
 
         self.sharedSerials = dict()
-        
+
         try:
             self.lsMatrix = self.portmap()
         except Exception as e:
             self.lsMatrix = dict()
-    
+
         self.numPorts = len(self.lsMatrix)
-        
-       # print(repr(list(self.validPorts()))) # Debugging
 
         if self.numPorts is 0:
             print("Cannot find any lightsweeper tiles")
-       # elif self.numPorts is 1:
-       #     print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
-      #      pass
-     #   else:
-       #     print("There are {:d} valid serial ports -> {:s}".format(self.numPorts,repr([port for port in self.lsMatrix.keys()])))
-    #        pass
 
 
     def lsSerial(self, port, baud=19200, timeout=0.01):
@@ -615,7 +607,7 @@ class LSOpen:
         """
         for validPort in list(filter(self.testport,self.availPorts())):
             yield validPort
-        
+
 
     def validAddrs(self, port):
         """
@@ -643,9 +635,9 @@ class LSOpen:
             If you provide this function with a list of serial ports it
             will limit the prompt to those ports.
         """
-            
+
         posPorts = enumerate(sorted(self.lsMatrix.keys()))
-      
+
         # you can tell when the sleep deprivation starts to kick in
         def checkinput(foo):
             if foo in self.lsMatrix.keys():
@@ -658,11 +650,11 @@ class LSOpen:
             if int(foo) in bar.keys():
                 return bar.get(int(foo))
             return False
-            
+
         # TODO: Sanity check that portList consists of valid ports
         if portList is not None:
             posPorts = enumerate(sorted(portList))
-        
+
         # Prompts the user to select a valid serial port then returns it
         print("\nThe following serial ports are available:\n")
         for key,val in posPorts:
@@ -674,7 +666,7 @@ class LSOpen:
         return checkinput(userPort)
 
 
-    # test code
+# Test code:
 
 # simple delay between test statements with default delay
 def testSleep(secs=0.3):
@@ -702,7 +694,6 @@ def fullSuite(myTile):
         print("\nTesting setShape - 4")
         myTile.setShape(51) # 0x33 AKA "4"
         testSleep()
-
 
         print("\nTesting setColor - white")
         myTile.setColor(7)
