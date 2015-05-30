@@ -7,6 +7,7 @@ from lstile import LSTile
 
 # imports for testing
 import os
+import threading
 import time
 
 # TODO - perhaps better to use hexlify and unhexlify
@@ -400,8 +401,8 @@ class LSRealTile(LSTile):
 
         # sync command is two adjacent NOP_MODE commands
         args = [0, NOP_MODE]  # use global address
-        count = self.mySerial.write(args)
-        count = self.mySerial.write(args)
+        count = self.mySerial.safeWrite(args)
+        count = self.mySerial.safeWrite(args)
         if self.Debug:
             print("sync command wrote two NOP_MODE commands")
 
@@ -468,7 +469,7 @@ class LSRealTile(LSTile):
         # insert address byte plus optional arg count
         addr = self.address + len(args) - 1  # command is not counted
         args.insert(0, addr)
-        count = self.mySerial.write(args)
+        count = self.mySerial.safeWrite(args)
         if self.Debug:
             writeStr = (' '.join(format(x, '#02x') for x in args))
             print("0x%x command wrote %d bytes: %s " % (args[1], count, writeStr))
@@ -515,7 +516,18 @@ class LSOpen:
             raise IOError("Could not import serial functions. Make sure pyserial is installed.")
         from serial.tools import list_ports
 
+        class threadSafeSerial(serial.Serial):
+            # Adds cross-platform thread-safety to pyserial's Serial class
+            def __init__(self, *args, **kwargs):
+                self._writeLock = threading.Lock()
+                super().__init__(self, *args, **kwargs)
+
+            def safeWrite(self, *args, **kwargs):
+                with self._writeLock:
+                    self.write(*args, **kwargs)
+
         self._pyserial = serial
+        self._pyserial.Serial = threadSafeSerial
         self._list_ports = list_ports
 
         self.sharedSerials = dict()
@@ -524,9 +536,6 @@ class LSOpen:
             self.lsMatrix = self.portmap()
         except Exception as e:
             self.lsMatrix = dict()
-    #    for port in self.lsMatrix:
-    #        newSerial = self.lsSerial(port)
-    #        self.sharedSerials[newSerial.name] = (newSerial)
     
         self.numPorts = len(self.lsMatrix)
         
@@ -534,12 +543,12 @@ class LSOpen:
 
         if self.numPorts is 0:
             print("Cannot find any lightsweeper tiles")
-        elif self.numPorts is 1:
+       # elif self.numPorts is 1:
        #     print("Only one serial port -> {:s}".format(repr([port for port in self.lsMatrix.keys()])))
-            pass
-        else:
+      #      pass
+     #   else:
        #     print("There are {:d} valid serial ports -> {:s}".format(self.numPorts,repr([port for port in self.lsMatrix.keys()])))
-            pass
+    #        pass
 
 
     def lsSerial(self, port, baud=19200, timeout=0.01):
@@ -1115,7 +1124,7 @@ def singleModeTest(mySerial):
     mode = input("What mode do you want? ")
     intMode = int(mode)
     # TODO - why force address 0 global?
-    mySerial.write([0, intMode])
+    mySerial.safeWrite([0, intMode])
 
 # simple testing function for LSRealTile
 def main():
