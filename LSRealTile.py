@@ -9,6 +9,7 @@ from lstile import LSTile
 import os
 import threading
 import time
+import types
 
 # TODO - perhaps better to use hexlify and unhexlify
 #from HexByteConversion import *
@@ -502,6 +503,11 @@ class LSRealTile(LSTile):
     ############################################
     # Serial code
 
+def _threadSafeWrite (self, *args, **kwargs):
+    # A thread safe write method to be monkey-patched by LSOpen.lsSerial()
+    with self.writeLock:
+        self.write(*args, **kwargs)
+
 class LSOpen:
 
     """
@@ -516,18 +522,9 @@ class LSOpen:
             raise IOError("Could not import serial functions. Make sure pyserial is installed.")
         from serial.tools import list_ports
 
-        class threadSafeSerial(serial.Serial):
-            # Adds cross-platform thread-safety to pyserial's Serial class
-            def __init__(self, *args, **kwargs):
-                self._writeLock = threading.Lock()
-                super().__init__(self, *args, **kwargs)
-
-            def safeWrite(self, *args, **kwargs):
-                with self._writeLock:
-                    self.write(*args, **kwargs)
-
+       # self._pyserial = serial.Serial = threadSafeSerial
         self._pyserial = serial
-        self._pyserial.Serial = threadSafeSerial
+       # print(self._pyserial.Serial)
         self._list_ports = list_ports
 
         self.sharedSerials = dict()
@@ -548,7 +545,6 @@ class LSOpen:
             Attempts to open the specified com port, returning a pySerial object
             if succesful.
         """
-        
             
         if port in self.sharedSerials.keys():
             return self.sharedSerials[port]
@@ -558,8 +554,11 @@ class LSOpen:
             # TODO: Check Exception...
             #       5 = I/O Error (No lightsweeper tiles)
             #       13 = Permissions error (Linux: add user to dialout group)
-            raise
+            raise(e)
         finally:
+            # Monkey patch a thread safe writing method onto the pyserial object
+            self.sharedSerials[port].writeLock = threading.Lock()
+            self.sharedSerials[port].safeWrite = types.MethodType(_threadSafeWrite, self.sharedSerials[port])
             return self.sharedSerials[port]
             
        # return serialObject
