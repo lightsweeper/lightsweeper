@@ -5,6 +5,8 @@ import random
 import threading
 import time
 
+from collections import defaultdict
+
 from lsdisplay import LSDisplay
 from lsaudio import LSAudio
 from lsconfig import LSFloorConfig
@@ -77,6 +79,7 @@ class LSGameEngine():
     SIMULATED_FLOOR = True
     CONSOLE = False
     numPlays = 0
+    _warnings = []
 
     def __init__(self, GAME, floorConfig=None, loop=True):
         self.loop = loop
@@ -101,6 +104,7 @@ class LSGameEngine():
         self.display = LSDisplay(conf=conf, eventCallback = self.handleTileStepEvent, initScreen=True)
         self.moves = []
         self.newGame()
+        self.sensorMatrix = defaultdict(lambda: defaultdict(int))
 
         #these are for bookkeeping
         self.frames = 0
@@ -136,21 +140,32 @@ class LSGameEngine():
         self.initLock.wait()
         sensorPcnt = int(sensorPcnt)
         if sensorPcnt is 0:
+            try:
+                self.game.stepOff(row, col)
+            except AttributeError:   # Game has no stepOff() method
+                self._warnOnce("{:s} has no stepOff() method.".format(self.GAME.__name__))
+        #    print("stepOff: ({:d},{:d})".format(row, col)) # Debugging
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         else:
-            self.moves.append(Move(row, col, sensorPcnt))
-            try:
-                self.game.handleTileStepEvent(row, col, sensorPcnt)
-            except AttributeError:   # Game has no event handler
-                print("({:d},{:d}): {:d}%".format(row,col,sensorPcnt)) # debugging
-                pass
+            if self.sensorMatrix[row][col] is 0:
+                try:
+                    self.game.stepOn(row, col)
+                except AttributeError:  # Game has no stepOn() method
+                    self._warnOnce("{:s} has no stepOn() method.".format(self.GAME.__name__))
+             #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
+                self.moves.append(Move(row, col, sensorPcnt))
+        self.sensorMatrix[row][col] = sensorPcnt
+#            try:
+#                self.game.handleTileStepEvent(row, col, sensorPcnt)
+#            except AttributeError:   # Game has no event handler
+#                print("({:d},{:d}): {:d}%".format(row,col,sensorPcnt)) # debugging
+#                pass
 
     def enterFrame(self):
         self.frames += 1
         startEnterFrame = time.time()
         if not self.game.ended:
-            sensors = self.moves
-            self.game.heartbeat(sensors)
+            self.game.heartbeat(self.moves)
             self.display.heartbeat()
             self.audio.heartbeat()
         else:
@@ -162,6 +177,11 @@ class LSGameEngine():
         if self.frames % self.FPS == 0:
             print(" [{:f} FPS]".format(1.0 / (self.frameRenderTime / self.FPS)), end="\r")
             self.frameRenderTime = 0
+
+    def _warnOnce(self, warning):
+        if warning not in self._warnings:
+            print("WARNING: {:s}".format(warning))
+            self._warnings.append(warning)
 
 def main():
     print("TODO: testing lsgame")
