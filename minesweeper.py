@@ -170,10 +170,7 @@ class Minesweeper():
         self.audio.loadSong('BetweenGames3.wav', 'between3')
         self.audio.loadSong('BetweenGames4.wav', 'between4')
         self.audio.shuffleSongs()
-        #handles events is required to be defined
-        self.handlesEvents = False
         self.audio.setSongVolume(0)
-        self.songsQuiet = False
         self.firstStep = True
         self.updateBoard(self.board)
 
@@ -181,24 +178,24 @@ class Minesweeper():
         # self.audio.playSound('StartUp.wav')
         # self.audio.playSound('Explosion.wav')
 
+    def stepOn(self, row, col):
+        playSound = True
+        if self.board.board[row][col].is_visible:
+            playSound = False
+        if self.firstStep:
+            if self.board.board[row][col].is_mine:
+                self.board.board[row][col].is_mine = False  # TODO: Should replace the mine somewhere else
+                print("Saved from the mine!")
+            self.firstStep = False
+        self.board.show(row, col)
+        if self.board.board[row][col].is_mine:
+            self.audio.playSound("Explosion.wav")
+        elif playSound:
+            self.audio.playSound("Blop.wav")
+        self.lastMove = (row, col)
+
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:
-            playSound = True
-            for move in sensorsChanged:
-                if self.songsQuiet:
-                    self.songsQuiet = True
-                if self.board.board[move.row][move.col].is_visible:
-                    playSound = False
-                if self.firstStep and self.board.board[move.row][move.col].is_mine:
-                    self.board.board[move.row][move.col].is_mine = False
-                    print("Saved from the mine!")
-                self.firstStep = False
-                self.board.show(move.row, move.col)
-                if self.board.board[move.row][move.col].is_mine:
-                    self.audio.playSound("Explosion.wav")
-                elif playSound:
-                    self.audio.playSound("Blop.wav")
-                self.lastMove = move
             self.updateBoard(self.board)
         elif not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
