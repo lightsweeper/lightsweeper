@@ -174,10 +174,6 @@ class Minesweeper():
         self.firstStep = True
         self.updateBoard(self.board)
 
-        # Confirmed that both sounsd play simultaneously
-        # self.audio.playSound('StartUp.wav')
-        # self.audio.playSound('Explosion.wav')
-
     def stepOn(self, row, col):
         playSound = True
         if self.board.board[row][col].is_visible:
@@ -216,7 +212,6 @@ class Minesweeper():
             if self.endAnim.ended:
                 print("ended")
                 self.ended = True
-        #push changed tiles to display
 
     # currently this is just iterating across all the cells in the internal game state and pushing
     # the corresponding shape/color to the display for the given tile's position. a slightly better design would
@@ -226,25 +221,40 @@ class Minesweeper():
             for col in range(0, self.cols):
                 if board != None:
                     cell = board.getCellState(row, col)
-                    if cell == "D":
+                    try:
+                        staleCell = self.staleBoard.getCellState(row, col)
+                    except AttributeError:
+                        staleCell = "Q" # Just different
+                    if cell == "D" and staleCell != "D":
                         self.display.set(row, col, Shapes.DASH, Colors.MAGENTA)
-                    elif cell == '.':
+                    elif cell == '.' and staleCell != ".":
                         self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
                     elif cell == ' ' or cell == '':
                         self.display.set(row, col, Shapes.DASH, Colors.BLACK)
-                    elif cell == 'M':
+                    elif cell == 'M' and staleCell != "M":
                         self.display.set(row, col, Shapes.ZERO, Colors.RED)
                     elif cell == 'F':
+                        print("A flag?!")
                         break
                     else:
-                        self.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
+                        cell = int(cell):
+                        if int(staleCell) != cell:
+                            if cell is 1:
+                                color = Colors.WHITE
+                            elif cell is 2:
+                                color = Colors.BLUE
+                            elif cell is 3:
+                                color = Colors.CYAN
+                            elif cell is 4:
+                                color = Colors.YELLOW
+                            else:
+                                color = Colors.PINK
+                            self.display.set(row, col, Shapes.digitToHex(cell), color) # Should use setDigit?
+        self.staleBoard = board
         return
 
     def ended(self):
         return self.ended
-
-    if __name__ == "__main__":
-        print("Test code goes here")
 
 class EndAnimation:
     def __init__(self, win, rows, cols, lastMove):
