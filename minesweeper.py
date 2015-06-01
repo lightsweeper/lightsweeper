@@ -6,6 +6,7 @@ from lsgame import Frame
 import Colors
 import Shapes
 
+from collections import defaultdict
 import random
 import time
 
@@ -151,6 +152,7 @@ class Board():
 
 
 class Minesweeper():
+    staleDisplay = defaultdict(lambda: defaultdict(str))
     def __init__(self, display, audio, rows, cols):
         board = Board()
         mines = random.randint(int(cols*rows*.1), int(cols*rows*.3))
@@ -173,6 +175,8 @@ class Minesweeper():
         self.audio.setSongVolume(0)
         self.firstStep = True
         self.updateBoard(self.board)
+        display.setAll(Shapes.ZERO, Colors.GREEN)
+
 
     def stepOn(self, row, col):
         playSound = True
@@ -185,15 +189,19 @@ class Minesweeper():
             self.firstStep = False
         self.board.show(row, col)
         if self.board.board[row][col].is_mine:
+            self.display.set(row, col, Shapes.ZERO, Colors.RED)
             self.audio.playSound("Explosion.wav")
         elif playSound:
             self.audio.playSound("Blop.wav")
+            cell = self.board.getCellState(row, col)
+            if cell != " ":
+                self.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
         self.lastMove = (row, col)
 
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:
             self.updateBoard(self.board)
-        elif not self.board.is_playing and not self.animatingEnd:
+        if not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
                 self.endAnim = EndAnimation(True, self.rows, self.cols, self.lastMove)
@@ -221,36 +229,36 @@ class Minesweeper():
             for col in range(0, self.cols):
                 if board != None:
                     cell = board.getCellState(row, col)
-                    try:
-                        staleCell = self.staleBoard.getCellState(row, col)
-                    except AttributeError:
-                        staleCell = "Q" # Just different
-                    if cell == "D" and staleCell != "D":
-                        self.display.set(row, col, Shapes.DASH, Colors.MAGENTA)
-                    elif cell == '.' and staleCell != ".":
-                        self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
+                    staleCell = self.staleDisplay[row][col]
+                    if cell == "D":
+                        if staleCell != "D":
+                            self.display.set(row, col, Shapes.DASH, Colors.MAGENTA)
+                    elif cell == '.':
+                        if staleCell != ".":
+                            self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
                     elif cell == ' ' or cell == '':
-                        self.display.set(row, col, Shapes.DASH, Colors.BLACK)
-                    elif cell == 'M' and staleCell != "M":
-                        self.display.set(row, col, Shapes.ZERO, Colors.RED)
+                        if staleCell != " " and staleCell != "":
+                            self.display.set(row, col, Shapes.DASH, Colors.BLACK)
+                    elif cell == 'M':
+                        if staleCell != "M":
+                            self.display.set(row, col, Shapes.ZERO, Colors.RED)
                     elif cell == 'F':
                         print("A flag?!")
                         break
                     else:
-                        cell = int(cell):
-                        if int(staleCell) != cell:
-                            if cell is 1:
-                                color = Colors.WHITE
-                            elif cell is 2:
-                                color = Colors.BLUE
-                            elif cell is 3:
-                                color = Colors.CYAN
-                            elif cell is 4:
-                                color = Colors.YELLOW
-                            else:
-                                color = Colors.PINK
-                            self.display.set(row, col, Shapes.digitToHex(cell), color) # Should use setDigit?
-        self.staleBoard = board
+                        cell = int(cell)
+                        if cell is 1:
+                            color = Colors.YELLOW
+                        elif cell is 2:
+                            color = Colors.WHITE
+                        elif cell is 3:
+                            color = Colors.CYAN
+                        elif cell is 4:
+                            color = Colors.BLUE
+                        else:
+                            color = Colors.MAGENTA
+                        self.display.set(row, col, Shapes.digitToHex(cell), color) # Should use setDigit?
+                self.staleDisplay[row][col] = cell
         return
 
     def ended(self):
