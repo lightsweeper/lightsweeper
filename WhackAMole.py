@@ -38,7 +38,7 @@ class WhackAMole():
         self.showingHighScores = False
         self.display.setAll(Shapes.ZERO, Colors.BLACK)
 
-    def handleTileStepEvent(self, row, col, val):
+    def stepOn(self, row, col):
         if (row, col) in self.moles:
             self.score += 1
             self.audio.playSound("Blop.wav")
