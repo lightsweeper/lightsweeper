@@ -35,8 +35,7 @@ class MidiSoundboard():
             #self.playTileSound(move.row, move.col)
             #self.display.setColor(move.row, move.col, Colors.RANDOM())
 
-    def handleTileStepEvent(self, row, col, val):
-        self.audio.setSoundVolume((255 - val) / 255)
+    def stepOn(self, row, col):
         self.playTileSound(row, col)
         self.display.setColor(row, col, Colors.RANDOM())
 

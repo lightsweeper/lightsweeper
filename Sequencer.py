@@ -52,7 +52,7 @@ class Sequencer():
                         self.display.set(2, sound, Shapes.DASH, Colors.MAGENTA)
             self.clock = time.time()
 
-    def handleTileStepEvent(self, row, col, val):
+    def stepOn(self, row, col):
         if row < 2:
             if self.selector in self.beats[row][col]:
                 self.beats[row][col].discard(self.selector)

@@ -22,10 +22,13 @@ class HelloWorld():
         print("Hello world heartbeat()")
         pass
 
-    def handleTileStepEvent(self, row, col, val):
-        print("Hello world handleTileStepEvent()")
+    def stepOn(self, row, col):
+        print("Hello tile at: ({:s},{:s})".format(row,col))
         self.playTileSound(row, col)
         self.display.setColor(row, col, Colors.RANDOM())
+
+    def stepOff(self, row, col):
+        print("Goodbye tile at: ({:s}.{:s})".format(row,col))
 
     def playTileSound(self, row, col):
         self.audio.playSound("Blop.wav")
