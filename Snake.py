@@ -1,0 +1,332 @@
+#!/usr/bin/python3
+import Colors
+import Shapes
+import random
+import time
+from collections import defaultdict
+from lsgame import LSGameEngine
+
+class Snake():
+    def __init__(self, display, audio, rows, cols):
+
+        # Standard game setup
+        self.display = display
+        self.audio = audio
+        self.rows = rows
+        self.cols = cols
+        self.ended = False
+        self.display.clearAll()
+
+        self.state = list()             # This will keep track of the state of the board
+        for r in range(0, rows):
+            self.state.append(list())
+            for c in range(0, cols):
+                self.state[r].append([Colors.BLACK] * 7)
+
+        # Snake initial values
+        self.snakeColor = Colors.WHITE  # The color of the snake
+        self.snake = [self.center()]    # Each item of the list is a section of the snake: (row, col, segment)
+        self.direction = "v"            # The direction of the snake's travel: ^, v, <, >
+
+    def heartbeat(self, sensors):
+        try:
+            if len(sensors) is 0:
+                self.slitherForward()
+            else:
+                self.left = 0
+                self.right = 0
+                self.straight = 0
+
+                for move in sensors:
+                    if self.nearHead(move.row, move.col):
+                        self.flee(move)
+                    else:
+                        self.follow(move)
+                self.moveSnake(self.left, self.right)
+        except IndexError:
+            self.gameOver()
+
+    def nearHead (self, row, col):
+        (r, c, s) = self.snake[0]
+        if row in range(r-1, r+1):
+            if col in range(c-1, c+1):
+                return True
+        return False
+
+    def flee (self, move):
+        (r, c, s) = self.snake[0]
+        if self.direction == "^":
+            if move.col < c:
+                self.right += move.val
+            elif move.col > c:
+                self.left += move.val
+            else:
+                self.randomVote(1000)
+        elif self.direction == "v":
+            if move.col < c:
+                self.left += move.val
+            elif move.col > c:
+                self.right += move.val
+            else:
+                self.randomVote(1000)
+        elif self.direction == "<":
+            if move.row < r:
+                self.left += move.val
+            elif move.row > r:
+                self.right += move.val
+            else:
+                self.randomVote(1000)
+        elif self.direction == ">":
+            if move.row < r:
+                self.right += move.val
+            elif move.row > r:
+                self.left += move.val
+            else:
+                self.randomVote(1000)
+
+    def follow (self, move):
+        (r, c, s) = self.snake[0]
+        if self.direction == "^":
+            if move.col < c:
+                self.left += move.val
+            elif move.col > c:
+                self.right += move.val
+            else:
+                self.straight += move.val
+        elif self.direction == "v":
+            if move.col < c:
+                self.right += move.val
+            elif move.col > c:
+                self.left += move.val
+            else:
+                self.straight += move.val
+        elif self.direction == "<":
+            if move.row < r:
+                self.right += move.val
+            elif move.row > r:
+                self.left += move.val
+            else:
+                self.straight += move.val
+        elif self.direction == ">":
+            if move.row < r:
+                self.left += move.val
+            elif move.row > r:
+                self.right += move.val
+            else:
+                self.straight += move.val
+
+    def randomVote (self, votes):
+        if random.choice([True, False]):
+            self.left += votes
+        else:
+            self.right += votes
+
+    def moveSnake(self, leftVotes, rightVotes):
+        if leftVotes == rightVotes:
+            if self.straight > 0:
+                self.slitherForward()
+            else:
+                self.randomVote()
+                self.moveSnake(leftVotes, rightVotes)
+        elif leftVotes > rightVotes:
+            self.turnLeft()
+        else:  # rightVotes > leftVotes
+            self.turnRight()
+
+    def addSegment (self, section):
+        (row, col, seg) = section
+        state = self.state[row][col]
+        state[seg] = self.snakeColor
+        self.state[row][col] = state
+        self.display.setCustom(row, col, state)
+
+    def delSegment (self, section):
+        (row, col, seg) = section
+        state = self.state[row][col]
+        state[seg] = Colors.BLACK
+        self.state[row][col] = state
+        self.display.setCustom(row, col, state)
+
+    def updateSnake (self, newHead):
+        self.addSegment(newHead)
+        self.delSegment(self.snake[-1])
+        for i in range(1, len(self.snake)):
+            self.snake[i] = self.snake[i-1]
+        self.snake[0] = newHead
+
+    def turnLeft (self):
+        (row, col, seg) = self.snake[0]
+        if self.direction == "^":
+            if seg is 1:
+                seg = 0
+            elif seg is 2:
+                seg = 6
+            elif seg is 4:
+                col -= 1
+                seg = 6
+            elif seg is 5:
+                col -= 1
+                seg = 0
+            self.direction = "<"
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == "v":
+            if seg is 1:
+                col += 1
+                seg = 6
+            elif seg is 2:
+                col += 1
+                seg = 3
+            elif seg is 4:
+                seg = 3
+            elif seg is 5:
+                seg = 6
+            self.direction = ">"
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == "<":
+            if seg is 0:
+                seg = 5
+            elif seg is 3:
+                row += 1
+                seg = 5
+            elif seg is 6:
+                seg = 4
+            self.direction = "v"
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == ">":
+            if seg is 0:
+                row -= 1
+                seg = 2
+            elif seg is 3:
+                seg = 2
+            elif seg is 6:
+                seg = 1
+            self.direction = "^"
+            self.updateSnake((row, col, seg))
+            return
+
+    def turnRight (self):
+        (row, col, seg) = self.snake[0]
+        if self.direction == "^":
+            if seg is 1:
+                col += 1
+                seg = 0
+            elif seg is 2:
+                col += 1
+                seg = 6
+            elif seg is 4:
+                seg = 6
+            elif seg is 5:
+                seg = 0
+            self.direction = ">"
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == "v":
+            if seg is 1:
+                seg = 6
+            elif seg is 2:
+                seg = 3
+            elif seg is 4:
+                col -= 1
+                seg = 3
+            elif seg is 5:
+                col -= 1
+                seg = 6
+            self.direction = "<"
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == "<":
+            if seg is 0:
+                row -= 1
+                seg = 4
+            elif seg is 3:
+                seg = 4
+            elif seg is 6:
+                seg = 5
+            self.direction = "^"
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == ">":
+            if seg is 0:
+                seg = 1
+            elif seg is 3:
+                row += 1
+                seg = 1
+            elif seg is 6:
+                seg = 2
+            self.direction = "v"
+            self.updateSnake((row, col, seg))
+            return
+
+    def slitherForward(self):
+        (row, col, seg) = self.snake[0]
+        if self.direction == "^":
+            if seg is 1:
+                row -= 1
+                seg = 2
+            elif seg is 2:
+                seg = 1
+            elif seg is 4:
+                seg = 5
+            elif seg is 5:
+                row -= 1
+                seg = 4
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == "v":
+            if seg is 1:
+                seg = 2
+            elif seg is 2:
+                row += 1
+                seg = 1
+            elif seg is 4:
+                row += 1
+                seg = 5
+            elif seg is 5:
+                seg = 4
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == "<":
+            col -= 1
+            self.updateSnake((row, col, seg))
+            return
+        elif self.direction == ">":
+            col += 1
+            self.updateSnake((row, col, seg))
+            return
+
+    def center (self):
+        midRow = int(self.rows/2)
+        midCol = int(self.cols/2)
+        segment = 4
+        location = (midRow, midCol, segment)
+        return(location)
+
+    def gameOver(self):
+        self.display.clearAll()
+        if self.rows > 1 and self.cols > 3:
+            r = int(self.rows/2)-1 # Row offset
+            c = int(self.cols/2)-2
+            #LIGHTSWEEPER
+            self.display.set(r+0, c+1, Shapes.Y, Colors.WHITE)
+            self.display.set(r+0, c+2, Shapes.O, Colors.WHITE)
+            self.display.set(r+0, c+3, Shapes.U, Colors.WHITE)
+            self.display.set(r+1, c+0, Shapes.L, Colors.WHITE)
+            self.display.set(r+1, c+1, Shapes.O, Colors.WHITE)
+            self.display.set(r+1, c+2, Shapes.S, Colors.WHITE)
+            self.display.set(r+1, c+3, Shapes.E, Colors.WHITE)
+            time.sleep(3)
+            self.ended = True
+
+    def ended(self):
+        return self.ended
+
+def main():
+    import lsgame
+    gameEngine = lsgame.LSGameEngine(Snake)
+    gameEngine.beginLoop()
+
+if __name__ == "__main__":
+    main()
