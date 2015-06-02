@@ -154,6 +154,7 @@ class Snake():
     def updateSnake (self, newHead):
         if self.moveLoses(newHead):
             self.gameOver()
+            return
         snakeCopy = copy.copy(self.snake)
         self.addSegment(newHead, self.snakeColor)
         self.delSegment(self.snake[-1])
@@ -314,7 +315,7 @@ class Snake():
     def feedTheSnake (self):
         randRow = random.randint(0, self.rows-1)
         randCol = random.randint(0, self.cols-1)
-        randSeg = random.randint(0, 6)
+        randSeg = random.randint(0, 5)
         self.snakeFood = (randRow, randCol, randSeg)
 
     def paintTheSnake (self, color):
@@ -331,16 +332,19 @@ class Snake():
 
     def moveLoses(self, move):
         (r,c,s) = move
-        if r > self.rows or c > self.cols:
+        if r >= self.rows or c >= self.cols or r < 0 or c < 0:
             return True
+        for section in self.snake:
+            if move == section:
+                return True
         return False
 
     def gameOver(self):
+        self.ended = True
         self.display.clearAll()
         if self.rows > 1 and self.cols > 3:
             r = int(self.rows/2)-1 # Row offset
             c = int(self.cols/2)-2
-            #LIGHTSWEEPER
             self.display.set(r+0, c+1, Shapes.Y, Colors.WHITE)
             self.display.set(r+0, c+2, Shapes.O, Colors.WHITE)
             self.display.set(r+0, c+3, Shapes.U, Colors.WHITE)
@@ -350,7 +354,6 @@ class Snake():
             self.display.set(r+1, c+3, Shapes.E, Colors.WHITE)
             self.display.heartbeat()
             time.sleep(3)
-            self.ended = True
 
     def ended(self):
         return self.ended
