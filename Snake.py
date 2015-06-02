@@ -36,26 +36,19 @@ class Snake():
     def heartbeat(self, sensors):
         self.morsel = next(self.foodColor)
         self.addSegment(self.snakeFood, self.morsel)
-        try:
-            if len(sensors) is 0:
-                self.slitherForward()
-            else:
-                self.left = 0
-                self.right = 0
-                self.straight = 0
+        if len(sensors) is 0:
+            self.slitherForward()
+        else:
+            self.left = 0
+            self.right = 0
+            self.straight = 0
 
-                for move in sensors:
-                    if self.nearHead(move.row, move.col):
-                        self.flee(move)
-                    else:
-                        self.follow(move)
-                self.moveSnake(self.left, self.right)
-
-        # Super lazy out-of-bounds checking
-        except IndexError:
-            self.gameOver()
-        except AttributeError:
-            self.gameOver()
+            for move in sensors:
+                if self.nearHead(move.row, move.col):
+                    self.flee(move)
+                else:
+                    self.follow(move)
+            self.moveSnake(self.left, self.right)
 
     def nearHead (self, row, col):
         (r, c, s) = self.snake[0]
@@ -159,6 +152,8 @@ class Snake():
         self.display.setCustom(row, col, state)
 
     def updateSnake (self, newHead):
+        if self.moveLoses(newHead):
+            self.gameOver()
         snakeCopy = copy.copy(self.snake)
         self.addSegment(newHead, self.snakeColor)
         self.delSegment(self.snake[-1])
@@ -333,6 +328,12 @@ class Snake():
         segment = 4
         location = (midRow, midCol, segment)
         return(location)
+
+    def moveLoses(self, move):
+        (r,c,s) = move
+        if r > self.rows or c > self.cols:
+            return True
+        return False
 
     def gameOver(self):
         self.display.clearAll()
