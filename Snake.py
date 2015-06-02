@@ -34,8 +34,10 @@ class Snake():
         self.feedTheSnake()
 
     def heartbeat(self, sensors):
-        self.morsel = next(self.foodColor)
-        self.addSegment(self.snakeFood, self.morsel)
+        self.morselColor = next(self.foodColor)
+        if self.morselColor == self.snakeColor:             # Don't make food the same color as the snake, it's confusing!
+            self.morselColor = next(self.foodColor)
+        self.addSegment(self.snakeFood, self.morselColor)
         if len(sensors) is 0:
             self.slitherForward()
         else:
@@ -51,6 +53,7 @@ class Snake():
             self.moveSnake(self.left, self.right)
 
     def nearHead (self, row, col):
+        # Returns true if the tile is within one space of the head of the snake
         (r, c, s) = self.snake[0]
         if row in range(r-1, r+1):
             if col in range(c-1, c+1):
@@ -163,7 +166,7 @@ class Snake():
         self.snake[0] = newHead
         if newHead == self.snakeFood:
             self.growSnake()
-            self.paintTheSnake(self.morsel)
+            self.paintTheSnake(self.morselColor)
             self.feedTheSnake()
 
     def turnLeft (self):
@@ -315,8 +318,16 @@ class Snake():
     def feedTheSnake (self):
         randRow = random.randint(0, self.rows-1)
         randCol = random.randint(0, self.cols-1)
-        randSeg = random.randint(0, 5)
-        self.snakeFood = (randRow, randCol, randSeg)
+        randSeg = random.randint(0, 5)              # Don't put food in the "dash" position
+        food = (randRow, randCol, randSeg)
+        if (randRow == 0 and randSeg in [0,3,4,5,6]) or (randRow == self.rows and randSeg in [0,1,2,3,6]):  # Don't put food on the edges
+            self.feedTheSnake()
+        elif (randCol == 0 and randSeg in [0,1,5]) or (randCol == self.cols and randSeg in [2,3,4]):          # it's just rude
+            self.feedTheSnake()
+        elif self.inSnake(food):      # Don't put food inside the snake
+            self.feedTheSnake()
+        else:
+            self.snakeFood = food   # Place the food pellet
 
     def paintTheSnake (self, color):
         self.snakeColor = color
