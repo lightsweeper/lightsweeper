@@ -23,12 +23,12 @@ class HelloWorld():
         pass
 
     def stepOn(self, row, col):
-        print("Hello tile at: ({:s},{:s})".format(row,col))
+        print("Hello tile at: ({:d},{:d})".format(row,col))
         self.playTileSound(row, col)
         self.display.setColor(row, col, Colors.RANDOM())
 
     def stepOff(self, row, col):
-        print("Goodbye tile at: ({:s}.{:s})".format(row,col))
+        print("Goodbye tile at: ({:d},{:d})".format(row,col))
 
     def playTileSound(self, row, col):
         self.audio.playSound("Blop.wav")
