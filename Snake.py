@@ -334,10 +334,14 @@ class Snake():
         (r,c,s) = move
         if r >= self.rows or c >= self.cols or r < 0 or c < 0:
             return True
+        if self.inSnake(move):
+            return True
+        return False
+
+    def inSnake(self, move):
         for section in self.snake:
             if move == section:
                 return True
-        return False
 
     def gameOver(self):
         self.ended = True

@@ -118,9 +118,10 @@ class LSGameEngine():
             GAME = random.choice(self.GAME)
         except: # Game was specified
             GAME = self.GAME
+        self.currentGame = GAME.__name__
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
         self.numPlays += 1
-        print("\nPlaying {:s}...".format(GAME.__name__))
+        print("\nPlaying {:s}...".format(self.currentGame))
 
     def beginLoop(self, plays = 0):
         while True:
@@ -143,7 +144,7 @@ class LSGameEngine():
             try:
                 self.game.stepOff(row, col)
             except AttributeError:   # Game has no stepOff() method
-                self._warnOnce("{:s} has no stepOff() method.".format(self.GAME.__name__))
+                self._warnOnce("{:s} has no stepOff() method.".format(self.currentGame))
         #    print("stepOff: ({:d},{:d})".format(row, col)) # Debugging
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         else:
@@ -151,7 +152,7 @@ class LSGameEngine():
                 try:
                     self.game.stepOn(row, col)
                 except AttributeError:  # Game has no stepOn() method
-                    self._warnOnce("{:s} has no stepOn() method.".format(self.GAME.__name__))
+                    self._warnOnce("{:s} has no stepOn() method.".format(self.currentGame))
              #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
                 self.moves.append(Move(row, col, sensorPcnt))
         self.sensorMatrix[row][col] = sensorPcnt

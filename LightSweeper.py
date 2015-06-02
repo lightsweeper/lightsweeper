@@ -8,6 +8,7 @@ from EightbitSoundboard import EightbitSoundboard
 from MidiSoundboard import MidiSoundboard
 from AnimTestbed import AnimTestbed
 from WhackAMole import WhackAMole
+from Snake import Snake
 
 from lsgame import LSGameEngine
 from lsconfig import userSelect
@@ -17,11 +18,12 @@ NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
 
 
 availableGames = dict([
-                        ("AnimTestbed", AnimTestbed),
+              #          ("AnimTestbed", AnimTestbed),
                         ("Minesweeper", Minesweeper),
-                        ("EightbitSoundboard", EightbitSoundboard),
+                 #       ("EightbitSoundboard", EightbitSoundboard),
                         ("WhackAMole", WhackAMole),
-                        ("MidiSoundboard", MidiSoundboard)
+                 #       ("MidiSoundboard", MidiSoundboard),
+                        ("Snake", Snake)
                       ])
 
 def clearTerm():
