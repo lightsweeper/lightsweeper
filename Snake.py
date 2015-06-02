@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 import Colors
 import Shapes
+import copy
 import random
 import time
 from collections import defaultdict
 from lsgame import LSGameEngine
 
 class Snake():
+
     def __init__(self, display, audio, rows, cols):
 
         # Standard game setup
@@ -28,7 +30,12 @@ class Snake():
         self.snake = [self.center()]    # Each item of the list is a section of the snake: (row, col, segment)
         self.direction = "v"            # The direction of the snake's travel: ^, v, <, >
 
+        self.foodColor = Colors.RAINBOW()
+        self.feedTheSnake()
+
     def heartbeat(self, sensors):
+        self.morsel = next(self.foodColor)
+        self.addSegment(self.snakeFood, self.morsel)
         try:
             if len(sensors) is 0:
                 self.slitherForward()
@@ -43,7 +50,11 @@ class Snake():
                     else:
                         self.follow(move)
                 self.moveSnake(self.left, self.right)
+
+        # Super lazy out-of-bounds checking
         except IndexError:
+            self.gameOver()
+        except AttributeError:
             self.gameOver()
 
     def nearHead (self, row, col):
@@ -133,10 +144,10 @@ class Snake():
         else:  # rightVotes > leftVotes
             self.turnRight()
 
-    def addSegment (self, section):
+    def addSegment (self, section, color):
         (row, col, seg) = section
         state = self.state[row][col]
-        state[seg] = self.snakeColor
+        state[seg] = color
         self.state[row][col] = state
         self.display.setCustom(row, col, state)
 
@@ -148,11 +159,16 @@ class Snake():
         self.display.setCustom(row, col, state)
 
     def updateSnake (self, newHead):
-        self.addSegment(newHead)
+        snakeCopy = copy.copy(self.snake)
+        self.addSegment(newHead, self.snakeColor)
         self.delSegment(self.snake[-1])
         for i in range(1, len(self.snake)):
-            self.snake[i] = self.snake[i-1]
+            self.snake[i] = snakeCopy[i-1]
         self.snake[0] = newHead
+        if newHead == self.snakeFood:
+            self.growSnake()
+            self.paintTheSnake(self.morsel)
+            self.feedTheSnake()
 
     def turnLeft (self):
         (row, col, seg) = self.snake[0]
@@ -297,6 +313,20 @@ class Snake():
             self.updateSnake((row, col, seg))
             return
 
+    def growSnake (self):
+        self.snake.append(copy.copy(self.snake[-1]))
+
+    def feedTheSnake (self):
+        randRow = random.randint(0, self.rows-1)
+        randCol = random.randint(0, self.cols-1)
+        randSeg = random.randint(0, 6)
+        self.snakeFood = (randRow, randCol, randSeg)
+
+    def paintTheSnake (self, color):
+        self.snakeColor = color
+        for section in self.snake:
+            self.addSegment(section, color)
+
     def center (self):
         midRow = int(self.rows/2)
         midCol = int(self.cols/2)
@@ -317,6 +347,7 @@ class Snake():
             self.display.set(r+1, c+1, Shapes.O, Colors.WHITE)
             self.display.set(r+1, c+2, Shapes.S, Colors.WHITE)
             self.display.set(r+1, c+3, Shapes.E, Colors.WHITE)
+            self.display.heartbeat()
             time.sleep(3)
             self.ended = True
 

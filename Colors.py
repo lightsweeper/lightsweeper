@@ -109,5 +109,5 @@ def RAINBOW(firstColor = RED):
     while True:
         if i is 6:
             i = 0
-        yield intToRGB(rainbowList[i])
+        yield rainbowList[i]
         i += 1
