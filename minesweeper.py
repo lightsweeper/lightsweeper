@@ -2,9 +2,13 @@
 
 from lsgame import *
 
+import lsanimate
+import lsexplosion
+
 from collections import defaultdict
 import random
 import time
+import pygame # pygame.event
 
 wait=time.sleep
 
@@ -145,6 +149,21 @@ class Board():
         #print("Remaining Mines: ", self.remaining_mines(), " Remaining Hidden: ", self.remaining_hidden())
         return self.remaining_mines() == self.remaining_hidden()
 
+    def list_mines(self):
+        r = 0
+        c = 0
+        out = []
+        for row in self.board:
+            for cell in row:
+                if cell.is_mine is True:
+                    rowCol = (r, c)
+                    out.append(rowCol)
+                c += 1
+            r += 1
+            c = 0
+        return out
+                    
+
 
 class Minesweeper(LSGame):
 
@@ -180,6 +199,7 @@ class Minesweeper(LSGame):
                 print("Saved from the mine!")
             self.firstStep = False
         self.board.show(row, col)
+        self.lastMove = (row, col)
         if self.board.board[row][col].is_mine:
             self.display.set(row, col, Shapes.ZERO, Colors.RED)
             self.audio.playSound("Explosion.wav")
@@ -188,7 +208,6 @@ class Minesweeper(LSGame):
             cell = self.board.getCellState(row, col)
             if cell != " ":
                 self.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
-        self.lastMove = (row, col)
 
     def heartbeat(self, sensorsChanged):
         if self.board.is_playing:
@@ -196,13 +215,13 @@ class Minesweeper(LSGame):
         if not self.board.is_playing and not self.animatingEnd:
             if self.board.is_solved():
                 print("Well done! You solved the board!")
-                self.endAnim = EndAnimation(True, self.rows, self.cols, self.lastMove)
+                self.endAnim = EndAnimation(True, self.display, self.lastMove, self.board.list_mines())
                 self.animatingEnd = True
                 self.audio.playSound("Success.wav")
             else:
                 #self.audio.playSound("Explosion.wav")
                 self.board.show_all()
-                self.endAnim = EndAnimation(False, self.rows, self.cols, self.lastMove)
+                self.endAnim = EndAnimation(False, self.display, self.lastMove, self.board.list_mines())
                 self.animatingEnd = True
         elif self.animatingEnd:
             frame = self.endAnim.getFrame()
@@ -210,7 +229,9 @@ class Minesweeper(LSGame):
                 #update display of each tile
                 self.display.setFrame(frame)
             if self.endAnim.ended:
+                self.endAnim.animation.play(self.display)
                 self.gameOver()
+
 
     # currently this is just iterating across all the cells in the internal game state and pushing
     # the corresponding shape/color to the display for the given tile's position. a slightly better design would
@@ -254,50 +275,78 @@ class Minesweeper(LSGame):
 
 
 class EndAnimation:
-    def __init__(self, win, rows, cols, lastMove):
-        self.rows = rows
-        self.cols = cols
+    def __init__(self, win, display, lastMove, mines):
+        self.rows = display.rows
+        self.cols = display.cols
+        print(self.rows)
+        print(self.cols)
         self.ended = False
         self.currentFrame = None
         self.frames = []
+        frame = display
         if win:
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.CYAN)
-            self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.BLUE)
-            self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.GREEN)
-            self.frames.append(frame)
+            redDash = (1, 0, 0)
+            greenDash = (0, 1, 0)
+            blueDash = (0, 0, 1)
+            dashes = [redDash, greenDash, blueDash]
+            redMine = (Shapes.H, 0, 0)
+            greenMine = (0, Shapes.H, 0)
+            blueMine = (0, 0, Shapes.H)
 
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.CYAN)
-            self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.BLUE)
-            self.frames.append(frame)
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.GREEN)
-            self.frames.append(frame)
+            winningAnimation = lsanimate.LSAnimation()
+
+            frame = lsanimate.LSFrameGen(self.rows,self.cols)
+            
+            for _ in range(0,15):
+                for i in range(0,self.cols):
+                    #frame.edit(0,i,redDash)
+                    #frame.edit(1,i,greenDash)
+                    #frame.edit(2,i,blueDash)
+                    for row in range(0,self.rows):
+                        idx = (0+row) % 3
+                        frame.edit(row,i,dashes[idx])
+                for mine in mines:
+                    frame.edit(mine[0],mine[1],redMine)
+                winningAnimation.addFrame(frame.get())
+
+                for i in range(0,self.cols):
+                    #frame.edit(1,i,redDash)
+                    #frame.edit(2,i,greenDash)
+                    #frame.edit(0,i,blueDash)
+                    for row in range(0,self.rows):
+                        idx = (1+row) % 3
+                        frame.edit(row,i,dashes[idx])
+                for mine in mines:
+                    frame.edit(mine[0],mine[1],greenMine)
+                winningAnimation.addFrame(frame.get())
+
+                for i in range(0,self.cols):
+                    #frame.edit(2,i,redDash)
+                    #frame.edit(1,i,greenDash)
+                    #frame.edit(0,i,blueDash)
+                    for row in range(0,self.rows):
+                        idx = (2+row) % 3
+                        frame.edit(row,i,dashes[idx])
+                for mine in mines:
+                    frame.edit(mine[0],mine[1],blueMine)
+                winningAnimation.addFrame(frame.get())
+
+                self.animation = winningAnimation
+
         else:
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 1
-            self.frames.append(frame)
 
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.BLACK)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 1
-            self.frames.append(frame)
+            losingAnimation = lsanimate.LSAnimation()
 
-            frame = Frame(self.rows, self.cols)
-            frame.setAllColor(Colors.RED)
-            frame.setAllShape(Shapes.EIGHT)
-            frame.heartbeats = 1
-            self.frames.append(frame)
+            frame = lsexplosion.LSExplosion(self.rows, self.cols, lastMove, mines)
+            
+            for frameNum in range(0,50):
+                frame.flamefront()
+                losingAnimation.addFrame(frame.get())
+
+            losingAnimation.deleteFrame(7) # Because I'm too lazy to do it right
+            losingAnimation.deleteFrame(7) # Yes, we need both of these
+
+            self.animation = losingAnimation
 
     def getFrame(self):
         if len(self.frames) is 0:

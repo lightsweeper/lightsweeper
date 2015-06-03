@@ -24,7 +24,6 @@ class LSDisplay():
                 >>> d.setMessage(0,"Hello World")
                 >>> d.heartbeat()
 
-
     """
 
     def __init__(self, rows=None, cols=None, conf=None, eventCallback=None, initScreen=True):
@@ -73,14 +72,16 @@ class LSDisplay():
         self.heartbeat()
 
     def heartbeat(self):
-        #print("Display heartbeat")
         self.floor.heartbeat()
+
 
     def set(self, row, col, shape, color):
         self.floor.set(row, col, shape, color)
 
+
     def setAll(self, shape, color):
         self.floor.setAll(shape, color)
+
 
     #segColors is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segColors):
@@ -92,6 +93,7 @@ class LSDisplay():
     def setColor(self, row, col, color):
         self.floor.setColor(row, col, color)
 
+
     def setAllColor(self, color):
         self.floor.setAllColor(color)
 
@@ -100,6 +102,7 @@ class LSDisplay():
 
     def setAllShape(self, shape):
         self.floor.setAllShape(shape)
+
 
     def setMessage(self, row, message, color = Colors.WHITE, start = 0, cutoff = -1):
         #TODO: ability to right-justify
@@ -142,14 +145,42 @@ class LSDisplay():
         self.floor.clearAll()
         self.heartbeat()
 
-    def setFrame(self, frame):
+    def hasShapeChangesFor(self, row, col):
+        val = True
+        try:
+            self.shapes[(row, col)]
+        except:
+            val = False
+        return val
+
+    def hasColorChangesFor(self, row, col):
+        val = True
+        try:
+            self.colors[(row, col)]
+        except:
+            val = False
+        return val
+
+    def setFrame(self):
+        self.heartbeat()
+        self.colors = dict()
+        self.shapes = dict()
+
+    def getShape(self, row, col):
+        return self.shapes[(row, col)]
+
+    def getColor(self, row, col):
+        return self.colors[(row, col)]
+
+    def allShapes(self, shape):
         for row in range(self.rows):
             for col in range(self.cols):
-                #if frame.hasChangesFor(row, col):
-                if frame.hasColorChangesFor(row, col):
-                    self.setColor(row, col, frame.getColor(row, col))
-                if frame.hasShapeChangesFor(row, col):
-                    self.setShape(row, col, frame.getShape(row, col))
+                self.shapes[(row, col)] = shape
+
+    def allColors(self, color):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.colors[(row, col)] = color
 
     def add(self, row, col, shape, color):
         pass

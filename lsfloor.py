@@ -9,8 +9,10 @@ from lsconfig import userSelect
 import Colors
 import Shapes
 
+
 from collections import defaultdict
 from queue import Queue
+import itertools
 
 import atexit
 import copy
@@ -327,7 +329,10 @@ class LSFloor():
     def renderFrame(self, frame):
     # TODO: LSRealTile, should optimize tile calls
 
-        cols = frame.pop(0)
+        try:
+            cols = frame.pop(0)
+        except:
+            pass
         row = 0
         col = 0
         for _ in itertools.repeat(None, int(len(frame)/3)):
@@ -341,6 +346,7 @@ class LSFloor():
                 self.tiles[row][col].setSegments((rMask,gMask,bMask))
            #     print("{:d},{:d} -> ({:d},{:d},{:d})".format(row,col,rMask,gMask,bMask)) # Debugging
             col += 1
+
 
     def heartbeat(self):
         pass
@@ -448,6 +454,7 @@ class LSRealFloor(LSFloor):
             zeroTile = LSRealTile(self.realTiles.sharedSerials[port])
             zeroTile.assignAddress(0)
             zeroTile.latch()
+
 
     def pollEvents(self):
         tiles = self.tileList
