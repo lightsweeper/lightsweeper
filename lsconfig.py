@@ -1,3 +1,5 @@
+""" lsconfig is used to create and manage .floor configuration files """
+
 from collections import defaultdict
 import os
 import json
@@ -268,7 +270,9 @@ def userSelect(selectionList, message="Select an option from the list:"):
         print("  [{:d}] {:s}".format(optNum, optName))
     return pick("{:s} ".format(message))
 
+
 def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
+
     try:
         rowsOrCols = int(rowsOrCols)
     except:
@@ -281,6 +285,7 @@ def validateRowCol(numTiles, rowsOrCols, isVirtual=True):
             print("There are only " + repr(numTiles) + " tiles!")
             return False
     return True
+    
 
 def pickRowCol(cells, message, isVirtual=True):
     x = input(message)
