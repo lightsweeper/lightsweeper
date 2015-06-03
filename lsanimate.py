@@ -65,18 +65,21 @@ class LSAnimation:
                 yield(frame)
 
     def play(self, display, frameRate = 30):
-        print("Starting animation ({:d} frames)".format(len(self._frames)))
-        stime = time.time()
+        print("Starting animation ({:d} frames at {:d} fps)".format(len(self._frames), frameRate))
         Frame = self.nextFrame()
-        f = 0
         for frame in Frame:
+            stime = time.time()
             display.floor.renderFrame(frame)
             display.heartbeat()
-            f += 1
-            if (time.time() - stime > 1):
-                print("{:d} fps".format(f))
-                stime = time.time()
-                f = 0
+            renderTime = time.time() - stime
+
+            fps = 1.0/renderTime
+            if fps < frameRate:
+                print("[Animation]{0:.4f} FPS".format(1.0/renderTime), end="\r")
+            else:
+                time.sleep((1.0/frameRate) - renderTime)
+        print(" " * 22, end = "\r")
+
         
 
     def _checkIndex(self, index):
@@ -167,16 +170,10 @@ def main():
 
   #  ourAnimation.showFrames()
 
-    useRealFloor = True
-    try:
-        realTiles = LSOpen()
-    except Exception as e:
-        useRealFloor = False
-
     print("Importing LSDisplay")
     import lsdisplay
 
-    d = lsdisplay.LSDisplay(realFloor = False, simulatedFloor = True, initScreen=False)
+    d = lsdisplay.LSDisplay(initScreen=False)
 
     ourAnimation.play(d)
 

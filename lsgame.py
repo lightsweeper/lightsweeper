@@ -35,9 +35,9 @@ class LSGame():
         self.ended = False
         self.frameRate = FPS
         self.display.clearAll()
-        self.init()
 
     def gameOver (self):
+        print("[Game Over]")
         self.ended = True
 
 #enforces the framerate, pushes sensor data to games, and selects games
@@ -86,10 +86,11 @@ class LSGameEngine():
         except: # Game was specified
             GAME = self.GAME
         self.currentGame = GAME.__name__
+
+        print("LSGameEngine: Starting {:s}...".format(self.currentGame))
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
         self.game.frameRate = FPS
         self.numPlays += 1
-        print("\nPlaying {:s}...".format(self.currentGame))
         try:
             self.game.init()
         except AttributeError:

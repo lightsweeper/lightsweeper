@@ -82,7 +82,7 @@ class Board():
             # self.display.show(row_id, col_id)
             if (cell.is_mine and not cell.is_flagged):
                 self.is_playing = False
-                print("mine'd!")
+                print("   (  (  ( ( *** B00M! *** ) )  )  )   ")
             elif self.is_solved():
                 self.is_playing = False
             elif self.count_surrounding(row_id, col_id) == 0:
@@ -190,6 +190,7 @@ class Minesweeper(LSGame):
 
 
     def stepOn(self, row, col):
+        self.lastMove = (row, col)
         playSound = True
         if self.board.board[row][col].is_visible:
             playSound = False
@@ -199,7 +200,6 @@ class Minesweeper(LSGame):
                 print("Saved from the mine!")
             self.firstStep = False
         self.board.show(row, col)
-        self.lastMove = (row, col)
         if self.board.board[row][col].is_mine:
             self.display.set(row, col, Shapes.ZERO, Colors.RED)
             self.audio.playSound("Explosion.wav")
@@ -229,7 +229,7 @@ class Minesweeper(LSGame):
                 #update display of each tile
                 self.display.setFrame(frame)
             if self.endAnim.ended:
-                self.endAnim.animation.play(self.display)
+                self.endAnim.animation.play(self.display, frameRate=10)
                 self.gameOver()
 
 
