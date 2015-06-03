@@ -7,6 +7,8 @@ import time
 from collections import defaultdict
 from lsgame import LSGameEngine
 
+import lsgame
+
 class Snake():
 
     def __init__(self, display, audio, rows, cols):
@@ -18,11 +20,16 @@ class Snake():
         self.cols = cols
         self.ended = False
         self.display.clearAll()
+        self.init()
 
+
+    def init (self):
+
+        self.frameRate = 3
         self.state = list()             # This will keep track of the state of the board
-        for r in range(0, rows):
+        for r in range(0, self.rows):
             self.state.append(list())
-            for c in range(0, cols):
+            for c in range(0, self.cols):
                 self.state[r].append([Colors.BLACK] * 7)
 
         # Snake initial values
@@ -31,7 +38,7 @@ class Snake():
         self.direction = "v"            # The direction of the snake's travel: ^, v, <, >
 
         self.foodColor = Colors.RAINBOW()
-        self.feedTheSnake()
+        self.snakeFood = self.feedTheSnake()
 
     def heartbeat(self, sensors):
         self.morselColor = next(self.foodColor)
@@ -167,7 +174,7 @@ class Snake():
         if newHead == self.snakeFood:
             self.growSnake()
             self.paintTheSnake(self.morselColor)
-            self.feedTheSnake()
+            self.snakeFood = self.feedTheSnake()
 
     def turnLeft (self):
         (row, col, seg) = self.snake[0]
@@ -321,13 +328,13 @@ class Snake():
         randSeg = random.randint(0, 5)              # Don't put food in the "dash" position
         food = (randRow, randCol, randSeg)
         if (randRow == 0 and randSeg in [0,3,4,5,6]) or (randRow == self.rows and randSeg in [0,1,2,3,6]):  # Don't put food on the edges
-            self.feedTheSnake()
+            return(self.feedTheSnake())
         elif (randCol == 0 and randSeg in [0,1,5]) or (randCol == self.cols and randSeg in [2,3,4]):          # it's just rude
-            self.feedTheSnake()
+            return(self.feedTheSnake())
         elif self.inSnake(food):      # Don't put food inside the snake
-            self.feedTheSnake()
+            return(self.feedTheSnake())
         else:
-            self.snakeFood = food   # Place the food pellet
+            return(food)   # Place the food pellet
 
     def paintTheSnake (self, color):
         self.snakeColor = color

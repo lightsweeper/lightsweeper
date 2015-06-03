@@ -1,5 +1,6 @@
 """ Contains methods related to LightSweeper games """
 
+import copy
 import os
 import random
 import threading
@@ -71,11 +72,11 @@ class Move():
         self.col = col
         self.val = val
 
+FPS = 30
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():
     initLock = threading.Event()
-    FPS = 30
     SIMULATED_FLOOR = True
     CONSOLE = False
     numPlays = 0
@@ -120,8 +121,13 @@ class LSGameEngine():
             GAME = self.GAME
         self.currentGame = GAME.__name__
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
+        self.game.frameRate = FPS
         self.numPlays += 1
         print("\nPlaying {:s}...".format(self.currentGame))
+        try:
+            self.game.init()
+        except AttributeError:
+            self._warnOnce("{:s} has no init() method.".format(self.currentGame))
 
     def beginLoop(self, plays = 0):
         while True:
@@ -156,14 +162,9 @@ class LSGameEngine():
              #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
                 self.moves.append(Move(row, col, sensorPcnt))
         self.sensorMatrix[row][col] = sensorPcnt
-#            try:
-#                self.game.handleTileStepEvent(row, col, sensorPcnt)
-#            except AttributeError:   # Game has no event handler
-#                print("({:d},{:d}): {:d}%".format(row,col,sensorPcnt)) # debugging
-#                pass
+
 
     def enterFrame(self):
-        self.frames += 1
         startEnterFrame = time.time()
         if not self.game.ended:
             self.game.heartbeat(self.moves)
@@ -172,12 +173,13 @@ class LSGameEngine():
         else:
             self.newGame()
 
-        # print("enterFrame() took" + str(time.time() - startEnterFrame) + " s\n\tpollSensors():" +
-        #       str(endSensorsChanged - startSensorsChanged) + " s")
-        self.frameRenderTime += (time.time() - startEnterFrame)
-        if self.frames % self.FPS == 0:
-            print(" [{:f} FPS]".format(1.0 / (self.frameRenderTime / self.FPS)), end="\r")
-            self.frameRenderTime = 0
+        self.frameRenderTime = (time.time() - startEnterFrame)
+        fps = 1.0/self.frameRenderTime
+        if fps < self.game.frameRate:
+            print("{0:.4f} FPS".format(1.0/self.frameRenderTime), end="\r")
+        else:
+            self.wait((1.0/self.game.frameRate)-self.frameRenderTime)
+            print("{0:.4f} FPS".format(self.game.frameRate), end="\r")
 
     def _warnOnce(self, warning):
         if warning not in self._warnings:
