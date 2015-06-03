@@ -70,8 +70,8 @@ class LSGameEngine():
         self.audio = LSAudio(initSound=True)
         self.display = LSDisplay(conf=conf, eventCallback = self.handleTileStepEvent, initScreen=True)
         self.moves = []
-        self.newGame()
         self.sensorMatrix = defaultdict(lambda: defaultdict(int))
+        self.newGame()
 
         #these are for bookkeeping
         self.frames = 0
@@ -90,6 +90,7 @@ class LSGameEngine():
         print("LSGameEngine: Starting {:s}...".format(self.currentGame))
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
         self.game.frameRate = FPS
+        self.game.sensors = self.sensorMatrix
         self.numPlays += 1
         try:
             self.game.init()
@@ -112,8 +113,7 @@ class LSGameEngine():
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
         self.initLock.wait()
-        sensorPcnt = int(sensorPcnt)
-        if sensorPcnt is 0:
+        if int(sensorPcnt) is 0:
             try:
                 self.game.stepOff(row, col)
             except AttributeError:   # Game has no stepOff() method
@@ -127,8 +127,11 @@ class LSGameEngine():
                 except AttributeError:  # Game has no stepOn() method
                     self._warnOnce("{:s} has no stepOn() method.".format(self.currentGame))
              #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
-                self.moves.append(Move(row, col, sensorPcnt))
-        self.sensorMatrix[row][col] = sensorPcnt
+                m = Move(row, col, sensorPcnt)
+                m.val = self.sensorMatrix[row][col]
+                self.moves.append(m)
+        self.sensorMatrix[row][col] = int(sensorPcnt)
+        
 
 
     def enterFrame(self):

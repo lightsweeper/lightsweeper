@@ -82,6 +82,12 @@ class LSDisplay():
     def setAll(self, shape, color):
         self.floor.setAll(shape, color)
 
+    def setDigit(self, row, col, digit, color):
+        self.floor.setDigit(row, col, digit, color)
+        
+    def setAllDigit(self, digit, color):
+        self.floor.setAllDigit(digit, color)
+
 
     #segColors is a list of seven colors in A,...,G order of segments
     def setCustom(self, row, col, segColors):

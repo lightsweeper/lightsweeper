@@ -271,12 +271,21 @@ class LSFloor():
         for tile in self.tileList:
             self.setShape(tile.row, tile.col, shape)
 
-# TODO
     def setDigit(self, row, column, digit, color=None):
         """
             Sets the tile at row, column to the provided digit.
         """
-        pass
+        tile = self.tiles[row][column]
+        try:
+            tile.setDigit(digit)
+            if color is not None:
+                tile.setColor(color)
+        except:
+            print("SetDigit failed: No tile exists at ({:d},{:d}).".format(row, column))
+            
+    def setAllDigit(self, digit, color):
+        for tile in self.tileList:
+            self.setDigit(tile.row, tile.col, digit, color)
 
     def set(self, row, col, shape, color):  # set is a python type, we may want to rename this
         """
@@ -288,7 +297,7 @@ class LSFloor():
         except AttributeError:
             print("Set failed: No tile exists at ({:d},{:d}).".format(row, col))  # TODO: move tile = self.tile[row][col] to a utility function
                                                                                   # that checks tile validity and replace these try/except blocks
-                                                                                  # here and in setColor/setShape
+                                                                                  # here and in setColor/setShape/setDigit
 
     def setRow(self, row, shape, color):
         for tile in self.tiles[row]:
