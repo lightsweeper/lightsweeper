@@ -4,8 +4,8 @@
 # sound type selection
 
 import time
-import Colors
-import Shapes
+
+from lsgame import *
 
 PREFIX = 'drums/'
 class Sequencer():
@@ -93,7 +93,6 @@ class Sequencer():
                 self.display.set(2, c, Shapes.DASH, Colors.RED)
 
 def main():
-    from lsgame import LSGameEngine
     gameEngine = LSGameEngine(Sequencer)
     gameEngine.beginLoop()
 

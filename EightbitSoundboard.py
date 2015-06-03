@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import Colors
-import Shapes
 import random
-from lsgame import LSGameEngine
-from lsgame import Move
+
+from lsgame import *
 
 class EightbitSoundboard():
     def __init__(self, display, audio, rows, cols):
@@ -26,9 +24,6 @@ class EightbitSoundboard():
                 print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
 
     def heartbeat(self, sensorsChanged):
-        #if random.randint(0, 10) > 8:
-        #    move = Move(random.randint(0, self.rows - 1), random.randint(0, self.cols - 1), 1)
-        #    sensorsChanged.append(move)
         for move in sensorsChanged:
             print("Tile:{:d},{:d} at {:d}".format(move.row, move.col, move.val))
             #self.playTileSound(move.row, move.col)

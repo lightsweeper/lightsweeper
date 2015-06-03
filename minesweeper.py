@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 
-from lsgame import LSGameEngine
-from lsgame import Frame
-
-import Colors
-import Shapes
+from lsgame import *
 
 from collections import defaultdict
 import random
@@ -36,7 +32,6 @@ class Cell(object):
 class Board():
 
     def __init__(self):
-        super().__init__()
         self.is_playing = True
 
     def create_board(self, rows, cols, mines):
@@ -151,21 +146,18 @@ class Board():
         return self.remaining_mines() == self.remaining_hidden()
 
 
-class Minesweeper():
+class Minesweeper(LSGame):
+
     staleDisplay = defaultdict(lambda: defaultdict(str))
-    def __init__(self, display, audio, rows, cols):
+
+    def init(self):
         board = Board()
-        mines = random.randint(int(cols*rows*.1), int(cols*rows*.3))
+        mines = random.randint(int(self.cols*self.rows*.1), int(self.cols*self.rows*.3))
         if mines is 0:
             mines = 1
         print("{:d} mines...".format(mines))
-        board.create_board(rows, cols, mines)
+        board.create_board(self.rows, self.cols, mines)
         self.board = board
-        self.audio = audio
-        self.display = display
-        self.rows = rows
-        self.cols = cols
-        self.ended = False
         self.animatingEnd = False
         self.audio.loadSong('BetweenGames1.wav', 'between1')
         self.audio.loadSong('BetweenGames2.wav', 'between2')
@@ -175,7 +167,7 @@ class Minesweeper():
         self.audio.setSongVolume(0)
         self.firstStep = True
         self.updateBoard(self.board)
-        display.setAll(Shapes.ZERO, Colors.GREEN)
+        self.display.setAll(Shapes.ZERO, Colors.GREEN)
 
 
     def stepOn(self, row, col):
@@ -218,8 +210,7 @@ class Minesweeper():
                 #update display of each tile
                 self.display.setFrame(frame)
             if self.endAnim.ended:
-                print("ended")
-                self.ended = True
+                self.gameOver()
 
     # currently this is just iterating across all the cells in the internal game state and pushing
     # the corresponding shape/color to the display for the given tile's position. a slightly better design would
@@ -261,8 +252,6 @@ class Minesweeper():
                 self.staleDisplay[row][col] = cell
         return
 
-    def ended(self):
-        return self.ended
 
 class EndAnimation:
     def __init__(self, win, rows, cols, lastMove):

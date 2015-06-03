@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-from lsgame import LSGameEngine
-
-import Colors
-import Shapes
+from lsgame import *
 
 import time
 
@@ -26,9 +23,6 @@ class AnimTestbed():
   #              self.display.setCustom(r,c, self.currentColors + [Colors.BLACK])
         color = self.currentColors.pop()
         self.currentColors.insert(0, color)
-
-    def ended(self):
-        pass
         
 def main():
     gameEngine = LSGameEngine(AnimTestbed)

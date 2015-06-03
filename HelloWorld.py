@@ -1,11 +1,10 @@
 #!/usr/bin/python3
-import Colors
-import Shapes
-import random
-from lsgame import LSGameEngine
-from lsgame import Move
 
-class HelloWorld():
+import random
+
+from lsgame import *
+
+class HelloWorld(LSGame):
     def __init__(self, display, audio, rows, cols):
         self.display = display
         self.audio = audio
@@ -29,16 +28,13 @@ class HelloWorld():
 
     def stepOff(self, row, col):
         print("Goodbye tile at: ({:d},{:d})".format(row,col))
+        self.gameOver() # Cause game to end
 
     def playTileSound(self, row, col):
         self.audio.playSound("Blop.wav")
 
-    def ended(self):
-        return self.ended
-
 def main():
-    import lsgame
-    gameEngine = lsgame.LSGameEngine(HelloWorld)
+    gameEngine = LSGameEngine(HelloWorld)
     gameEngine.beginLoop()
 
 if __name__ == "__main__":

@@ -1,30 +1,15 @@
 #!/usr/bin/python3
-import Colors
-import Shapes
+
 import copy
 import random
 import time
 from collections import defaultdict
-from lsgame import LSGameEngine
 
-import lsgame
+from lsgame import *
 
-class Snake():
-
-    def __init__(self, display, audio, rows, cols):
-
-        # Standard game setup
-        self.display = display
-        self.audio = audio
-        self.rows = rows
-        self.cols = cols
-        self.ended = False
-        self.display.clearAll()
-        self.init()
-
+class Snake(LSGame):
 
     def init (self):
-
         self.frameRate = 3
         self.state = list()             # This will keep track of the state of the board
         for r in range(0, self.rows):
@@ -376,13 +361,10 @@ class Snake():
             self.display.set(r+1, c+3, Shapes.E, Colors.WHITE)
             self.display.heartbeat()
             time.sleep(3)
-
-    def ended(self):
-        return self.ended
+        super().gameOver()
 
 def main():
-    import lsgame
-    gameEngine = lsgame.LSGameEngine(Snake)
+    gameEngine = LSGameEngine(Snake)
     gameEngine.beginLoop()
 
 if __name__ == "__main__":

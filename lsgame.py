@@ -13,6 +13,9 @@ from lsaudio import LSAudio
 from lsconfig import LSFloorConfig
 from lsconfig import userSelect
 
+import Colors
+import Shapes
+
 #has a list of changes to the board
 class Frame():
     def __init__(self, row, col):
@@ -73,6 +76,22 @@ class Move():
         self.val = val
 
 FPS = 30
+
+class LSGame():
+    def __init__(self, display, audio, rows, cols):
+
+        # Standard game setup
+        self.display = display
+        self.audio = audio
+        self.rows = rows
+        self.cols = cols
+        self.ended = False
+        self.frameRate = FPS
+        self.display.clearAll()
+        self.init()
+
+    def gameOver (self):
+        self.ended = True
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():

@@ -3,8 +3,8 @@
 import time
 import random
 
-import Colors
-import Shapes
+from lsgame import *
+
 from LSGameUtils import HighScores
 from LSGameUtils import CountdownTimer
 from LSGameUtils import EnterName
@@ -13,14 +13,9 @@ TIMEOUT = 5
 FAST_TIMEOUT = 4
 EXTREME_TIMEOUT = 4
 
-class WhackAMole():
-    def __init__(self, display, audio, rows, cols):
-        self.rows = rows
-        self.cols = cols
-        self.display = display
-        self.audio = audio
-        self.audio.setSoundVolume(0.2)
-        self.ended = False
+class WhackAMole(LSGame):
+
+    def init(self):
         self.moleTimeout = TIMEOUT
         self.startTimestamp = -1
         self.moles = []
@@ -36,7 +31,6 @@ class WhackAMole():
         self.handlesEvents = True
         self.timer = CountdownTimer(30, self.timerFinished)
         self.showingHighScores = False
-        self.display.setAll(Shapes.ZERO, Colors.BLACK)
 
     def stepOn(self, row, col):
         if (row, col) in self.moles:
@@ -56,7 +50,7 @@ class WhackAMole():
                     self.enterName = None
                     self.winScreenTimestamp = ts
             elif ts - self.winScreenTimestamp > 6:
-                self.ended = True
+                self.gameOver()
             elif not self.showingHighScores:
                 self.display.setAll(Shapes.ZERO, Colors.BLACK)
                 self.display.showHighScores(self.highScores.getHighScores())
@@ -120,8 +114,7 @@ class WhackAMole():
             self.enterName = EnterName(self.display, self.rows, self.cols, highScore=str(self.score))
 
 def main():
-    import lsgame
-    gameEngine = lsgame.LSGameEngine(WhackAMole)
+    gameEngine = LSGameEngine(WhackAMole)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':
