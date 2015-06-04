@@ -125,8 +125,8 @@ class Snake(LSGame):
             if self.straight > 0:
                 self.slitherForward()
             else:
-                self.randomVote(1000)
-                self.moveSnake(self.left, self.right)
+                vote = random.choice([self.turnLeft, self.turnRight])
+                vote()
         elif leftVotes > rightVotes:
             self.turnLeft()
         else:  # rightVotes > leftVotes
