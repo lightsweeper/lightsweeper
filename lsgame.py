@@ -145,12 +145,13 @@ class LSGameEngine():
             self.newGame()
 
         self.frameRenderTime = (time.time() - startEnterFrame)
+        spaces = " " * 15
         fps = 1.0/self.frameRenderTime
         if fps < self.game.frameRate:
-            print("{0:.4f} FPS".format(1.0/self.frameRenderTime), end="\r")
+            print("{1:s}{0:.4f} FPS".format(1.0/self.frameRenderTime, spaces), end="\r")
         else:
             self.wait((1.0/self.game.frameRate)-self.frameRenderTime)
-            print("{0:.4f} FPS".format(self.game.frameRate), end="\r")
+            print("{1:s}{0:.4f} FPS".format(self.game.frameRate, spaces), end="\r")
 
     def _warnOnce(self, warning):
         if warning not in self._warnings:
