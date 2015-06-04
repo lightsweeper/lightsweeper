@@ -10,7 +10,7 @@ from lsgame import *
 class Snake(LSGame):
 
     def init (self):
-        self.frameRate = 3
+        self.frameRate = 2
         self.state = list()             # This will keep track of the state of the board
         for r in range(0, self.rows):
             self.state.append(list())
@@ -19,7 +19,7 @@ class Snake(LSGame):
 
         # Snake initial values
         self.snakeColor = Colors.WHITE  # The color of the snake
-        self.snake = [self.center()]    # Each item of the list is a section of the snake: (row, col, segment)
+        self.snake = [(0,0,5)]    # Each item of the list is a section of the snake: (row, col, segment)
         self.direction = "v"            # The direction of the snake's travel: ^, v, <, >
 
         self.foodColor = Colors.RAINBOW()
@@ -125,8 +125,8 @@ class Snake(LSGame):
             if self.straight > 0:
                 self.slitherForward()
             else:
-                self.randomVote()
-                self.moveSnake(leftVotes, rightVotes)
+                self.randomVote(1000)
+                self.moveSnake(self.left, self.right)
         elif leftVotes > rightVotes:
             self.turnLeft()
         else:  # rightVotes > leftVotes

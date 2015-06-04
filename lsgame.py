@@ -122,14 +122,15 @@ class LSGameEngine():
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         else:
             if self.sensorMatrix[row][col] is 0:
-                try:
-                    self.game.stepOn(row, col)
-                except AttributeError:  # Game has no stepOn() method
-                    self._warnOnce("{:s} has no stepOn() method.".format(self.currentGame))
-             #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
-                m = Move(row, col, sensorPcnt)
-                m.val = self.sensorMatrix[row][col]
-                self.moves.append(m)
+                if sensorPcnt > 5:                 # Only trigger > 10%, hack to guard against phantom sensors
+                    try:
+                        self.game.stepOn(row, col)
+                    except AttributeError:  # Game has no stepOn() method
+                        self._warnOnce("{:s} has no stepOn() method.".format(self.currentGame))
+                 #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
+                    m = Move(row, col, sensorPcnt)
+                    m.val = self.sensorMatrix[row][col]
+                    self.moves.append(m)
         self.sensorMatrix[row][col] = int(sensorPcnt)
         
 
