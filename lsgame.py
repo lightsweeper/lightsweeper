@@ -25,20 +25,21 @@ class Move():
         self.val = val
 
 class LSGame():
-    def __init__(self, display, audio, rows, cols):
+    def __init__(game, display, audio, rows, cols):
 
         # Standard game setup
-        self.display = display
-        self.audio = audio
-        self.rows = rows
-        self.cols = cols
-        self.ended = False
-        self.frameRate = FPS
-        self.display.clearAll()
+        game.display = display
+        game.audio = audio
+        game.rows = rows
+        game.cols = cols
+        game.ended = False
+        game.frameRate = FPS
+        game.display.clearAll()
 
-    def gameOver (self):
+    def over (game, score=None):
+        # TODO: Pass the score to a the scoreboard class
         print("[Game Over]")
-        self.ended = True
+        game.ended = True
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():
@@ -89,6 +90,7 @@ class LSGameEngine():
 
         print("LSGameEngine: Starting {:s}...".format(self.currentGame))
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
+        game = self.game
         self.game.frameRate = FPS
         self.game.sensors = self.sensorMatrix
         self.numPlays += 1
@@ -104,29 +106,42 @@ class LSGameEngine():
             elif plays is 0:
                 self.enterFrame()
             else:
-                print(" G A M E  O V E R ")
-                self.display.clearAll()
-                self.display.setMessage(int(self.display.rows/2)-1,"GAME OVER")
-                self.display.heartbeat()
-                input("--Press any key to exit--\n")
-                self.display.floor.saveAndExit(0)
+                self.insertCoin()
+
+    def insertCoin(self):
+        self.gameOver()
+        # TODO: Instead of quitting, go to game/demo screen and wait for someone to reset
+
+    def gameOver(self):
+        print(" G A M E  O V E R ")
+        self.display.clearAll()
+        self.display.setMessage(int(self.display.rows/2)-1,"GAME OVER")
+        self.display.heartbeat()
+        input("--Press any key to exit--\n")
+        self.display.floor.saveAndExit(0)
 
     def handleTileStepEvent(self, row, col, sensorPcnt):
         self.initLock.wait()
         if int(sensorPcnt) is 0:
             try:
                 self.game.stepOff(row, col)
-            except AttributeError:   # Game has no stepOff() method
-                self._warnOnce("{:s} has no stepOff() method.".format(self.currentGame))
-        #    print("stepOff: ({:d},{:d})".format(row, col)) # Debugging
+            except AttributeError as e:   # Game has no stepOff() method
+                if "object has no attribute 'stepOff'" in str(e):
+                    self._warnOnce("{:s} has no stepOff() method.".format(self.currentGame))
+                else:
+                    raise(e)
+         #   print("stepOff: ({:d},{:d})".format(row, col)) # Debugging
             self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
         else:
             if self.sensorMatrix[row][col] is 0:
                 if sensorPcnt > 5:                 # Only trigger > 10%, hack to guard against phantom sensors
                     try:
                         self.game.stepOn(row, col)
-                    except AttributeError:  # Game has no stepOn() method
-                        self._warnOnce("{:s} has no stepOn() method.".format(self.currentGame))
+                    except AttributeError as e:   # Game has no stepOn() method
+                        if "object has no attribute 'stepOn'" in str(e):
+                            self._warnOnce("{:s} has no stepOn() method.".format(self.currentGame))
+                        else:
+                            raise(e)
                  #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
                     m = Move(row, col, sensorPcnt)
                     m.val = self.sensorMatrix[row][col]
@@ -143,15 +158,18 @@ class LSGameEngine():
             self.audio.heartbeat()
         else:
             self.newGame()
+        frameRenderTime = (time.time() - startEnterFrame)
+        self.wait(self.padFrame(frameRenderTime))
 
-        self.frameRenderTime = (time.time() - startEnterFrame)
+    def padFrame(self, renderTime):
         spaces = " " * 15
-        fps = 1.0/self.frameRenderTime
+        fps = 1.0/renderTime
         if fps < self.game.frameRate:
-            print("{1:s}{0:.4f} FPS".format(1.0/self.frameRenderTime, spaces), end="\r")
+            print("{1:s}{0:.4f} FPS".format(1.0/renderTime, spaces), end="\r")
+            return(0)
         else:
-            self.wait((1.0/self.game.frameRate)-self.frameRenderTime)
             print("{1:s}{0:.4f} FPS".format(self.game.frameRate, spaces), end="\r")
+            return((1.0/self.game.frameRate)-renderTime)
 
     def _warnOnce(self, warning):
         if warning not in self._warnings:

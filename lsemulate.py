@@ -57,7 +57,7 @@ class LSPygameFloor(LSEmulateFloor):
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill(Colors.intToRGB(Colors.BLACK))
         systemFonts = pygame.font.get_fonts()
-        monoFonts = [f for f in systemFonts if "mono" in f]
+        monoFonts = [f for f in systemFonts if "mono" in f.lower()]
         if len(monoFonts) is 0:
             useFont = random.choice(systemFonts)
         else:
@@ -65,13 +65,10 @@ class LSPygameFloor(LSEmulateFloor):
         if "freemono" in systemFonts:   # I like it
             useFont = "freemono"
         self.font = pygame.font.SysFont(useFont, 14)
-    # Old code:
-  #      for tile in self.tileList:
-  #          tile.loadImage = types.MethodType(self._loadImage, tile) # Bind the loadImage function to each tile
+
 
     def heartbeat(self):
         #gets the images from the individual tiles, blits them in succession
-        #print("heartbeat drawing floor")
         self.screen.blit(self.background, (0,0))
         for r in range(self.rows):
             for c in range(self.cols):

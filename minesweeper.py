@@ -169,91 +169,91 @@ class Minesweeper(LSGame):
 
     staleDisplay = defaultdict(lambda: defaultdict(str))
 
-    def init(self):
+    def init(game):
         board = Board()
-        mines = random.randint(int(self.cols*self.rows*.1), int(self.cols*self.rows*.3))
+        mines = random.randint(int(game.cols*game.rows*.1), int(game.cols*game.rows*.3))
         if mines is 0:
             mines = 1
         print("{:d} mines...".format(mines))
-        board.create_board(self.rows, self.cols, mines)
-        self.board = board
-        self.animatingEnd = False
-        self.audio.loadSong('BetweenGames1.wav', 'between1')
-        self.audio.loadSong('BetweenGames2.wav', 'between2')
-        self.audio.loadSong('BetweenGames3.wav', 'between3')
-        self.audio.loadSong('BetweenGames4.wav', 'between4')
-        self.audio.shuffleSongs()
-        self.audio.setSongVolume(0)
-        self.firstStep = True
-        self.updateBoard(self.board)
-        self.display.setAll(Shapes.ZERO, Colors.GREEN)
+        board.create_board(game.rows, game.cols, mines)
+        game.board = board
+        game.animatingEnd = False
+        game.audio.loadSong('BetweenGames1.wav', 'between1')
+        game.audio.loadSong('BetweenGames2.wav', 'between2')
+        game.audio.loadSong('BetweenGames3.wav', 'between3')
+        game.audio.loadSong('BetweenGames4.wav', 'between4')
+        game.audio.shuffleSongs()
+        game.audio.setSongVolume(0)
+        game.firstStep = True
+        game.updateBoard(game.board)
+        game.display.setAll(Shapes.ZERO, Colors.GREEN)
 
 
-    def stepOn(self, row, col):
-        self.lastMove = (row, col)
+    def stepOn(game, row, col):
+        game.lastMove = (row, col)
         playSound = True
-        if self.board.board[row][col].is_visible:
+        if game.board.board[row][col].is_visible:
             playSound = False
-        if self.firstStep:
-            if self.board.board[row][col].is_mine:
-                self.board.board[row][col].is_mine = False  # TODO: Should replace the mine somewhere else
+        if game.firstStep:
+            if game.board.board[row][col].is_mine:
+                game.board.board[row][col].is_mine = False  # TODO: Should replace the mine somewhere else
                 print("Saved from the mine!")
-            self.firstStep = False
-        self.board.show(row, col)
-        if self.board.board[row][col].is_mine:
-            self.display.set(row, col, Shapes.ZERO, Colors.RED)
-            self.audio.playSound("Explosion.wav")
+            game.firstStep = False
+        game.board.show(row, col)
+        if game.board.board[row][col].is_mine:
+            game.display.set(row, col, Shapes.ZERO, Colors.RED)
+            game.audio.playSound("Explosion.wav")
         elif playSound:
-            self.audio.playSound("Blop.wav")
-            cell = self.board.getCellState(row, col)
+            game.audio.playSound("Blop.wav")
+            cell = game.board.getCellState(row, col)
             if cell != " ":
-                self.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
+                game.display.set(row, col, Shapes.digitToHex(int(cell)), Colors.YELLOW)
 
-    def heartbeat(self, sensorsChanged):
-        if self.board.is_playing:
-            self.updateBoard(self.board)
-        if not self.board.is_playing and not self.animatingEnd:
-            if self.board.is_solved():
+    def heartbeat(game, sensorsChanged):
+        if game.board.is_playing:
+            game.updateBoard(game.board)
+        if not game.board.is_playing and not game.animatingEnd:
+            if game.board.is_solved():
                 print("Well done! You solved the board!")
-                self.endAnim = EndAnimation(True, self.display, self.lastMove, self.board.list_mines())
-                self.animatingEnd = True
-                self.audio.playSound("Success.wav")
+                game.endAnim = EndAnimation(True, game.display, game.lastMove, game.board.list_mines())
+                game.animatingEnd = True
+                game.audio.playSound("Success.wav")
             else:
                 #self.audio.playSound("Explosion.wav")
-                self.board.show_all()
-                self.endAnim = EndAnimation(False, self.display, self.lastMove, self.board.list_mines())
-                self.animatingEnd = True
-        elif self.animatingEnd:
-            frame = self.endAnim.getFrame()
+                game.board.show_all()
+                game.endAnim = EndAnimation(False, game.display, game.lastMove, game.board.list_mines())
+                game.animatingEnd = True
+        elif game.animatingEnd:
+            frame = game.endAnim.getFrame()
             if frame:
                 #update display of each tile
-                self.display.setFrame(frame)
-            if self.endAnim.ended:
-                self.endAnim.animation.play(self.display, frameRate=10)
-                self.gameOver()
+                game.display.setFrame(frame)
+            if game.endAnim.ended:
+                game.endAnim.animation.play(game.display, frameRate=10)
+                game.over()
 
 
     # currently this is just iterating across all the cells in the internal game state and pushing
     # the corresponding shape/color to the display for the given tile's position. a slightly better design would
     # be to only need to push info for the tiles that have actually changed
-    def updateBoard(self, board):
-        for row in range(0, self.rows):
-            for col in range(0, self.cols):
+    def updateBoard(game, board):
+        for row in range(game.rows):
+            for col in range(game.cols):
                 if board != None:
                     cell = board.getCellState(row, col)
-                    staleCell = self.staleDisplay[row][col]
+                    staleCell = game.staleDisplay[row][col]
                     if cell == "D":
                         if staleCell != "D":
-                            self.display.set(row, col, Shapes.DASH, Colors.MAGENTA)
+                            game.display.set(row, col, Shapes.DASH, Colors.MAGENTA)
                     elif cell == '.':
                         if staleCell != ".":
-                            self.display.set(row, col, Shapes.ZERO, Colors.GREEN)
+                            game.display.set(row, col, Shapes.ZERO, Colors.GREEN)
                     elif cell == ' ' or cell == '':
                         if staleCell != " " and staleCell != "":
-                            self.display.set(row, col, Shapes.DASH, Colors.BLACK)
+                            game.display.set(row, col, Shapes.DASH, Colors.BLACK)
                     elif cell == 'M':
                         if staleCell != "M":
-                            self.display.set(row, col, Shapes.ZERO, Colors.RED)
+                            game.display.set(row, col, Shapes.ZERO, Colors.RED)
                     elif cell == 'F':
                         print("A flag?!")
                         break
@@ -269,8 +269,8 @@ class Minesweeper(LSGame):
                             color = Colors.BLUE
                         else:
                             color = Colors.MAGENTA
-                        self.display.set(row, col, Shapes.digitToHex(cell), color) # Should use setDigit?
-                self.staleDisplay[row][col] = cell
+                        game.display.set(row, col, Shapes.digitToHex(cell), color) # Should use setDigit?
+                game.staleDisplay[row][col] = cell
         return
 
 

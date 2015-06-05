@@ -9,40 +9,43 @@ from lsgame import *
 
 class Snake(LSGame):
 
-    def init (self):
-        self.frameRate = 2
-        self.state = list()             # This will keep track of the state of the board
-        for r in range(0, self.rows):
-            self.state.append(list())
-            for c in range(0, self.cols):
-                self.state[r].append([Colors.BLACK] * 7)
+    def init (game):
+        game.frameRate = 2
+        game.state = list()             # This will keep track of the state of the board
+        for r in range(0, game.rows):
+            game.state.append(list())
+            for c in range(0, game.cols):
+                game.state[r].append([Colors.BLACK] * 7)
 
         # Snake initial values
-        self.snakeColor = Colors.WHITE  # The color of the snake
-        self.snake = [(0,0,5)]    # Each item of the list is a section of the snake: (row, col, segment)
-        self.direction = "v"            # The direction of the snake's travel: ^, v, <, >
+        game.snakeColor = Colors.WHITE  # The color of the snake
+        game.snake = [(0,0,5)]    # Each item of the list is a section of the snake: (row, col, segment)
+        game.direction = "v"            # The direction of the snake's travel: ^, v, <, >
 
-        self.foodColor = Colors.RAINBOW()
-        self.snakeFood = self.feedTheSnake()
+        game.foodColor = Colors.RAINBOW()
+        game.snakeFood = game.feedTheSnake()
 
-    def heartbeat(self, sensors):
+    def heartbeat(game, sensors):
+        game.updateMorsel()
+        if len(sensors) is 0:
+            game.slitherForward()
+        else:
+            game.left = 0
+            game.right = 0
+            game.straight = 0
+
+            for move in sensors:
+                if game.nearHead(move.row, move.col):
+                    game.flee(move)
+                else:
+                    game.follow(move)
+            game.moveSnake(game.left, game.right)
+
+    def updateMorsel (self):
         self.morselColor = next(self.foodColor)
         if self.morselColor == self.snakeColor:             # Don't make food the same color as the snake, it's confusing!
             self.morselColor = next(self.foodColor)
         self.addSegment(self.snakeFood, self.morselColor)
-        if len(sensors) is 0:
-            self.slitherForward()
-        else:
-            self.left = 0
-            self.right = 0
-            self.straight = 0
-
-            for move in sensors:
-                if self.nearHead(move.row, move.col):
-                    self.flee(move)
-                else:
-                    self.follow(move)
-            self.moveSnake(self.left, self.right)
 
     def nearHead (self, row, col):
         # Returns true if the tile is within one space of the head of the snake
@@ -346,22 +349,21 @@ class Snake(LSGame):
             if move == section:
                 return True
 
-    def gameOver(self):
-        self.ended = True
-        self.display.clearAll()
-        if self.rows > 1 and self.cols > 3:
-            r = int(self.rows/2)-1 # Row offset
-            c = int(self.cols/2)-2
-            self.display.set(r+0, c+1, Shapes.Y, Colors.WHITE)
-            self.display.set(r+0, c+2, Shapes.O, Colors.WHITE)
-            self.display.set(r+0, c+3, Shapes.U, Colors.WHITE)
-            self.display.set(r+1, c+0, Shapes.L, Colors.WHITE)
-            self.display.set(r+1, c+1, Shapes.O, Colors.WHITE)
-            self.display.set(r+1, c+2, Shapes.S, Colors.WHITE)
-            self.display.set(r+1, c+3, Shapes.E, Colors.WHITE)
-            self.display.heartbeat()
+    def gameOver(game):
+        game.display.clearAll()
+        if game.rows > 1 and game.cols > 3:
+            r = int(game.rows/2)-1 # Row offset
+            c = int(game.cols/2)-2
+            game.display.set(r+0, c+1, Shapes.Y, Colors.WHITE)
+            game.display.set(r+0, c+2, Shapes.O, Colors.WHITE)
+            game.display.set(r+0, c+3, Shapes.U, Colors.WHITE)
+            game.display.set(r+1, c+0, Shapes.L, Colors.WHITE)
+            game.display.set(r+1, c+1, Shapes.O, Colors.WHITE)
+            game.display.set(r+1, c+2, Shapes.S, Colors.WHITE)
+            game.display.set(r+1, c+3, Shapes.E, Colors.WHITE)
+            game.display.heartbeat()
             time.sleep(3)
-        super().gameOver()
+        game.over()
 
 def main():
     gameEngine = LSGameEngine(Snake)
