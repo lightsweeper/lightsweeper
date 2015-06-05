@@ -98,6 +98,51 @@ class LSAnimation:
             raise Exception
         return True
 
+class ScrollingText(LSAnimation):
+    def __init__(self, text, color=Colors.WHITE, height=1, width=None):
+        super().__init__()
+        self.charString = Shapes.stringToShapes(text)
+        self.direction="left"
+        self.height = height
+        if width is None:
+            self.width = len(charString)
+        else:
+            self.width = width
+        self._buildAnimation()
+
+    def setDirection(self, direction):
+        if "left" not in direction.lower() and "right" not in direction.lower():
+            raise NotImplementedError("Text must go 'left' or 'right'")
+        else:
+            self.direction = direction
+        self._buildAnimation()
+
+    def _buildAnimation (self):
+        self._frames = list()  # TODO: A hack! LSAnimation should implement a dropFrames option
+        self.frame = LSFrameGen(self.height, self.width)
+        cs = self.charString[:]
+        if "right" in self.direction.lower():
+            cs = reversed(cs)
+        if self.height is 1:
+            for char in cs:
+                charR = charG = charB = char                 # TODO: implement colors besides white
+                endCap = lambda x: self.width-1 if "left" in x.lower() else 0
+                self.frame.edit(0, endCap(self.direction), (charR, charG, charB))
+                self.addFrame(self.frame.get())
+                shiftFunc = self._pickShift()
+                shiftFunc()
+        else:
+            raise NotImplementedError("height cannot be more than 1")
+
+
+    def _pickShift(self):
+        lowerD = self.direction.lower()
+        if "left" in lowerD:
+            return self.frame.shiftLeft
+        elif "right" in lowerD:
+            return self.frame.shiftRight
+
+
 
 class LSFrameGen:
 
