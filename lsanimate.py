@@ -6,6 +6,8 @@ import Shapes
 import Colors
 import lsdisplay
 
+# TODO: Custom error handlers
+
 def validateFrame(frame):
    # print(repr(frame)) # Debugging
     frameLen = len(frame) - 1
@@ -17,7 +19,6 @@ def validateFrame(frame):
     if all(i <= 128 for i in frame[1:]) is False:
         return False
     return True
-
 
 class LSAnimation:
 
@@ -33,7 +34,6 @@ class LSAnimation:
         if validateFrame(frame) is False:
             print("Error frame is invalid")
             raise Exception
-        index -= 1
         if self._checkIndex(index) is True:
             self._frames.insert(index,frame)
         return True
@@ -52,8 +52,8 @@ class LSAnimation:
         while True:
             i += 1
             try:
-                print("Frame {:d}: ".format(i) + str(next(Frame)))
-            except:
+                print("Frame {:d}: {:s}".format(i, str(next(Frame))))
+            except StopIteration:
                 print("Out of frames")
                 break
 
@@ -65,19 +65,29 @@ class LSAnimation:
                 yield(frame)
 
     def play(self, display, frameRate = 30):
+        if frameRate < 0:
+            raise ValueError("Please specify a non-negative frame rate")
         print("Starting animation ({:d} frames at {:d} fps)".format(len(self._frames), frameRate))
         Frame = self.nextFrame()
+        i = 0
         for frame in Frame:
+            i+=1
+            if frameRate is 0:
+                input("Press any key to advance the animation...\n")
+                print("Frame {:d}: {:s}".format(i, str(frame)))
             stime = time.time()
             display.floor.renderFrame(frame)
             display.heartbeat()
             renderTime = time.time() - stime
 
-            fps = 1.0/renderTime
-            if fps < frameRate:
-                print("[Animation]{0:.4f} FPS".format(1.0/renderTime), end="\r")
-            else:
-                time.sleep((1.0/frameRate) - renderTime)
+            if frameRate is not 0:
+                fps = 1.0/renderTime
+                if fps < frameRate:
+                    print("[Animation]{0:.4f} FPS".format(1.0/renderTime), end="\r")
+                else:
+                    time.sleep((1.0/frameRate) - renderTime)
+        if frameRate is 0:
+            print("Animation ended.")
         print(" " * 22, end = "\r")
 
         
@@ -98,16 +108,48 @@ class LSFrameGen:
 
     # Allows you to edit an existing frame structure, if no colormask is set
     # then the tile will keep its current colormask
-    def edit(self,row,col,colormask):
+    def edit(self, row, col, colormask):
         if row > self.rows or col > self.cols:
             print("Edit error, index out of range")
             raise Exception
         self.frame[row][col] = [colormask]
 
-    def fill(self,colormask):
+    def fill(self, colormask):
         for row in range(0, self.rows):
             for col in range(0, self.cols):
                 self.frame[row][col] = [colormask]
+
+    def shiftLeft (self):
+        for col in range(0, self.cols-1):
+            for row in range(0, self.rows):
+                self.frame[row][col] = self.frame[row][col+1]
+        for row in range(0, self.rows):
+            self.frame[row][self.cols-1] = [(0,0,0)]
+
+    def shiftRight (self):
+        for col in reversed(range(0, self.cols)):
+            for row in range(0, self.rows):
+                self.frame[row][col] = self.frame[row][col-1]
+        for row in range(0, self.rows):
+            self.frame[row][0] = [(0,0,0)]
+
+    def shiftUp (self):
+        for row in range(0, self.rows-1):
+            for col in range(0, self.cols):
+                self.frame[row][col] = self.frame[row+1][col]
+        for col in range(0, self.cols):
+            self.frame[self.rows-1][col] = [(0,0,0)]
+
+    def shiftDown (self):
+        for row in reversed(range(0, self.rows)):
+            for col in range(0, self.cols):
+                self.frame[row][col] = self.frame[row-1][col]
+        for col in range(0, self.cols):
+            self.frame[0][col] = [(0,0,0)]
+
+#TODO: shiftUp and shiftDown (shiftDiag?)
+
+
 
     def print(self):
         for row in self.frame:
@@ -135,7 +177,10 @@ class LSFrameGen:
 
 
 def main():
-    print("TODO: testing lsanimate")
+    print("Importing LSDisplay")
+    import lsdisplay
+
+    d = lsdisplay.LSDisplay(initScreen=False)
 
     colormask = (Shapes.ZERO, 0,0)
     diffmask = (Shapes.ONE, Shapes.TWO, Shapes.THREE)
@@ -145,20 +190,20 @@ def main():
 
     ourAnimation = LSAnimation()
 
-    frame = LSFrameGen(3,3)
+    frame = LSFrameGen(3,d.cols)
     
     for _ in range(0,100):
-        for i in range(0,3):
+        for i in range(d.cols):
             frame.edit(0,i,redZero)
             frame.edit(1,i,greenZero)
             frame.edit(2,i,blueZero)
         ourAnimation.addFrame(frame.get())
-        for i in range(0,3):
+        for i in range(0,d.cols):
             frame.edit(1,i,redZero)
             frame.edit(2,i,greenZero)
             frame.edit(0,i,blueZero)
         ourAnimation.addFrame(frame.get())
-        for i in range(0,3):
+        for i in range(0,d.cols):
             frame.edit(2,i,redZero)
             frame.edit(0,i,greenZero)
             frame.edit(1,i,blueZero)
@@ -170,12 +215,8 @@ def main():
 
   #  ourAnimation.showFrames()
 
-    print("Importing LSDisplay")
-    import lsdisplay
 
-    d = lsdisplay.LSDisplay(initScreen=False)
-
-    ourAnimation.play(d)
+    ourAnimation.play(d, frameRate=0)
 
 
 
