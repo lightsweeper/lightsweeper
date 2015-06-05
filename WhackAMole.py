@@ -39,18 +39,18 @@ class WhackAMole(LSGame):
             self.deletables.append((row, col))
             self.display.set(row, col, Shapes.DASH, Colors.YELLOW)
 
-    def heartbeat(self, sensorsChanged):
+    def heartbeat(self, activeSensors):
         #show appropriate win screen
         ts = time.time()
         if self.winScreen:
             if self.enterName is not None:
-                self.enterName.heartbeat(sensorsChanged)
+                self.enterName.heartbeat(activeSensors)
                 if self.enterName.ended:
                     self.highScores.saveHighScore(self.enterName.currentText, self.score)
                     self.enterName = None
                     self.winScreenTimestamp = ts
             elif ts - self.winScreenTimestamp > 6:
-                self.gameOver()
+                self.over()
             elif not self.showingHighScores:
                 self.display.setAll(Shapes.ZERO, Colors.BLACK)
                 self.display.showHighScores(self.highScores.getHighScores())

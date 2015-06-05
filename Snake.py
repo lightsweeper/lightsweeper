@@ -25,20 +25,22 @@ class Snake(LSGame):
         game.foodColor = Colors.RAINBOW()
         game.snakeFood = game.feedTheSnake()
 
-    def heartbeat(game, sensors):
+    def heartbeat(game, activeSensors):
         game.updateMorsel()
-        if len(sensors) is 0:
+        if len(game.sensors) is 0:
             game.slitherForward()
         else:
             game.left = 0
             game.right = 0
             game.straight = 0
 
-            for move in sensors:
-                if game.nearHead(move.row, move.col):
-                    game.flee(move)
+            for rowCol in activeSensors:
+                row = rowCol[0]
+                col = rowCol[1]
+                if game.nearHead(row, col):
+                    game.flee(row, col)
                 else:
-                    game.follow(move)
+                    game.follow(row, col)
             game.moveSnake(game.left, game.right)
 
     def updateMorsel (self):
@@ -55,67 +57,69 @@ class Snake(LSGame):
                 return True
         return False
 
-    def flee (self, move):
+    def flee (self, row, col):
+        sensorPcnt = self.sensors[row][col]
         (r, c, s) = self.snake[0]
         if self.direction == "^":
-            if move.col < c:
-                self.right += move.val
-            elif move.col > c:
-                self.left += move.val
+            if col < c:
+                self.right += sensorPcnt
+            elif col > c:
+                self.left += sensorPcnt
             else:
-                self.randomVote(1000)
+                self.randomVote(sensorPcnt * 2)
         elif self.direction == "v":
-            if move.col < c:
-                self.left += move.val
-            elif move.col > c:
-                self.right += move.val
+            if col < c:
+                self.left += sensorPcnt
+            elif col > c:
+                self.right += sensorPcnt
             else:
-                self.randomVote(1000)
+                self.randomVote(sensorPcnt * 2)
         elif self.direction == "<":
-            if move.row < r:
-                self.left += move.val
-            elif move.row > r:
-                self.right += move.val
+            if row < r:
+                self.left += sensorPcnt
+            elif row > r:
+                self.right += sensorPcnt
             else:
-                self.randomVote(1000)
+                self.randomVote(sensorPcnt * 2)
         elif self.direction == ">":
-            if move.row < r:
-                self.right += move.val
-            elif move.row > r:
-                self.left += move.val
+            if row < r:
+                self.right += sensorPcnt
+            elif row > r:
+                self.left += sensorPcnt
             else:
-                self.randomVote(1000)
+                self.randomVote(sensorPcnt * 2)
 
-    def follow (self, move):
+    def follow (self, row, col):
+        sensorPcnt = self.sensors[row][col]
         (r, c, s) = self.snake[0]
         if self.direction == "^":
-            if move.col < c:
-                self.left += move.val
-            elif move.col > c:
-                self.right += move.val
+            if col < c:
+                self.left += sensorPcnt
+            elif col > c:
+                self.right += sensorPcnt
             else:
-                self.straight += move.val
+                self.straight += sensorPcnt
         elif self.direction == "v":
-            if move.col < c:
-                self.right += move.val
-            elif move.col > c:
-                self.left += move.val
+            if col < c:
+                self.right += sensorPcnt
+            elif col > c:
+                self.left += sensorPcnt
             else:
-                self.straight += move.val
+                self.straight += sensorPcnt
         elif self.direction == "<":
-            if move.row < r:
-                self.right += move.val
-            elif move.row > r:
-                self.left += move.val
+            if row < r:
+                self.right += sensorPcnt
+            elif row > r:
+                self.left += sensorPcnt
             else:
-                self.straight += move.val
+                self.straight += sensorPcnt
         elif self.direction == ">":
-            if move.row < r:
-                self.left += move.val
-            elif move.row > r:
-                self.right += move.val
+            if row < r:
+                self.left += sensorPcnt
+            elif row > r:
+                self.right += sensorPcnt
             else:
-                self.straight += move.val
+                self.straight += sensorPcnt
 
     def randomVote (self, votes):
         if random.choice([True, False]):

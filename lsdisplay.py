@@ -82,10 +82,10 @@ class LSDisplay():
     def setAll(self, shape, color):
         self.floor.setAll(shape, color)
 
-    def setDigit(self, row, col, digit, color):
+    def setDigit(self, row, col, digit, color=None):
         self.floor.setDigit(row, col, digit, color)
         
-    def setAllDigit(self, digit, color):
+    def setAllDigit(self, digit, color=None):
         self.floor.setAllDigit(digit, color)
 
 

@@ -18,12 +18,6 @@ import Shapes
 
 FPS = 30
 
-class Move():
-    def __init__(self, row, col, val):
-        self.row = row
-        self.col = col
-        self.val = val
-
 class LSGame():
     def __init__(game, display, audio, rows, cols):
 
@@ -131,7 +125,7 @@ class LSGameEngine():
                 else:
                     raise(e)
          #   print("stepOff: ({:d},{:d})".format(row, col)) # Debugging
-            self.moves = [x for x in self.moves if x.row is not row and x.col is not col]
+            self.moves = [x for x in self.moves if x[0] is not row and x[1] is not col]
         else:
             if self.sensorMatrix[row][col] is 0:
                 if sensorPcnt > 5:                 # Only trigger > 10%, hack to guard against phantom sensors
@@ -143,8 +137,7 @@ class LSGameEngine():
                         else:
                             raise(e)
                  #   print("stepOn: ({:d},{:d})".format(row, col)) # Debugging
-                    m = Move(row, col, sensorPcnt)
-                    m.val = self.sensorMatrix[row][col]
+                    m = (row, col)
                     self.moves.append(m)
         self.sensorMatrix[row][col] = int(sensorPcnt)
         

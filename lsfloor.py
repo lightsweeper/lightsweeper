@@ -277,10 +277,10 @@ class LSFloor():
         """
         tile = self.tiles[row][column]
         try:
-            tile.setDigit(digit)
+            tile.setShape(Shapes.digitToHex(int(digit)))
             if color is not None:
                 tile.setColor(color)
-        except:
+        except AttributeError:
             print("SetDigit failed: No tile exists at ({:d},{:d}).".format(row, column))
             
     def setAllDigit(self, digit, color):

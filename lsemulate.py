@@ -95,7 +95,7 @@ class LSPygameFloor(LSEmulateFloor):
             t = 0
         image = pygame.Surface((100, 100))
         if t is not 0:
-            image = self._addText(str(t), image, ("center",25))
+            image = self._addText("{:d}%".format(t), image, ("center",25))
         horizontal = (42,10)
         vertical = (10,30)
         segMap = [(29,10),(71,17),(71,52),(29,79),(19,52),(19,17),(29,45)]

@@ -3,7 +3,6 @@ import Colors
 import Shapes
 import random
 from lsgame import LSGameEngine
-from lsgame import Move
 
 instrument_1 = 19
 instrument_2 = 20
@@ -27,11 +26,8 @@ class MidiSoundboard():
                 print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
 
     def heartbeat(self, sensorsChanged):
-        #if random.randint(0, 10) > 8:
-        #    move = Move(random.randint(0, self.rows - 1), random.randint(0, self.cols - 1), 1)
-        #    sensorsChanged.append(move)
-        for move in sensorsChanged:
-            print("Tile:{:d},{:d} at {:d}".format(move.row, move.col, move.val))
+        for (row, col) in sensorsChanged:
+            print("Tile:{:d},{:d} at {:d}".format(row, col))
             #self.playTileSound(move.row, move.col)
             #self.display.setColor(move.row, move.col, Colors.RANDOM())
 

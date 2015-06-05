@@ -98,7 +98,7 @@ class EightbitSoundboard():
         print("Test code goes here")
         
 def main():
-    gameEngine = LSGameEngine(Soundboard)
+    gameEngine = LSGameEngine(EightbitSoundboard)
     gameEngine.beginLoop()
 
 if __name__ == '__main__':

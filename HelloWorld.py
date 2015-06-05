@@ -96,17 +96,19 @@ class HelloWorld(LSGame):   # Define a new class with the name of your game
                 game.display.set(i, j, Shapes.ZERO, Colors.RANDOM())
 
 
-    def heartbeat(game, activeTiles):
+    def heartbeat(game, activeSensors):
         """
             This function gets called in a loop and is where the meat of your
             game logic will likely occur. The game engine attempts to call
             heartbeat a number of times per second equal to the value of
-            game.frameRate. The variable activeTiles contains a list of tiles
-            that are being actively triggered.
+            game.frameRate. The variable activeSensors contains a list of tiles
+            that are being actively triggered, each entry in the format (row, col)
         """
 
-        if len(activeTiles) > 0:
-            print("Tiles currently being stepped on: " + repr(activeTiles))
+        if len(activeSensors) > 0:
+            for (row, col) in activeSensors:
+                sensorValue = game.sensors[row][col]
+                print("The tile at ({:d},{:d}) currently reads: {:d}%".format(row, col, sensorValue))
         pass
 
 
@@ -131,10 +133,10 @@ class HelloWorld(LSGame):   # Define a new class with the name of your game
         game.over() # Cause game to end
 
 
-# The following 5 lines are the magic that allows you run your game directly.
+# The following 5 lines are the magic that allows your game to run directly.
 # You should include them at the end of every game you write.
 def main():
-    gameEngine = LSGameEngine(HelloWorld)
+    gameEngine = LSGameEngine(HelloWorld) # Be sure to change this to reference your game
     gameEngine.beginLoop()
 
 if __name__ == "__main__":
