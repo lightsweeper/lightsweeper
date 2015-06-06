@@ -26,6 +26,9 @@ class LSAnimation:
         self._frames = list()
 
     def addFrame(self, frame):
+        if len(self._frames) is 0:
+            self.rows = int(len(frame[1:])/frame[0]/3)
+            self.cols = frame[0]
         self.insertFrame(len(self._frames), frame)
         return True
 
@@ -46,6 +49,10 @@ class LSAnimation:
             self._frames = frames
         return True
 
+    def dropFrames(self):
+        # Discard all stored frames
+        self._frames = list()
+
     def showFrames(self):
         Frame = self.nextFrame()
         i = 0
@@ -65,6 +72,8 @@ class LSAnimation:
                 yield(frame)
 
     def play(self, display, frameRate = 30):
+        if self.rows > display.rows or self.cols > display.cols:
+            raise Exception("Animation is too large for this display!")  # TODO: support clipping
         if frameRate < 0:
             raise ValueError("Please specify a non-negative frame rate")
         print("Starting animation ({:d} frames at {:d} fps)".format(len(self._frames), frameRate))
@@ -99,6 +108,13 @@ class LSAnimation:
         return True
 
 class ScrollingText(LSAnimation):
+
+    height = 1
+    width = 1
+    color = Colors.WHITE
+    direction = "left"
+    iterations = 1
+
     def __init__(self, text, color=Colors.WHITE, height=1, width=None):
         super().__init__()
         self.charString = Shapes.stringToShapes(text)
@@ -108,29 +124,33 @@ class ScrollingText(LSAnimation):
             self.width = len(charString)
         else:
             self.width = width
-        self._buildAnimation()
 
-    def setDirection(self, direction):
-        if "left" not in direction.lower() and "right" not in direction.lower():
-            raise NotImplementedError("Text must go 'left' or 'right'")
-        else:
-            self.direction = direction
-        self._buildAnimation()
+    def __setattr__ (self, name, value):
+        super().__setattr__(name, value)
+        if name in ["height", "width", "color", "direction", "iterations"]:
+            self._buildAnimation()
 
     def _buildAnimation (self):
-        self._frames = list()  # TODO: A hack! LSAnimation should implement a dropFrames option
+        self.dropFrames()
         self.frame = LSFrameGen(self.height, self.width)
         cs = self.charString[:]
         if "right" in self.direction.lower():
             cs = reversed(cs)
         if self.height is 1:
-            for char in cs:
-                charR = charG = charB = char                 # TODO: implement colors besides white
-                endCap = lambda x: self.width-1 if "left" in x.lower() else 0
-                self.frame.edit(0, endCap(self.direction), (charR, charG, charB))
-                self.addFrame(self.frame.get())
-                shiftFunc = self._pickShift()
-                shiftFunc()
+            endCap = lambda x: self.width-1 if "left" in x.lower() else 0
+            for i in range(0,self.iterations):
+                for char in cs:
+                    colorMask = Colors.intToRGB(self.color)
+                    charR = charG = charB = 0
+                    (charR, charG, charB) = [char if i is not 0 else 0 for i in colorMask]
+                    self.frame.edit(0, endCap(self.direction), (charR, charG, charB))
+                    self.addFrame(self.frame.get())
+                    self._pickShift()
+                if True:
+                    for i in range(0,self.width):
+                        self.frame.edit(0, endCap(self.direction), (0, 0, 0))
+                        self.addFrame(self.frame.get())
+                        self._pickShift()
         else:
             raise NotImplementedError("height cannot be more than 1")
 
@@ -138,9 +158,9 @@ class ScrollingText(LSAnimation):
     def _pickShift(self):
         lowerD = self.direction.lower()
         if "left" in lowerD:
-            return self.frame.shiftLeft
+            self.frame.shiftLeft()
         elif "right" in lowerD:
-            return self.frame.shiftRight
+            self.frame.shiftRight()
 
 
 
@@ -192,7 +212,7 @@ class LSFrameGen:
         for col in range(0, self.cols):
             self.frame[0][col] = [(0,0,0)]
 
-#TODO: shiftUp and shiftDown (shiftDiag?)
+#TODO: (shiftDiag?)
 
 
 
@@ -211,7 +231,7 @@ class LSFrameGen:
                     frameOut.append(cell[1])
                     frameOut.append(cell[2])
                 except:
-                    print("Warning: ({:d},{:d}) has no update".format(row,col))
+                #    print("Warning: ({:d},{:d}) has no update".format(row,col)) # Debugging
                     frameOut.append(128)
                     frameOut.append(128)
                     frameOut.append(128)
