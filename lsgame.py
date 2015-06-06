@@ -13,6 +13,7 @@ from lsaudio import LSAudio
 from lsconfig import LSFloorConfig
 from lsconfig import userSelect
 
+
 import Colors
 import Shapes
 
@@ -34,6 +35,11 @@ class LSGame():
         # TODO: Pass the score to a the scoreboard class
         print("[Game Over]")
         game.ended = True
+        
+class LSScreenSaver(LSGame):
+    def __init__(game, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        game.frameRate = 15
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():
@@ -128,7 +134,8 @@ class LSGameEngine():
             self.moves = [x for x in self.moves if x[0] is not row and x[1] is not col]
         else:
             if self.sensorMatrix[row][col] is 0:
-                if sensorPcnt > 5:                 # Only trigger > 10%, hack to guard against phantom sensors
+                if sensorPcnt > 20:                 # Only trigger > 20%, hack to guard against phantom sensors
+                                                    # TODO: This but better
                     try:
                         self.game.stepOn(row, col)
                     except AttributeError as e:   # Game has no stepOn() method

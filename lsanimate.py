@@ -1,5 +1,6 @@
 from collections import defaultdict
 import time
+import itertools
 
 
 import Shapes
@@ -19,7 +20,27 @@ def validateFrame(frame):
     if all(i <= 128 for i in frame[1:]) is False:
         return False
     return True
+    
+def mergeFrames(baseFrame, subFrame, offset=(0,0)):
+    # TODO: Alpha channel
+    rows = frameRows(baseFrame)
+    cols = frameCols(baseFrame)
+    if frameRows(subFrame)+offset[0] > rows or frameRows(subFrame)+offset[1] > cols:
+        raise Exception("Cannot merge frames, subFrame plus offset must be smaller than baseFrame")
+    out = list()
+    out.append(cols)
+    
+    
+    return(out)
 
+    
+
+def frameRows (frame):
+    return(len(frame[1:])/3)
+
+def frameCols (frame):
+    return(frame[0])
+    
 class LSAnimation:
 
     def __init__(self):
@@ -239,6 +260,19 @@ class LSFrameGen:
                           # followed by a repeating pattern of 3 integers, each representing a
                           # subsequent tile's red, green, and blue colormasks
 
+  #  def put(self, frame):
+  #      if not validateFrame(frame):
+  #          raise Exception("Cannot put frame. Frame is invalid")
+  #      cols = frame.pop()
+  #      row = col = 0
+  #      for _ in itertools.repeat(None, int(len(frame)/3)):
+  #          if col is cols:
+  #              row += 1
+  #              col = 0
+  #          rMask, gMask, bMask = frame.pop(0), frame.pop(0), frame.pop(0)
+  #          if rMask is not 128:
+  #              self.frame[row][col] = (rMask, gMask, bMask)
+  #          col += 1
 
 
 def main():

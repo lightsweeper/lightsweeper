@@ -340,10 +340,7 @@ class LSFloor():
     
         frame = frame[:]
 
-        try:
-            cols = frame.pop(0)
-        except:
-            pass
+        cols = frame.pop(0)
         row = 0
         col = 0
         for _ in itertools.repeat(None, int(len(frame)/3)):
