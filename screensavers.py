@@ -46,9 +46,28 @@ class RainbowZipper(LSScreenSaver):
             outAnimation.addFrame(thisFrame)
         outAnimation.play(self.display, frameRate=10)
 
+class RandDot(LSScreenSaver):
+    def heartbeat(self, activeSensors):
+        self.display.set(random.randint(0,self.display.rows-1), random.randint(0,self.display.cols-1), Shapes.ZERO, Colors.RANDOM())
+
+class AnimTestbed(LSScreenSaver):
+    def init(self):
+        self.frameRate = 0
+        self.frame = 0
+        self.currentColors = [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.MAGENTA]
+
+    def heartbeat(self, sensorsChanged):
+        self.frame += 1
+        self.display.setAllCustom(self.currentColors + [Colors.BLACK])
+        color = self.currentColors.pop()
+        self.currentColors.insert(0, color)
+        if self.frame % 7 is 0:
+            self.display.setAll(Shapes.DASH, Colors.WHITE)
+
+screensaverList = [FlyingWords, RainbowZipper, RandDot, AnimTestbed]
 
 def main():
-    gameEngine = LSGameEngine(RainbowZipper)
+    gameEngine = LSGameEngine(AnimTestbed)
     gameEngine.beginLoop()
 
 if __name__ == "__main__":

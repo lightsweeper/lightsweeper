@@ -45,7 +45,7 @@ class LSScreenSaver(LSGame):
 
 import screensavers
 
-SAVERS = [screensavers.FlyingWords, screensavers.RainbowZipper]
+SAVERS = screensavers.screensaverList
 
 
 #enforces the framerate, pushes sensor data to games, and selects games
@@ -179,7 +179,7 @@ class LSGameEngine():
     def padFrame(self, renderTime):
         spaces = " " * 15
         fps = 1.0/renderTime
-        if fps < self.game.frameRate:
+        if fps < self.game.frameRate or self.game.frameRate is 0:
             print("{1:s}{0:.4f} FPS".format(1.0/renderTime, spaces), end="\r")
             return(0)
         else:
