@@ -23,14 +23,22 @@ def validateFrame(frame):
     
 def mergeFrames(baseFrame, subFrame, offset=(0,0)):
     # TODO: Alpha channel
-    rows = frameRows(baseFrame)
-    cols = frameCols(baseFrame)
-    if frameRows(subFrame)+offset[0] > rows or frameRows(subFrame)+offset[1] > cols:
+    rows = bRows = frameRows(baseFrame)
+    cols = bCols = baseFrame.pop(0)
+    sRows = frameRows(subFrame)
+    sCols = subFrame.pop(0)
+    if sRows+offset[0] > rows or sCols+offset[1] > cols:
         raise Exception("Cannot merge frames, subFrame plus offset must be smaller than baseFrame")
     out = list()
+    hiddenLayer = list()
     out.append(cols)
-    
-    
+    out.extend([baseFrame.pop(0) for _ in range(offset[0]*bCols*3)])
+    while len(subFrame) > 0:
+        out.extend([baseFrame.pop(0) for _ in range(offset[1]*3)])
+        hiddenLayer.extend([baseFrame.pop(0) for _ in range(sCols*3)])
+        out.extend([subFrame.pop(0) for _ in range(sCols*3)])
+        out.extend([baseFrame.pop(0) for _ in range((bCols-sCols-offset[1])*3)])
+    out.extend(baseFrame)
     return(out)
 
     
