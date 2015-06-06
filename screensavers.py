@@ -11,13 +11,14 @@ class FlyingWords(LSScreenSaver):
         self.text = lsanimate.ScrollingText("LightSweeper", width=self.cols)
         self.surface = lsanimate.LSFrameGen(self.rows, self.cols)
         self.surface.fill((0,0,0))
+        self.lastRow = random.randint(0, self.surface.rows-1)
 
 
     def heartbeat(self, activeSensors):
         self.text.color = Colors.RANDOM(exclude=self.text.color)
         outAnimation = lsanimate.LSAnimation()
         Frame = self.text.nextFrame()
-        randomRow = random.randint(0, self.surface.rows)
+        randomRow = self.lastRow = random.choice([x for x in range(0, self.surface.rows) if x != self.lastRow])
         for frame in Frame:
             outAnimation.addFrame(lsanimate.mergeFrames(self.surface.get(), frame, offset=(randomRow,0)))
             
