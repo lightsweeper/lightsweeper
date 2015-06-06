@@ -111,3 +111,5 @@ def RAINBOW(firstColor = RED):
             i = 0
         yield rainbowList[i]
         i += 1
+
+#TODO: SPECTRUM() and CYCLIC_RAINBOW()

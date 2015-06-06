@@ -28,6 +28,7 @@ class LSGame():
         game.rows = rows
         game.cols = cols
         game.ended = False
+        game.duration = 0
         game.frameRate = FPS
         game.display.clearAll()
 
@@ -39,7 +40,13 @@ class LSGame():
 class LSScreenSaver(LSGame):
     def __init__(game, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        game.duration = 10
         game.frameRate = 15
+
+import screensavers
+
+SAVERS = [screensavers.FlyingWords, screensavers.RainbowZipper]
+
 
 #enforces the framerate, pushes sensor data to games, and selects games
 class LSGameEngine():
@@ -72,7 +79,7 @@ class LSGameEngine():
         self.display = LSDisplay(conf=conf, eventCallback = self.handleTileStepEvent, initScreen=True)
         self.moves = []
         self.sensorMatrix = defaultdict(lambda: defaultdict(int))
-        self.newGame()
+        self.newGame(self.GAME)
 
         #these are for bookkeeping
         self.frames = 0
@@ -81,23 +88,25 @@ class LSGameEngine():
         # This lock prevents handleTileStepEvent() from being run by polling loops before init is complete
         self.initLock.set()
 
-    def newGame(self):
+    def newGame(self, Game):
         try: # Game is a list of game classes, pick one at random
-            GAME = random.choice(self.GAME)
+            GAME = random.choice(Game)
         except: # Game was specified
-            GAME = self.GAME
+            GAME = Game
         self.currentGame = GAME.__name__
 
         print("LSGameEngine: Starting {:s}...".format(self.currentGame))
         self.game = GAME(self.display, self.audio, self.ROWS, self.COLUMNS)
-        game = self.game
-        self.game.frameRate = FPS
+        self.startGame = time.time()
+     #   game = self.game
+     #   self.game.frameRate = FPS
         self.game.sensors = self.sensorMatrix
-        self.numPlays += 1
+        self.numPlays += 1   # TODO: Check if type is screensaver
         try:
             self.game.init()
         except AttributeError:
             self._warnOnce("{:s} has no init() method.".format(self.currentGame))
+
 
     def beginLoop(self, plays = 0):
         while True:
@@ -151,13 +160,19 @@ class LSGameEngine():
 
 
     def enterFrame(self):
+        if self.game.duration is not 0:
+            playTime = (time.time() - self.startGame)
+            if playTime > self.game.duration:
+            #    self.game.ended = True
+                self.newGame(self.GAME)
         startEnterFrame = time.time()
         if not self.game.ended:
             self.game.heartbeat(self.moves)
             self.display.heartbeat()
             self.audio.heartbeat()
         else:
-            self.newGame()
+            self.newGame(SAVERS)    # Super hacky, should be in gameOver
+         #   self.newGame(self.GAME)
         frameRenderTime = (time.time() - startEnterFrame)
         self.wait(self.padFrame(frameRenderTime))
 

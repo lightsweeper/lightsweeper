@@ -44,7 +44,7 @@ def mergeFrames(baseFrame, subFrame, offset=(0,0)):
     
 
 def frameRows (frame):
-    return(len(frame[1:])/3)
+    return(len(frame[1:])/frame[0]/3)
 
 def frameCols (frame):
     return(frame[0])
@@ -101,7 +101,7 @@ class LSAnimation:
                 yield(frame)
 
     def play(self, display, frameRate = 30):
-        if self.rows > display.rows or self.cols > display.cols:
+        if frameRows(self._frames[0]) > display.rows or frameCols(self._frames[0]) > display.cols:
             raise Exception("Animation is too large for this display!")  # TODO: support clipping
         if frameRate < 0:
             raise ValueError("Please specify a non-negative frame rate")
@@ -149,6 +149,7 @@ class ScrollingText(LSAnimation):
         self.charString = Shapes.stringToShapes(text)
         self.direction="left"
         self.height = height
+        self.color = color
         if width is None:
             self.width = len(self.charString)
         else:
@@ -169,7 +170,11 @@ class ScrollingText(LSAnimation):
             endCap = lambda x: self.width-1 if "left" in x.lower() else 0
             for i in range(0,self.iterations):
                 for char in cs:
-                    colorMask = Colors.intToRGB(self.color)
+                    try:
+                        color = next(self.color)
+                    except TypeError:
+                        color = self.color
+                    colorMask = Colors.intToRGB(color)
                     charR = charG = charB = 0
                     (charR, charG, charB) = [char if i is not 0 else 0 for i in colorMask]
                     self.frame.edit(0, endCap(self.direction), (charR, charG, charB))
