@@ -52,7 +52,7 @@ class RandDot(LSScreenSaver):
 
 class AnimTestbed(LSScreenSaver):
     def init(self):
-        self.frameRate = 0
+        self.frameRate = -1
         self.frame = 0
         self.currentColors = [Colors.RED, Colors.YELLOW, Colors.GREEN, Colors.CYAN, Colors.BLUE, Colors.MAGENTA]
 

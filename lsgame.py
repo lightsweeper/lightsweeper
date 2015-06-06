@@ -156,8 +156,12 @@ class LSGameEngine():
                     m = (row, col)
                     self.moves.append(m)
         self.sensorMatrix[row][col] = int(sensorPcnt)
-        
 
+    def pauseGame (self):
+        print("Game is paused.")
+        while self.game.frameRate < 1:
+            pass
+        print("Game resuming...")
 
     def enterFrame(self):
         if self.game.duration is not 0:
@@ -177,9 +181,11 @@ class LSGameEngine():
         self.wait(self.padFrame(frameRenderTime))
 
     def padFrame(self, renderTime):
+        if self.game.frameRate is 0:
+            self.pauseGame()
         spaces = " " * 15
         fps = 1.0/renderTime
-        if fps < self.game.frameRate or self.game.frameRate is 0:
+        if fps < self.game.frameRate or self.game.frameRate < 0:
             print("{1:s}{0:.4f} FPS".format(1.0/renderTime, spaces), end="\r")
             return(0)
         else:

@@ -10,7 +10,7 @@ from lsgame import *
 class Snake(LSGame):
 
     def init (game):
-        game.frameRate = 2
+        game.speed = 2
         game.state = list()             # This will keep track of the state of the board
         for r in range(0, game.rows):
             game.state.append(list())
@@ -24,6 +24,7 @@ class Snake(LSGame):
 
         game.foodColor = Colors.RAINBOW()
         game.snakeFood = game.feedTheSnake()
+        game.frameRate = 0
 
     def heartbeat(game, activeSensors):
         game.updateMorsel()
@@ -42,6 +43,10 @@ class Snake(LSGame):
                 else:
                     game.follow(row, col)
             game.moveSnake(game.left, game.right)
+
+    def stepOn(game, row, col):
+        if game.frameRate is 0:
+            game.frameRate = game.speed
 
     def updateMorsel (self):
         self.morselColor = next(self.foodColor)
