@@ -19,7 +19,7 @@ class Snake(LSGame):
 
         # Snake initial values
         game.snakeColor = Colors.WHITE  # The color of the snake
-        game.snake = [(0,0,5)]    # Each item of the list is a section of the snake: (row, col, segment)
+        game.snake = [(0,int(game.cols/2),5)]    # Each item of the list is a section of the snake: (row, col, segment)
         game.direction = "v"            # The direction of the snake's travel: ^, v, <, >
 
         game.foodColor = Colors.RAINBOW()

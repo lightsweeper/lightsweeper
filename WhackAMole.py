@@ -52,9 +52,10 @@ class WhackAMole(LSGame):
             elif ts - self.winScreenTimestamp > 6:
                 self.over()
             elif not self.showingHighScores:
-                self.display.setAll(Shapes.ZERO, Colors.BLACK)
-                self.display.showHighScores(self.highScores.getHighScores())
-                self.showingHighScores = True
+                self.over()
+          #      self.display.setAll(Shapes.ZERO, Colors.BLACK)
+         #       self.display.showHighScores(self.highScores.getHighScores())
+        #        self.showingHighScores = True                      # TODO: pass highscores to LSGameEngine with game.over
             return
 
         #update timer
