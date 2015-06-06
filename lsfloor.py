@@ -337,6 +337,8 @@ class LSFloor():
 
     def renderFrame(self, frame):
     # TODO: LSRealTile, should optimize tile calls
+    
+        frame = frame[:]
 
         try:
             cols = frame.pop(0)

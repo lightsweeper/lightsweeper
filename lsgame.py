@@ -163,6 +163,7 @@ class LSGameEngine():
         else:
             print("{1:s}{0:.4f} FPS".format(self.game.frameRate, spaces), end="\r")
             return((1.0/self.game.frameRate)-renderTime)
+        print(spaces * 2, end="\r")
 
     def _warnOnce(self, warning):
         if warning not in self._warnings:

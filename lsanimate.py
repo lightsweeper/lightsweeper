@@ -121,7 +121,7 @@ class ScrollingText(LSAnimation):
         self.direction="left"
         self.height = height
         if width is None:
-            self.width = len(charString)
+            self.width = len(self.charString)
         else:
             self.width = width
 
@@ -281,7 +281,7 @@ def main():
   #  ourAnimation.showFrames()
 
 
-    ourAnimation.play(d, frameRate=0)
+    ourAnimation.play(d, frameRate=15)
 
 
 
