@@ -4,16 +4,16 @@ lightsweeper
 Lightsweeper Firmware
 
 
-# Requirements:
+### Requirements:
   - A LightSweeper board
   - An ATTiny85 programmer (we use this one: https://www.sparkfun.com/products/11801)
   - Arduino SDK (http://www.arduino.cc/en/Main/Software)
   - The ATtiny Arduino core board files from https://code.google.com/p/arduino-tiny/
 
 
-# Installation:
+### Installation:
 
-## Flashing the LightSweeper firmware:
+#### Flashing the LightSweeper firmware:
   - Launch the Arduino IDE
   - Navigate to File -> Open and select the file: ls_firmware.ino
   - Make sure that Tools -> Serial Port and Tools -> Programmer are correctly configured
