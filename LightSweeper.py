@@ -3,22 +3,20 @@
 import os
 import random
 
-from minesweeper import Minesweeper
-from EightbitSoundboard import EightbitSoundboard
-from MidiSoundboard import MidiSoundboard
-from AnimTestbed import AnimTestbed
-from WhackAMole import WhackAMole
-from Snake import Snake
+from games.minesweeper import Minesweeper
+from games.EightbitSoundboard import EightbitSoundboard
+from games.MidiSoundboard import MidiSoundboard
+from games.WhackAMole import WhackAMole
+from games.Snake import Snake
 
-from lsgame import LSGameEngine
-from lsconfig import userSelect
-import lsconfig
+from LightSweeper.lsgame import LSGameEngine
+from LightSweeper.lsconfig import userSelect
+import LightSweeper.lsconfig as lsconfig
 
 NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
 
 
 availableGames = dict([
-              #          ("AnimTestbed", AnimTestbed),
                         ("Minesweeper", Minesweeper),
                  #       ("EightbitSoundboard", EightbitSoundboard),
                         ("WhackAMole", WhackAMole),
