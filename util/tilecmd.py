@@ -23,9 +23,9 @@ Tile commands:
     reset       Causes the tile to reset
 '''
 from docopt import docopt
-from lightsweeper.LSRealTile import LSOpen
-from lightsweeper.LSRealTile import LSRealTile
-from lightsweeper.LSRealTile import EE_ADDR
+from lightsweeper.lstile import LSOpen
+from lightsweeper.lstile import LSRealTile
+from lightsweeper.lstile import EE_ADDR
 
 if __name__ == '__main__':
     args = docopt(__doc__)

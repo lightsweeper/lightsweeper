@@ -1,7 +1,7 @@
 """ Contains descriptions of and methods for interfacing with LightSweeper floors """
 
-from lightsweeper.LSRealTile import LSRealTile
-from lightsweeper.LSRealTile import LSOpen
+from lightsweeper.lstile import LSRealTile
+from lightsweeper.lstile import LSOpen
 from lightsweeper.lstile import LSTile
 from lightsweeper.lsconfig import LSFloorConfig
 from lightsweeper.lsconfig import userSelect
