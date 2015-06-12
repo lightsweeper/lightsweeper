@@ -17,7 +17,7 @@ Lightsweeper - a burning man project
   > python setup.py install
 
 
-### To use:
+### Usage:
 
  First run:
 
@@ -26,10 +26,6 @@ Lightsweeper - a burning man project
  this will walk you through creating a floor configuration file. If you are not using
  a real floor just create a virtual configuration.
 
- Once configured, run a game by calling it directly, e.g.:
+ Once configured, run:
 
-  > python games/minesweeper.py
-
- or by accessing it through LightSweeper:
-
- > python LightSweeper.py
+  > python LightSweeper.py
