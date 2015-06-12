@@ -3,11 +3,11 @@
 import time
 import random
 
-from LightSweeper.lsgame import *
+from lsapi.lsgame import *
 
-from LightSweeper.LSGameUtils import HighScores
-from LightSweeper.LSGameUtils import CountdownTimer
-from LightSweeper.LSGameUtils import EnterName
+from lsapi.LSGameUtils import HighScores
+from lsapi.LSGameUtils import CountdownTimer
+from lsapi.LSGameUtils import EnterName
 
 TIMEOUT = 5
 FAST_TIMEOUT = 4

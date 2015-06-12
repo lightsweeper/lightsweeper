@@ -2,10 +2,10 @@ from collections import defaultdict
 import time
 
 
-import LightSweeper.Shapes as Shapes
-import LightSweeper.Colors as Colors
-import LightSweeper.lsdisplay as lsdisplay
-import LightSweeper.lsanimate as lsanimate
+from lsapi import Shapes
+from lsapi import Colors
+import lsapi.lsdisplay as lsdisplay
+import lsapi.lsanimate as lsanimate
 
 
 

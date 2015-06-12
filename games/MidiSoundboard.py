@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import random
-from LightSweeper.lsgame import *
+from lsapi.lsgame import *
 
 instrument_1 = 19
 instrument_2 = 20

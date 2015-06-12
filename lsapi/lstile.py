@@ -1,7 +1,7 @@
 """ Contains descriptions of and methods for interfacing with LightSweeper tile objects """
 
-import LightSweeper.Colors as Colors
-import LightSweeper.Shapes as Shapes
+from lsapi import Colors
+from lsapi import Shapes
 
 ### Definition of the Lightsweeper low level API
 

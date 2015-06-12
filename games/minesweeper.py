@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from LightSweeper.lsgame import *
+from lsapi.lsgame import *
 
 from collections import defaultdict
 import random
@@ -10,10 +10,10 @@ import pygame # pygame.event
 
 
 
-import LightSweeper.Shapes as Shapes
-import LightSweeper.Colors as Colors
-import LightSweeper.lsdisplay as lsdisplay
-import LightSweeper.lsanimate as lsanimate
+from lsapi import Shapes
+from lsapi import Colors
+import lsapi.lsdisplay as lsdisplay
+import lsapi.lsanimate as lsanimate
 
 
 
@@ -515,7 +515,7 @@ class LSExplosion:
         #print(repr(tile) + " to " + repr(mine) + " = " + repr(dist))
         return dist
 
-def main():
+def test_explosion():
     print("TODO: testing lsexplosion")
 
     useRealFloor = True
@@ -565,11 +565,6 @@ def main():
     #ourAnimation.deleteFrame(7) # Yes, we need both of these
 
     ourAnimation.play(d)
-
-
-if __name__ == '__main__':
-    main()
-
 
 wait=time.sleep
 

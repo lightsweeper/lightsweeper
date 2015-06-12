@@ -9,9 +9,9 @@ from games.MidiSoundboard import MidiSoundboard
 from games.WhackAMole import WhackAMole
 from games.Snake import Snake
 
-from LightSweeper.lsgame import LSGameEngine
-from LightSweeper.lsconfig import userSelect
-import LightSweeper.lsconfig as lsconfig
+from lsapi.lsgame import LSGameEngine
+from lsapi.lsconfig import userSelect
+import lsapi.lsconfig as lsconfig
 
 NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
 

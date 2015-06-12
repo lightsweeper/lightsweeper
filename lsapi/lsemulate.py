@@ -1,7 +1,7 @@
 """ Contains methods to emulate LightSweeper floors on your computer """
 
-import LightSweeper.lsfloor as lsfloor
-import LightSweeper.Colors as Colors
+from lsapi import lsfloor
+from lsapi import Colors
 
 import os
 import random

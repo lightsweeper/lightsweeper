@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # the API is the base class
-from .lstile import LSTile
+from lsapi.lstile import LSTile
 
 #from struct import *
 

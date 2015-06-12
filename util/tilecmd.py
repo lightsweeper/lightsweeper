@@ -23,9 +23,9 @@ Tile commands:
     reset       Causes the tile to reset
 '''
 from docopt import docopt
-from LSRealTile import LSOpen
-from LSRealTile import LSRealTile
-from LSRealTile import EE_ADDR
+from lsapi.LSRealTile import LSOpen
+from lsapi.LSRealTile import LSRealTile
+from lsapi.LSRealTile import EE_ADDR
 
 if __name__ == '__main__':
     args = docopt(__doc__)

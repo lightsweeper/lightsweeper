@@ -2,7 +2,7 @@
 
 import random
 
-from lsgame import *
+from lsapi.lsgame import *
 
 class Calibrate(LSGame):
         

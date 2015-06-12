@@ -5,7 +5,7 @@ import random
 import time
 from collections import defaultdict
 
-from LightSweeper.lsgame import *
+from lsapi.lsgame import *
 
 class Snake(LSGame):
 

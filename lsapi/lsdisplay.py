@@ -1,11 +1,11 @@
 """ The main point of interface to the LightSweeper API. """
 
-from .lsfloor import LSFloor
-from .lsemulate import LSPygameFloor
-from .lsconfig import LSFloorConfig
+from lsapi.lsfloor import LSFloor
+from lsapi.lsemulate import LSPygameFloor
+from lsapi.lsconfig import LSFloorConfig
 
-import LightSweeper.Shapes as Shapes
-import LightSweeper.Colors as Colors
+from lsapi import Shapes
+from lsapi import Colors
 import time
 
 wait = time.sleep

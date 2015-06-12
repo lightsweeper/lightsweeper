@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lsgame import *    # Start by importing the namespace from lsgame
+from lsapi.lsgame import *    # Start by importing the namespace from lsgame
 
 import random           # You can also import any other python modules you need
                         # to run your game

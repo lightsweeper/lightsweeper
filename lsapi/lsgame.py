@@ -8,14 +8,14 @@ import time
 
 from collections import defaultdict
 
-from .lsdisplay import LSDisplay
-from .lsaudio import LSAudio
-from .lsconfig import LSFloorConfig
-from .lsconfig import userSelect
+from lsapi.lsdisplay import LSDisplay
+from lsapi.lsaudio import LSAudio
+from lsapi.lsconfig import LSFloorConfig
+from lsapi.lsconfig import userSelect
 
 
-import LightSweeper.Colors as Colors
-import LightSweeper.Shapes as Shapes
+from lsapi import Colors
+from lsapi import Shapes
 
 FPS = 30
 
@@ -43,7 +43,7 @@ class LSScreenSaver(LSGame):
         game.duration = 10
         game.frameRate = 15
 
-from .screensavers import screensavers
+from lsapi.screensavers import screensavers
 
 SAVERS = screensavers.screensaverList
 
