@@ -2,7 +2,7 @@
 
 import random
 
-from lsapi.lsgame import *
+from lsapi import *
 
 class EightbitSoundboard():
     def __init__(self, display, audio, rows, cols):

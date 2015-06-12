@@ -11,7 +11,7 @@ from games.Snake import Snake
 
 from lsapi.lsgame import LSGameEngine
 from lsapi.lsconfig import userSelect
-import lsapi.lsconfig as lsconfig
+from lsapi import lsconfig
 
 NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
 

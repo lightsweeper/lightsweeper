@@ -5,7 +5,7 @@
 
 import time
 
-from lsapi.lsgame import *
+from lsapi import *
 
 PREFIX = 'drums/'
 class Sequencer():

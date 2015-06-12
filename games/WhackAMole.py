@@ -3,7 +3,7 @@
 import time
 import random
 
-from lsapi.lsgame import *
+from lsapi import *
 
 from lsapi.LSGameUtils import HighScores
 from lsapi.LSGameUtils import CountdownTimer

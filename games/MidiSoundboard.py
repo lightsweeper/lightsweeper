@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import random
-from lsapi.lsgame import *
+from lsapi import *
 
 instrument_1 = 19
 instrument_2 = 20

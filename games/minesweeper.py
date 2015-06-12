@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from lsapi.lsgame import *
+from lsapi import *
 
 from collections import defaultdict
 import random

@@ -5,7 +5,7 @@ import random
 import time
 from collections import defaultdict
 
-from lsapi.lsgame import *
+from lsapi import *
 
 class Snake(LSGame):
 
