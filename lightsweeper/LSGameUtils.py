@@ -1,8 +1,8 @@
 import time
 import json
 
-from lsapi import Colors
-from lsapi import Shapes
+from lightsweeper import Colors
+from lightsweeper import Shapes
 
 HI_SCORE_CUTOFF = 5
 class HighScores():

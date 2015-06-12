@@ -3,9 +3,9 @@ import time
 import itertools
 
 
-from lsapi import Shapes
-from lsapi import Colors
-import lsapi.lsdisplay as lsdisplay
+from lightsweeper import Shapes
+from lightsweeper import Colors
+from lightsweeper import lsdisplay
 
 # TODO: Custom error handlers
 

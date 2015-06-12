@@ -5,8 +5,8 @@ import os
 import json
 import numbers
 
-from .LSRealTile import LSOpen
-from .LSRealTile import LSRealTile
+from lightsweeper.LSRealTile import LSOpen
+from lightsweeper.LSRealTile import LSRealTile
 
 
 

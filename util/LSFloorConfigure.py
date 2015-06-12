@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-from lsapi.lsconfig import LSFloorConfig
-from lsapi.lsconfig import userSelect
-from lsapi.lsconfig import interactiveConfig
-from lsapi.lsconfig import pickFile
-from lsapi.lsconfig import FileExistsError
-from lsapi.lsconfig import yesNO
+from lightsweeper.lsconfig import LSFloorConfig
+from lightsweeper.lsconfig import userSelect
+from lightsweeper.lsconfig import interactiveConfig
+from lightsweeper.lsconfig import pickFile
+from lightsweeper.lsconfig import FileExistsError
+from lightsweeper.lsconfig import yesNO
 
 def main():
 

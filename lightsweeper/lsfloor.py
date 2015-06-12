@@ -1,13 +1,13 @@
 """ Contains descriptions of and methods for interfacing with LightSweeper floors """
 
-from lsapi.LSRealTile import LSRealTile
-from lsapi.LSRealTile import LSOpen
-from lsapi.lstile import LSTile
-from lsapi.lsconfig import LSFloorConfig
-from lsapi.lsconfig import userSelect
+from lightsweeper.LSRealTile import LSRealTile
+from lightsweeper.LSRealTile import LSOpen
+from lightsweeper.lstile import LSTile
+from lightsweeper.lsconfig import LSFloorConfig
+from lightsweeper.lsconfig import userSelect
 
-from lsapi import Colors
-from lsapi import Shapes
+from lightsweeper import Colors
+from lightsweeper import Shapes
 
 
 from collections import defaultdict

@@ -2,7 +2,7 @@
 
 import random
 
-from lsapi.lsgame import *
+from lightsweeper.lsapi import *
 
 class Calibrate(LSGame):
         

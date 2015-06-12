@@ -1,8 +1,8 @@
 
 import random
 
-from lsapi.lsgame import *
-from lsapi import lsanimate
+from lightsweeper.lsgame import *
+from lightsweeper import lsanimate
 
 MESSAGE = "LightSweeper"
 

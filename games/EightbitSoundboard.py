@@ -2,7 +2,7 @@
 
 import random
 
-from lsapi import *
+from lightsweeper.lsapi import *
 
 class EightbitSoundboard():
     def __init__(self, display, audio, rows, cols):

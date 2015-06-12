@@ -9,11 +9,11 @@ if sys.hexversion < 0x030200a1:
     print("Exiting...")
     sys.exit(1)
 
-setup(name='LightSweeperAPI',
+setup(name='LightSweeper',
     version='0.6b',
     description='The LightSweeper API',
     author='The LightSweeper Team',
     author_email='codewizards@lightsweeper.org',
     url='http://www.lightsweeper.org',
-    packages=['lsapi'],
+    packages=['lightsweeper'],
     )

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from lsapi import *
+from lightsweeper.lsapi import *
 
 from collections import defaultdict
 import random
@@ -9,8 +9,8 @@ import time
 import pygame # pygame.event
 
 
-from lsapi import lsdisplay
-from lsapi import lsanimate
+from lightsweeper import lsdisplay
+from lightsweeper import lsanimate
 
 
 

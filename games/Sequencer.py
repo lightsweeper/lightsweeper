@@ -5,7 +5,7 @@
 
 import time
 
-from lsapi import *
+from lightsweeper.lsapi import *
 
 PREFIX = 'drums/'
 class Sequencer():

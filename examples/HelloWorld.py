@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lsapi import *    # Start by importing the LightSweeper API
+from lightsweeper.lsapi import *    # Start by importing the LightSweeper API
 
 import random           # You can also import any other python modules you need
                         # to run your game

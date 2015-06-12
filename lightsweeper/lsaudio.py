@@ -4,7 +4,7 @@ import atexit
 import os
 import random
 
-from .lsconfig import userSelect
+from lightsweeper.lsconfig import userSelect
 
 class _lsAudio:
     def __init__(self, initSound=True, useMidi=False):
