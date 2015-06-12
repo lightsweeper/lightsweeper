@@ -9,11 +9,8 @@ import time
 import pygame # pygame.event
 
 
-
-from lsapi import Shapes
-from lsapi import Colors
-import lsapi.lsdisplay as lsdisplay
-import lsapi.lsanimate as lsanimate
+from lsapi import lsdisplay
+from lsapi import lsanimate
 
 
 
