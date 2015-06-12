@@ -22,10 +22,10 @@ Lightsweeper Firmware
   - Select Tools -> Burn Bootloader and wait for the operation to complete
   - Select File -> Upload and wait for the firmware to finish flashing
 
-  By default the pin connected to the touch-sensor input of the LightSweeper tile is the same pin
-  as is used for ATtiny85's system-reset. Thus to use the LightSweeper tile with sensor input you
-  will also need to set the RSTDSBL (reset disable) flag on the chip. You can do this using a tool
-  that ships with the Arduino platform called avrdude.
+By default the pin connected to the touch-sensor input of the LightSweeper tile is the same pin
+as is used for ATtiny85's system-reset. Thus to use the LightSweeper tile with sensor input you
+will also need to set the RSTDSBL (reset disable) flag on the chip. You can do this using a tool
+that ships with the Arduino platform called avrdude.
 
     **WARNING**: The system-reset behavior is required for the chip programming cycle, so once you have
     set the RSTDSBL flag you will be unable to reflash your LightSweeper firmware without using a
@@ -33,5 +33,5 @@ Lightsweeper Firmware
     Programmer on this page: http://www.microcontrollerprog.com/fuseprog.html). Do not set the RSTDSBL
     flag until you are ready to install the chip in a LightSweeper board for production.
 
-  You now have a fully-programmed brain for your LightSweeper board! Plug it in and get ready to play
-  some 7-segment games!
+You now have a fully-programmed brain for your LightSweeper board! Plug it in and get ready to play
+some 7-segment games!
