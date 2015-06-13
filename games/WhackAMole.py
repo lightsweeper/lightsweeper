@@ -5,9 +5,9 @@ import random
 
 from lightsweeper.lsapi import *
 
-from lightsweeper.LSGameUtils import HighScores
-from lightsweeper.LSGameUtils import CountdownTimer
-from lightsweeper.LSGameUtils import EnterName
+from lightsweeper.lsgame import HighScores
+from lightsweeper.lsgame import CountdownTimer
+from lightsweeper.lsgame import EnterName
 
 TIMEOUT = 5
 FAST_TIMEOUT = 4
@@ -52,10 +52,9 @@ class WhackAMole(LSGame):
             elif ts - self.winScreenTimestamp > 6:
                 self.over()
             elif not self.showingHighScores:
-                self.over()
-          #      self.display.setAll(Shapes.ZERO, Colors.BLACK)
-         #       self.display.showHighScores(self.highScores.getHighScores())
-        #        self.showingHighScores = True                      # TODO: pass highscores to LSGameEngine with game.over
+                self.display.setAll(Shapes.ZERO, Colors.BLACK)
+                self.display.showHighScores(self.highScores.getHighScores())
+                self.showingHighScores = True                      # TODO: pass highscores to LSGameEngine with game.over
             return
 
         #update timer
