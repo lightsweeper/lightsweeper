@@ -1,4 +1,32 @@
-""" Tools for creating and manipulating animations """
+""" Tools for creating and manipulating animations
+
+Animations are objects created from classes derived from LSAnimation. Each
+LSAnimation object maintains a list of frames which can be manipulated using
+methods specific to the subclass. Each frame is a list of integers representing
+segments that need to be illuminated. The first item in the list represents the
+width of the frame in columns. All of the frames that make up a given animation
+must have the same dimensions.
+
+The rest of a the numbers in the frame object are a repeating pattern of Red,
+Green, and Blue color masks, every three belonging to tiles succesively scanned
+from the left to the right and the top to the bottom. A color mask is an integer
+defining a certain shape on the 7 segment display. The shapes referenced in Red,
+Green, and Blue will be composited over eachother on the display. Look at the
+documentation in the Shapes module for more information on the scheme used to
+encode different shapes.
+
+Frames can be constructed and manipulated using the LSFrameGen class. Objects
+created by LSFrameGen maintain an internal representation of a frame and output
+the compacted list-type frames required by LSAnimation whenever the get() method
+is called. A simple technique for programatically generating animations is thus
+to maintain one or more LSFrameGen objects that you apply transformations to
+while iteratively adding the output of get() to your LSAnimation object.
+
+Using the mergeFrames tool you can merge the contents of a frame, at an
+arbitrary offset, into another frame of equal or greater size. By unpacking and
+merging the frames from two animations you can create a new combined animation.
+
+"""
 
 from collections import defaultdict
 import time
@@ -289,6 +317,54 @@ class LSFrameGen:
   #              self.frame[row][col] = (rMask, gMask, bMask)
   #          col += 1
 
+
+def example():
+
+    # Import the LightSweeper API
+    from lightsweeper.lsapi import *
+
+    # Also import the animation library
+    from lightsweeper import lsanimate
+
+    # We'll start by creating a frame the size of our desired animation
+    # Let's make this one 3 rows by 3 columns
+    frame = lsanimate.LSFrameGen(3, 3)
+
+    # We'll also need a fresh animation object to put our generated frames in
+    ourAnimation = lsanimate.LSAnimation()
+
+    # I want the background of this animation to be all pink so I need to
+    # build a colormask that looks like a magenta Eight. Magenta is red+blue
+    # so:
+    pinkEight = (redMask, greenMask, blueMask) = (Shapes.EIGHT, 0, Shapes.EIGHT)
+
+    # Then fill the frame with it
+    frame.fill(pinkEight)
+
+    # Now for my animation I'd like to make a vertical green stripe that
+    # moves down the the height of the frame. I'll define three new masks:
+    bottomLine = (Shapes.A, Shapes.UNDERSCORE, Shapes.A)
+    midLine = (Shapes.ZERO, Shapes.DASH, Shapes.ZERO)
+    topLine = (Shapes.U+Shapes.DASH, Shapes.SEG_A, Shapes.U+Shapes.DASH)
+
+    # Now we'll programatically animate the scanning line:
+    for _ in range(0, 10):
+        for thisRow in range(frame.rows):
+            for i in range(4):
+                for thisCol in range(frame.cols):
+                    if i is 0:
+                        frame.edit(thisRow, thisCol, topLine)
+                    elif i is 1:
+                        frame.edit(thisRow, thisCol, midLine)
+                    elif i is 2:
+                        frame.edit(thisRow, thisCol, bottomLine)
+                    else:
+                        frame.edit(thisRow, thisCol, pinkEight)
+                ourAnimation.addFrame(frame.get())
+                
+    d = LSDisplay()
+
+    ourAnimation.play(d, frameRate=10)
 
 def main():
     print("Importing LSDisplay")

@@ -52,6 +52,7 @@ Y = SEG_B + SEG_C + SEG_D + SEG_F + SEG_G
 Z = SEG_A + SEG_B + SEG_D + SEG_E + SEG_G
 
 DASH = SEG_G
+UNDERSCORE = SEG_D
 
 def digitToHex(digit):
     if digit is 0:
