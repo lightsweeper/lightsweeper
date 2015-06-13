@@ -1,3 +1,5 @@
+""" Tools for creating and manipulating animations """
+
 from collections import defaultdict
 import time
 import itertools

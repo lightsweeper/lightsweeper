@@ -1,4 +1,4 @@
-""" The main point of interface to the LightSweeper API. """
+""" Bundles various floors together """
 
 from lightsweeper.lsfloor import LSFloor
 from lightsweeper.lsemulate import LSPygameFloor

@@ -1,4 +1,4 @@
-""" Contains descriptions of and methods for interfacing with LightSweeper tile objects """
+""" The lowest level of the LightSweeper API, responsible for modelling and talking to LightSweeper tiles """
 
 import os
 import threading

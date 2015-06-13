@@ -1,3 +1,5 @@
+""" The main point of interface to the LightSweeper API """
+
 from lightsweeper import Colors
 from lightsweeper import Shapes
 

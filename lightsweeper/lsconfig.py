@@ -1,4 +1,4 @@
-""" lsconfig is used to create and manage .floor configuration files """
+""" Contains tools used to create and manage .floor configuration files """
 
 from collections import defaultdict
 import os

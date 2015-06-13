@@ -1,4 +1,4 @@
-""" Contains methods related to LightSweeper games """
+""" Contains methods responsible for running and interacting with LightSweeper games """
 
 import copy
 import json

@@ -1,4 +1,4 @@
-""" Contains descriptions of and methods for interfacing with LightSweeper floors """
+""" Models specific LightSweeper floors and aggregates data from one or more connected representations """
 
 from lightsweeper.lstile import LSRealTile
 from lightsweeper.lstile import LSOpen

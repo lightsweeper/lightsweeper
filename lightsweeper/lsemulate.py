@@ -1,4 +1,4 @@
-""" Contains methods to emulate LightSweeper floors on your computer """
+""" Emulators allow you to interact with running LightSweeper code via various interfaces """
 
 from lightsweeper import lsfloor
 from lightsweeper import Colors
