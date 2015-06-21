@@ -60,7 +60,9 @@ Example:
     # Now we programatically animate the scanning line:
     for _ in range(10):      # Loop the animation 10 times
         for thisRow in range(frame.rows):
-            for i in range(4):
+            for i in range(4):  # It takes 4 frames to move the line from the
+                                # top of the figure 8 to the bottom and then
+                                # reset the row
                 for thisCol in range(frame.cols):
                     # We just re-use the same LSFrameGen object, making incremental
                     # changes to it and adding the modified frames to our animation
@@ -74,7 +76,7 @@ Example:
                         frame.edit(thisRow, thisCol, pinkEight)
 
                 # Filter out frames that are all pink:
-                if not all(i in [127, 0] for i in frame.get()[1:]):
+                if not all(i in pinkEight for i in frame.get()[1:]):
                     ourAnimation.addFrame(frame.get())  # Add the constructed frame
 
     # Our animation is built! Now let's play it:
