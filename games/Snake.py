@@ -31,7 +31,8 @@ class Snake(LSGame):
 
     def heartbeat(game, activeSensors):
         game.updateMorsel()
-        if len(game.sensors) is 0:
+        print(len(activeSensors))
+        if len(activeSensors) == 0:
             game.slitherForward()
         else:
             game.left = 0
@@ -253,7 +254,7 @@ class Snake(LSGame):
             if pole is BOTTOM:
                 pole = TOP
             else:
-                col -= 1
+                row -= 1
                 pole = BOTTOM
             self.updateSnake((row, col, pole))
             return
@@ -261,7 +262,7 @@ class Snake(LSGame):
             if pole is TOP:
                 pole = BOTTOM
             else:
-                col += 1
+                row += 1
                 pole = TOP
             self.updateSnake((row, col, pole))
             return
@@ -310,8 +311,6 @@ class Snake(LSGame):
         return False
 
     def inSnake(self, move):
-        print(repr(self.snake))
-        print(repr(move))
         for section in self.snake:
             if move == section:
                 return True
