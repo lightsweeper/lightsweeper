@@ -160,6 +160,7 @@ class _pygameAudio(_lsAudio):
 
 try:
     import pygame
+    import pygame.mixer
     lsAudioBackend = _pygameAudio
 except:
     lsAudioBackend = _lsAudio

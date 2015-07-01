@@ -31,7 +31,6 @@ class Snake(LSGame):
 
     def heartbeat(game, activeSensors):
         game.updateMorsel()
-        print(len(activeSensors))
         if len(activeSensors) == 0:
             game.slitherForward()
         else:
