@@ -7,6 +7,9 @@ from collections import defaultdict
 
 from lightsweeper.lsapi import *
 
+TOP = 1
+BOTTOM = 0
+
 class Snake(LSGame):
 
     def init (game):
@@ -19,7 +22,7 @@ class Snake(LSGame):
 
         # Snake initial values
         game.snakeColor = Colors.WHITE  # The color of the snake
-        game.snake = [(0,int(game.cols/2),5)]    # Each item of the list is a section of the snake: (row, col, segment)
+        game.snake = [(0,int(game.cols/2),TOP)]    # Each item of the list is a section of the snake: (row, col, segment)
         game.direction = "v"            # The direction of the snake's travel: ^, v, <, >
 
         game.foodColor = Colors.RAINBOW()
@@ -145,16 +148,25 @@ class Snake(LSGame):
             self.turnRight()
 
     def addSegment (self, section, color):
-        (row, col, seg) = section
+        (row, col, pole) = section
         state = self.state[row][col]
-        state[seg] = color
+        if pole is TOP:
+            state[0] = state[1] = state[5] = state[6] = color
+        else:
+            state[2] = state[3] = state[4] = state[6] = color
         self.state[row][col] = state
         self.display.setCustom(row, col, state)
 
     def delSegment (self, section):
-        (row, col, seg) = section
+        (row, col, pole) = section
         state = self.state[row][col]
-        state[seg] = Colors.BLACK
+        if pole is TOP:
+            state[0] = state[1] = state[5] = state[6] = Colors.BLACK
+        else:
+            state[2] = state[3] = state[4] = state[6] = Colors.BLACK
+
+      #  if not self.inSnake((row, col, TOP)) and not self.inSnake((row, col, BOTTOM)):
+      #     state[6] = Colors.BLACK
         self.state[row][col] = state
         self.display.setCustom(row, col, state)
 
@@ -163,8 +175,8 @@ class Snake(LSGame):
             self.gameOver()
             return
         snakeCopy = copy.copy(self.snake)
-        self.addSegment(newHead, self.snakeColor)
         self.delSegment(self.snake[-1])
+        self.addSegment(newHead, self.snakeColor)
         for i in range(1, len(self.snake)):
             self.snake[i] = snakeCopy[i-1]
         self.snake[0] = newHead
@@ -174,146 +186,92 @@ class Snake(LSGame):
             self.snakeFood = self.feedTheSnake()
 
     def turnLeft (self):
-        (row, col, seg) = self.snake[0]
+        (row, col, pole) = self.snake[0]
         if self.direction == "^":
-            if seg is 1:
-                seg = 0
-            elif seg is 2:
-                seg = 6
-            elif seg is 4:
-                col -= 1
-                seg = 6
-            elif seg is 5:
-                col -= 1
-                seg = 0
+            col -= 1
             self.direction = "<"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == "v":
-            if seg is 1:
-                col += 1
-                seg = 6
-            elif seg is 2:
-                col += 1
-                seg = 3
-            elif seg is 4:
-                seg = 3
-            elif seg is 5:
-                seg = 6
+            col += 1
             self.direction = ">"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == "<":
-            if seg is 0:
-                seg = 5
-            elif seg is 3:
+            if pole is TOP:
+                pole = BOTTOM
+            else:
                 row += 1
-                seg = 5
-            elif seg is 6:
-                seg = 4
+                pole = TOP
             self.direction = "v"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == ">":
-            if seg is 0:
+            if pole is BOTTOM:
+                pole = TOP
+            else:
                 row -= 1
-                seg = 2
-            elif seg is 3:
-                seg = 2
-            elif seg is 6:
-                seg = 1
+                pole = BOTTOM
             self.direction = "^"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
 
     def turnRight (self):
-        (row, col, seg) = self.snake[0]
+        (row, col, pole) = self.snake[0]
         if self.direction == "^":
-            if seg is 1:
-                col += 1
-                seg = 0
-            elif seg is 2:
-                col += 1
-                seg = 6
-            elif seg is 4:
-                seg = 6
-            elif seg is 5:
-                seg = 0
+            col += 1
             self.direction = ">"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == "v":
-            if seg is 1:
-                seg = 6
-            elif seg is 2:
-                seg = 3
-            elif seg is 4:
-                col -= 1
-                seg = 3
-            elif seg is 5:
-                col -= 1
-                seg = 6
+            col -= 1
             self.direction = "<"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == "<":
-            if seg is 0:
+            if pole is BOTTOM:
+                pole = TOP
+            else:
                 row -= 1
-                seg = 4
-            elif seg is 3:
-                seg = 4
-            elif seg is 6:
-                seg = 5
+                pole = BOTTOM
             self.direction = "^"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == ">":
-            if seg is 0:
-                seg = 1
-            elif seg is 3:
+            if pole is TOP:
+                pole = BOTTOM
+            else:
                 row += 1
-                seg = 1
-            elif seg is 6:
-                seg = 2
+                pole = TOP
             self.direction = "v"
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
 
     def slitherForward(self):
-        (row, col, seg) = self.snake[0]
+        (row, col, pole) = self.snake[0]
         if self.direction == "^":
-            if seg is 1:
-                row -= 1
-                seg = 2
-            elif seg is 2:
-                seg = 1
-            elif seg is 4:
-                seg = 5
-            elif seg is 5:
-                row -= 1
-                seg = 4
-            self.updateSnake((row, col, seg))
+            if pole is BOTTOM:
+                pole = TOP
+            else:
+                col -= 1
+                pole = BOTTOM
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == "v":
-            if seg is 1:
-                seg = 2
-            elif seg is 2:
-                row += 1
-                seg = 1
-            elif seg is 4:
-                row += 1
-                seg = 5
-            elif seg is 5:
-                seg = 4
-            self.updateSnake((row, col, seg))
+            if pole is TOP:
+                pole = BOTTOM
+            else:
+                col += 1
+                pole = TOP
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == "<":
             col -= 1
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
         elif self.direction == ">":
             col += 1
-            self.updateSnake((row, col, seg))
+            self.updateSnake((row, col, pole))
             return
 
     def growSnake (self):
@@ -322,11 +280,9 @@ class Snake(LSGame):
     def feedTheSnake (self):
         randRow = random.randint(0, self.rows-1)
         randCol = random.randint(0, self.cols-1)
-        randSeg = random.randint(0, 5)              # Don't put food in the "dash" position
-        food = (randRow, randCol, randSeg)
-        if (randRow == 0 and randSeg in [0,3,4,5,6]) or (randRow == self.rows and randSeg in [0,1,2,3,6]):  # Don't put food on the edges
-            return(self.feedTheSnake())
-        elif (randCol == 0 and randSeg in [0,1,5]) or (randCol == self.cols and randSeg in [2,3,4]):          # it's just rude
+        randPole = random.randint(0, 1)              # Don't put food in the "dash" position
+        food = (randRow, randCol, randPole)
+        if (randRow == 0 or randCol == 0 or randRow == self.rows or randCol == self.cols):  # Don't put food on the edges
             return(self.feedTheSnake())
         elif self.inSnake(food):      # Don't put food inside the snake
             return(self.feedTheSnake())
@@ -354,9 +310,12 @@ class Snake(LSGame):
         return False
 
     def inSnake(self, move):
+        print(repr(self.snake))
+        print(repr(move))
         for section in self.snake:
             if move == section:
                 return True
+        return False
 
     def gameOver(game):
         game.display.clearAll()

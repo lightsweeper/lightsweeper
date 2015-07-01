@@ -7,9 +7,9 @@ segments that need to be illuminated. The first item in the list represents the
 width of the frame in columns. All of the frames that make up a given animation
 must have the same dimensions.
 
-The rest of a the numbers in the frame object are a repeating pattern of Red,
-Green, and Blue color masks, every three belonging to tiles succesively scanned
-from the left to the right and the top to the bottom. A color mask is an integer
+The rest of a the numbers in the frame are a repeating pattern of Red, Green, 
+and Blue color masks, every three belonging to tiles succesively scanned from 
+the left to the right and the top to the bottom. A color mask is an integer
 defining a certain shape on the 7 segment display. The shapes referenced in Red,
 Green, and Blue will be composited over eachother on the display. Look at the
 documentation in the Shapes module for more information on the scheme used to
