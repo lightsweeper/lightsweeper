@@ -96,6 +96,7 @@ class LSPygameFloor(LSEmulateFloor):
         image = pygame.Surface((100, 100))
         if t is not 0:
             image = self._addText("{:d}%".format(int(t)), image, ("center",25))
+            image = self._addText("{:d}%".format(int(t)), image, ("center",60))
         horizontal = (42,10)
         vertical = (10,30)
         segMap = [(29,10),(71,17),(71,52),(29,79),(19,52),(19,17),(29,45)]
@@ -122,19 +123,19 @@ class LSPygameFloor(LSEmulateFloor):
                 if event.type == MOUSEBUTTONDOWN:
                     if event.button is 1: # Left mouse button
                         lastClick = rowCol
-                        print(level)
+                   #     print(level)  # Debugging
                         yield((rowCol[0], rowCol[1], level))
                     elif event.button is 4: # Mousewheel up
                         if level < 100:
                             level += 10
                             if level > 100:
                                 level = 100
-                            print(level)
+                   #         print(level)  # Debugging
                             yield((rowCol[0], rowCol[1], level))
                     elif event.button is 5: # Mousewheel down
                         if level > 0:
                             level -= 10
-                            print(level)
+                  #          print(level)  # Debugging
                             yield((rowCol[0], rowCol[1], level))
                 if event.type == MOUSEBUTTONUP:
                  #   print("Clicked off {:d},{:d} ({:d})".format(rowCol[0], rowCol[1],reading)) # Debugging

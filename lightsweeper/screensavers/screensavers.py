@@ -61,8 +61,6 @@ class AnimTestbed(LSScreenSaver):
         self.display.setAllCustom(self.currentColors + [Colors.BLACK])
         color = self.currentColors.pop()
         self.currentColors.insert(0, color)
-        if self.frame % 7 is 0:
-            self.display.setAll(Shapes.DASH, Colors.WHITE)
 
 screensaverList = [FlyingWords, RainbowZipper, RandDot, AnimTestbed]
 

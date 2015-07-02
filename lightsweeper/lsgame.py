@@ -144,8 +144,9 @@ class LSGameEngine():
             self.moves = [x for x in self.moves if x[0] is not row and x[1] is not col]
         else:
             if self.sensorMatrix[row][col] is 0:
-                if sensorPcnt > 20:                 # Only trigger > 20%, hack to guard against phantom sensors
-                                                    # TODO: This but better
+         #       if sensorPcnt > 20:                 # Only trigger > 20%, hack to guard against phantom sensors
+         #                                           # TODO: This but better
+                if sensorPcnt > 0:
                     try:
                         self.game.stepOn(row, col)
                     except AttributeError as e:   # Game has no stepOn() method
