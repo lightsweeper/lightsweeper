@@ -2,7 +2,7 @@
 
 from lightsweeper.lsapi import *
 
-class HelloWorld(LSGame):
+class 000NameOfGame000(LSGame): # Be sure to change this to reference your game
     def init(game):
         pass
 
@@ -16,8 +16,9 @@ class HelloWorld(LSGame):
         pass
 
 def main():
-    gameEngine = LSGameEngine(HelloWorld) # Be sure to change this to reference your game
+    gameEngine = LSGameEngine(000NameOfGame000) # Be sure to change this to reference your game
     gameEngine.beginLoop()
 
 if __name__ == "__main__":
     main()
+

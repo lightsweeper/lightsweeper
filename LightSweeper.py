@@ -8,6 +8,7 @@ from games.EightbitSoundboard import EightbitSoundboard
 from games.MidiSoundboard import MidiSoundboard
 from games.WhackAMole import WhackAMole
 from games.Snake import Snake
+from games.RainbowMemory import RainbowMemory
 
 from lightsweeper.lsgame import LSGameEngine
 from lightsweeper.lsconfig import userSelect
@@ -21,7 +22,8 @@ availableGames = dict([
                  #       ("EightbitSoundboard", EightbitSoundboard),
                         ("WhackAMole", WhackAMole),
                  #       ("MidiSoundboard", MidiSoundboard),
-                        ("Snake", Snake)
+                        ("Snake", Snake),
+                        ("RainbowMemory", RainbowMemory)
                       ])
 
 def clearTerm():
