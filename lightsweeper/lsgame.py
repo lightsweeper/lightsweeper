@@ -202,43 +202,58 @@ class LSGameEngine():
 
 HI_SCORE_CUTOFF = 5
 class HighScores():
-    def __init__(self, fname="scores"):
-        self.fname = fname
-        with open(fname) as f:
-            self.namesAndScores = json.load(f)
-        self.scores = []
-        for entry in self.namesAndScores:
-            self.scores.append(int(entry[1]))
-        if len(self.scores) < HI_SCORE_CUTOFF:
-            self.highScoreThreshold = 0
+    def __init__(self, fname="scores", writeToSerial=False):
+        self.writeToSerial = writeToSerial
+        #load scores from the card
+        if self.writeToSerial:
+            import serial
+        #load in scores from a file
         else:
-            self.highScoreThreshold = self.scores[HI_SCORE_CUTOFF-1]
+            self.fname = fname
+            with open(fname) as f:
+                self.namesAndScores = json.load(f)
+            self.scores = []
+            for entry in self.namesAndScores:
+                self.scores.append(int(entry[1]))
+            if len(self.scores) < HI_SCORE_CUTOFF:
+                self.highScoreThreshold = 0
+            else:
+                self.highScoreThreshold = self.scores[HI_SCORE_CUTOFF-1]
 
     def isHighScore(self, score):
+        #TODO: modify somehow to enable lower scores to be better depending on the game
         return score > self.highScoreThreshold
 
     def saveHighScore(self, name, score):
-        if score < self.scores[len(self.scores) - 1]:
-            self.scores.append(score)
-            self.namesAndScores.append((name, str(score)))
-            with open(self.fname, 'w') as f:
-                f.dump(self.namesAndScores)
+        if not self.isHighScore(score):
             return
-        for i in range(len(self.scores)):
-            if self.scores[i] < score:
-                self.scores.insert(i, score)
-                self.namesAndScores.insert(i, (name, str(score)))
+        if self.writeToSerial:
+            pass
+        else:
+            if score < self.scores[len(self.scores) - 1]:
+                self.scores.append(score)
+                self.namesAndScores.append((name, str(score)))
                 with open(self.fname, 'w') as f:
-                    json.dump(self.namesAndScores, f)
+                    f.dump(self.namesAndScores)
                 return
+            for i in range(len(self.scores)):
+                if self.scores[i] < score:
+                    self.scores.insert(i, score)
+                    self.namesAndScores.insert(i, (name, str(score)))
+                    with open(self.fname, 'w') as f:
+                        json.dump(self.namesAndScores, f)
+                    return
 
     def getHighScores(self, limit=10, start=0):
-        result = []
-        i = start
-        while len(result) < limit and i < len(self.namesAndScores):
-            result.append((self.namesAndScores[i][0], str(self.namesAndScores[i][1])))
-            i += 1
-        return result
+        if self.writeToSerial:
+            pass
+        else:
+            result = []
+            i = start
+            while len(result) < limit and i < len(self.namesAndScores):
+                result.append((self.namesAndScores[i][0], str(self.namesAndScores[i][1])))
+                i += 1
+            return result
 
 class EnterName():
     def __init__(self, display, rows, cols, seconds=30, highScore = None):
