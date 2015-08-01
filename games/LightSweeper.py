@@ -3,12 +3,12 @@
 import os
 import random
 
-from games.minesweeper import Minesweeper
-from games.EightbitSoundboard import EightbitSoundboard
-from games.MidiSoundboard import MidiSoundboard
-from games.WhackAMole import WhackAMole
-from games.Snake import Snake
-from games.RainbowMemory import RainbowMemory
+from minesweeper import Minesweeper
+from EightbitSoundboard import EightbitSoundboard
+from MidiSoundboard import MidiSoundboard
+from WhackAMole import WhackAMole
+from Snake import Snake
+from RainbowMemory import RainbowMemory
 
 from lightsweeper.lsgame import LSGameEngine
 from lightsweeper.lsconfig import userSelect
