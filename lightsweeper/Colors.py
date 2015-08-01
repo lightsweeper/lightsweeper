@@ -12,7 +12,7 @@ CYAN = 6
 WHITE = 7
 
 colorArray = ["black", "red", "green", "yellow", "blue", "violet", "cyan", "white"]
-
+colorArrayInts = [BLACK, RED, YELLOW, GREEN, BLUE, CYAN, MAGENTA, WHITE]
 
 def intToName(i):
     return colorArray[i]

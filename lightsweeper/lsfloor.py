@@ -300,12 +300,12 @@ class LSFloor():
                                                                                   # here and in setColor/setShape/setDigit
 
     def setRow(self, row, shape, color):
-        for tile in self.tiles[row]:
+        for col,tile in self.tiles[row].items():
             tile.set(shape, color)
 
     def setColumn(self, col, shape, color):
-        tiles = list(zip(*self.tiles[::-1]))
-        for tile in tiles[col]:
+        for i in range(self.rows):
+            tile = self.tiles[i][col]
             tile.set(shape, color)
 
     def setAll(self, shape, color):

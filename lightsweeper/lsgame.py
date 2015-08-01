@@ -41,7 +41,7 @@ class LSGame():
 class LSScreenSaver(LSGame):
     def __init__(game, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        game.duration = 10
+        game.duration = 5
         game.frameRate = 15
 
 from lightsweeper.screensavers import screensavers

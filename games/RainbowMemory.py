@@ -18,6 +18,7 @@ import time
 DISPLAY_DIGIT = 10
 WAIT_FOR_INPUT = 50
 RAINBOW_SHUFFLE = 40
+TIMEOUT = 150
 class RainbowMemory(LSGame):
     def init(self):
         self.frameRate = 15
@@ -50,7 +51,7 @@ class RainbowMemory(LSGame):
             if self.currentDigit <= len(self.tileChain) and self.frame > DISPLAY_DIGIT:
                 self.tile = self.tileChain[self.currentDigit - 1]
                 self.audio.playSound('ding_1.wav')
-                self.display.setAll(Shapes.UNDERSCORE, Colors.WHITE)
+                self.rainbowScreen()
                 self.display.set(self.tile[0],self.tile[1], Shapes.digitToHex(self.currentDigit), (self.currentDigit % 6) + 1)
                 self.currentDigit += 1
                 self.frame = 0
@@ -58,23 +59,28 @@ class RainbowMemory(LSGame):
                 self.state = 'wait for input'
                 self.stateInitialized = False
         elif self.state is 'wait for input':
-            if not self.stateInitialized:
+            if not self.stateInitialized: 
                 self.audio.stopSounds()
                 self.audio.playSound('tick_tock.wav')
-                self.display.setAll(Shapes.UNDERSCORE, Colors.WHITE)
+                self.rainbowScreen()
                 self.frame = 0
                 self.stateInitialized = True
                 self.currentDigit = 1
             if self.frame > WAIT_FOR_INPUT:
-                if not self.beingPlayed:
+                if not self.beingPlayed: # this is for when the game isn't being actively played
                     self.state = 'rainbow'
                     self.stateInitialized = False
                 elif self.currentDigit > len(self.tileChain):
                     self.state = 'rainbow'
                     self.stateInitialized = False
                     self.tileChain.append((random.randint(0,self.display.rows-1), random.randint(0,self.display.cols-1)))
+            if self.frame == TIMEOUT: # this will only ever be reached when it's being played
+                self.audio.playSound('tick_tock.wav')
+            if self.frame > TIMEOUT + 30:
+                self.state = 'lost'
+                self.frame = 0
             if self.frame > DISPLAY_DIGIT:
-                self.display.setAll(Shapes.UNDERSCORE, Colors.WHITE)
+                self.rainbowScreen()
             if self.currentDigit <= len(self.tileChain):
                 self.tile = self.tileChain[self.currentDigit-1]
             
@@ -90,13 +96,27 @@ class RainbowMemory(LSGame):
             self.display.setAllCustom(self.currentColors + [Colors.BLACK])
             color = self.currentColors.pop()
             self.currentColors.insert(0, color)
+        elif self.state is 'lost':
+            if self.frame < 2:
+                self.audio.playSound('game_over_noise.wav')
+                self.display.setAll(Shapes.DASH, Colors.RED)
 
-        if self.lost and self.frame > 15:
-            self.ended = True
-        if self.currentDigit > 9:
-                self.audio.stopSounds()
+            if self.frame > 15:
                 self.ended = True
-                self.audio.playSound('8bit/42.wav')
+        elif self.state is 'won':
+            if self.frame < 2:
+                self.audio.playSound('Success.wav')
+            self.rainbowScreen(Shapes.digitToHex(self.frame % 10))
+            if self.frame > 20:
+                self.ended
+        if self.currentDigit > 3 and self.state != 'won':
+                self.audio.stopSounds()
+                self.state = 'won'
+                self.frame = 0
+    
+    def rainbowScreen(self, shape=Shapes.DASH):
+        for i in range(self.display.rows):
+            self.display.setRow(i, shape, Colors.colorArrayInts[(i % 7) + 1])
 
     def stepOn(game, row, col):
         game.audio.stopSounds()
@@ -105,14 +125,13 @@ class RainbowMemory(LSGame):
                 game.steppedOnDigit = True
                 game.beingPlayed = True
                 game.audio.playSound('8bit/42.wav')
-                game.display.setAll(Shapes.UNDERSCORE, Colors.GREEN)
+                game.display.setAll(Shapes.DASH, Colors.GREEN)
                 game.currentDigit += 1
                 game.frame = 0
             else:
                 game.audio.playSound('8bit/16.wav')
-                print('Oops...')
-                game.display.setAll(Shapes.UNDERSCORE, Colors.RED)
-                game.lost = True
+                game.display.setAll(Shapes.DASH, Colors.RED)
+                game.state = 'lost'
                 game.frame = 0
         else:
             print('Game state is "' + game.state + '", ignoring input')
