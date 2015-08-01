@@ -131,10 +131,13 @@ class _pygameAudio(_lsAudio):
         sound = pygame.mixer.Sound("sounds/" + filename)
         self.soundDictionary[name] = sound
 
-    def playSound(self, filename):
+    def playSound(self, filename, custom_relative_volume=-1):
         print("playing sound", filename)
         sound = pygame.mixer.Sound("sounds/" + filename)
-        sound.set_volume(self.soundVolume)
+        if custom_relative_volume >= 0:
+            sound.set_volume(custom_relative_volume * self.soundVolume)
+        else:
+            sound.set_volume(self.soundVolume)
         self.soundDictionary[filename] = sound
         pygame.mixer.Sound.play(sound)
         #do we need this code?        
