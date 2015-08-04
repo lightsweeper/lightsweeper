@@ -8,6 +8,7 @@ import numbers
 from lightsweeper.lstile import LSOpen
 from lightsweeper.lstile import LSRealTile
 
+DEFAULTCONFIGURATION = dict()
 
 class FileDoesNotExistError(IOError):
     """ Custom exception returned when the config file is non-existant. """
@@ -42,12 +43,13 @@ def getConfigurationPaths(configurationFilePath = None):
     if configurationFilePath is not None:
         absPath = os.path.abspath(configurationFilePath)
         if os.path.isfile(absPath):                             # If you provide an absolute path to a valid configuration file it will
-            return([absPath])                                    # be the sole configuration used. Otherwise files override individual
-                                                                # options according to the above heirarchy
+            return([absPath])                                   # be the sole configuration used. Otherwise files override individual
+                                                                # options according to the heirarchy in defaultPaths
         elif (os.path.exists(absPath) is not True) and (configurationFilePath is not None):
-            fileName = configurationFilePath                    # Provided file is not a directory or link, so assume it's an alternate base name
+            fileName = configurationFilePath                    # Provided file is not a directory or link, so assume it's an alternate
+                                                                # base name
         elif os.path.isdir(absPath):
-            defaultPaths.append(configurationFilePath)           # Add provided path directory to end of search space
+            defaultPaths.append(configurationFilePath)          # Add provided path directory to end of search space
 
     outPaths = list()
     for path in [os.path.abspath(p) for p in defaultPaths]:     # No absolute configuration explicitly provided, search in default directories
@@ -66,17 +68,45 @@ def getConfigurationPaths(configurationFilePath = None):
         raise(FileDoesNotExistError(e))
     
 def readConfiguration (configurationFilePath = None):
-    """ Attempts to load configuration details from lightsweeper conf files.
-        configurationFilePath can point either directly at a valid configuration
-        file or to a directory containing a valid configuration named "lightsweeper.conf"
+    """
+        Attempts to load configuration details from lightsweeper conf files.
+        configurationFilePath can be either a a valid configuration file name
+        or a directory containing a valid configuration named "lightsweeper.conf"
     """
     
     pathList = getConfigurationPaths(configurationFilePath)
     
     if len(pathList) is 1:
-        print("Loading options from {:s}".format(path[0]))
+        print("Loading options from {:s}".format(pathList[0]))
     else:
-        print("Loading overrides from {:s}".format(path[-1]))
+        print("Loading overrides from {:s}".format(pathList[-1]))
+
+    configuration = DEFAULTCONFIGURATION
+    for path in pathList:
+        configuration = parseConfiguration(path, configuration)
+
+    return(configuration)
+
+         # TODO:  Validate configuration
+
+def parseConfiguration (configurationPath, configuration):
+    with open(configurationPath, "r") as f:
+        lines = [l.rstrip("\n") for l in f]
+        i = 0
+        for directive in lines:
+            i += 1
+            if directive.startswith("#"):               # Lines that start with # are comments
+                pass
+            elif (directive == ""):                     # Ignore blank lines
+                pass
+            else:
+                try:
+                    (option, value) = str.split(directive, "=", 1)
+                except ValueError:
+                    e = "[{:s}: line {:d}] : Invalid directive: {:s}".format(configurationPath, i, directive)
+                    raise(InvalidConfigError(e))
+                configuration[option.strip()] = value.strip()
+        return(configuration)
     
     
 class LSFloorConfig:

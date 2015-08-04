@@ -4,22 +4,23 @@ import imp
 import os
 import random
 
-GAMESDIR = ['/home/lightsweeper/lightsweeper/games']
-
 from lightsweeper.lsgame import LSGameEngine
 from lightsweeper.lsconfig import userSelect
 from lightsweeper import lsconfig
+
+conf = lsconfig.readConfiguration()
+GAMESDIRS = [conf["GAMESDIR"]]
 
 NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
 
 availableGames = dict()
 
-for searchDir in GAMESDIR:
+for searchDir in GAMESDIRS:
     gameFiles = [os.path.join(os.getcwd(),f) for f in os.listdir(searchDir) if f.endswith(".py")]
     
     for gamePath in gameFiles:
         gameName = os.path.splitext(os.path.basename(gamePath))[0]
-        fp, pathname, description = imp.find_module(gameName, GAMESDIR)
+        fp, pathname, description = imp.find_module(gameName, GAMESDIRS)
         try:
             gameModule = imp.load_module(gameName, fp, pathname, description)
         finally:
