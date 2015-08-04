@@ -44,9 +44,9 @@ class LSScreenSaver(LSGame):
         game.duration = 5
         game.frameRate = 15
 
-from lightsweeper.screensavers import screensavers
+from lightsweeper.lsscreensavers import screensaverList
 
-SAVERS = screensavers.screensaverList
+SAVERS = screensaverList
 
 
 #enforces the framerate, pushes sensor data to games, and selects games
