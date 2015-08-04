@@ -131,23 +131,29 @@ class _pygameAudio(_lsAudio):
         sound = pygame.mixer.Sound("sounds/" + filename)
         self.soundDictionary[name] = sound
 
-    def playSound(self, filename):
+    def playSound(self, filename, custom_relative_volume=-1):
         print("playing sound", filename)
         sound = pygame.mixer.Sound("sounds/" + filename)
-        sound.set_volume(self.soundVolume)
+        if custom_relative_volume >= 0:
+            sound.set_volume(custom_relative_volume * self.soundVolume)
+        else:
+            sound.set_volume(self.soundVolume)
+        self.soundDictionary[filename] = sound
         pygame.mixer.Sound.play(sound)
-        try:
-            pygame.mixer.music.load("sounds/" + filename)
-            pygame.mixer.music.play(1)
-        except:
-            print("Could not load file " + filename)
+        #do we need this code?        
+        #try:
+        #    pygame.mixer.music.load("sounds/" + filename)
+        #    pygame.mixer.music.play(1)
+        #except:
+        #    print("Could not load file " + filename)
 
     def playLoadedSound(self, name):
         sound = self.soundDictionary[name]
         pygame.mixer.Sound.play(sound)
 
     def stopSounds(self):
-        pass
+        for name in self.soundDictionary.keys():
+            pygame.mixer.Sound.stop(self.soundDictionary[name])
 
     def midiSoundOn(self, instrument=19, note=72):
         self.midi_out.set_instrument(instrument)

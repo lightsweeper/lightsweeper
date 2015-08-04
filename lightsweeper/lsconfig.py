@@ -1,4 +1,4 @@
-""" Contains tools used to create and manage .floor configuration files """
+""" Contains tools used to create, read, and manage Lightsweeper configurations """
 
 from collections import defaultdict
 import os
@@ -7,7 +7,6 @@ import numbers
 
 from lightsweeper.lstile import LSOpen
 from lightsweeper.lstile import LSRealTile
-
 
 
 class FileDoesNotExistError(IOError):
@@ -28,7 +27,58 @@ class CannotParseError(IOError):
 class InvalidConfigError(Exception):
     """ Custom exception returned when the configuration is not valid. """
     pass
+    
+def getConfigurationPaths(configurationFilePath = None):
+    # Returns a list of paths to lightsweeper configuration files
+        
+    fileName = "lightsweeper.conf"                      # Default configuration file name
+                                                        # Configuration search space:
+    defaultPaths = ["/LightSweeper",                        # Look for a systemwide /LightSweeper/ folder in root
+                    os.path.expanduser("~/.lightsweeper"),  # Look for a hidden .lightsweeper/ folder in user's home directory
+                    os.path.expanduser("~/"),               # No dedicated Lightsweeper directory, look in user's home directory
+                    os.getcwd()]                            # Look in current working directory
+        
+        
+    if configurationFilePath is not None:
+        absPath = os.path.abspath(configurationFilePath)
+        if os.path.isfile(absPath):                             # If you provide an absolute path to a valid configuration file it will
+            return([absPath])                                    # be the sole configuration used. Otherwise files override individual
+                                                                # options according to the above heirarchy
+        elif (os.path.exists(absPath) is not True) and (configurationFilePath is not None):
+            fileName = configurationFilePath                    # Provided file is not a directory or link, so assume it's an alternate base name
+        elif os.path.isdir(absPath):
+            defaultPaths.append(configurationFilePath)           # Add provided path directory to end of search space
 
+    outPaths = list()
+    for path in [os.path.abspath(p) for p in defaultPaths]:     # No absolute configuration explicitly provided, search in default directories
+        if os.path.exists(path) and os.path.isfile(os.path.join(path, fileName)):
+            outPaths.append(os.path.join(path, fileName))
+
+    if len(outPaths) > 0:
+        return(list(set(outPaths)))     # Passing the list through set removes duplicates that occur when the current working directory is
+                                        # also a default search directory
+    else:
+        cf = configurationFilePath
+        if cf is None:
+            e = "No {:s} found.".format(fileName)
+        else:
+            e = "{:s} does not exist.".format(os.path.join(cf, fileName) if os.path.exists(cf) else cf)
+        raise(FileDoesNotExistError(e))
+    
+def readConfiguration (configurationFilePath = None):
+    """ Attempts to load configuration details from lightsweeper conf files.
+        configurationFilePath can point either directly at a valid configuration
+        file or to a directory containing a valid configuration named "lightsweeper.conf"
+    """
+    
+    pathList = getConfigurationPaths(configurationFilePath)
+    
+    if len(pathList) is 1:
+        print("Loading options from {:s}".format(path[0]))
+    else:
+        print("Loading overrides from {:s}".format(path[-1]))
+    
+    
 class LSFloorConfig:
     """
 
@@ -101,7 +151,7 @@ class LSFloorConfig:
         """
         if os.path.exists(fileName) is True:
             if os.path.isfile(fileName) is not True:
-                raise IOError(fileName + " is not a valid floor config file!")
+                raise IOError(fileName + " is not a valid configuration file!")
         else:
             raise FileDoesNotExistError(fileName + " does not exist!")
         try:
@@ -109,15 +159,14 @@ class LSFloorConfig:
                 self.config = json.load(configFile)
         except Exception as e:
             print(e)
-            raise CannotParseError("Could not parse " + fileName + "!")
+            raise CannotParseError("Could not parse {:s}!".format(fileName))
         finally:
-            print("Board mapping loaded from " + fileName)
+            print("Board mapping loaded from {:s}".format(fileName))
             self.fileName = fileName
             try:
                 self._parseConfig(self.config)
-            except ValueError:          # Remove from future version
-                print("\nYou are attempting to parse an old-style floor file. Please delete it and create a new copy by running LSFloorConfigure.py")
-                raise CannotParseError(fileName + " is an old-style floor file.")
+            except Exception as e:
+                raise CannotParseError("Parsing of {:s} failed: {s}".format(fileName, e))
             print("Loaded {:d} rows and {:d} columns ({:d} tiles)".format(self.rows, self.cols, self.cells))
             return True
 

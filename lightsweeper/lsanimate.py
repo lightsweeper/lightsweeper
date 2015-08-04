@@ -36,6 +36,10 @@ Example:
 
     # Create a LightSweeper display:
     ourDisplay = LSDisplay()
+    
+    # or if you're in a directory without a .floor file and don't want to make one,
+    # try this command instead:
+    ourDisplay = LSDisplay(6,6)
 
     # We'll start by creating a frame the size of our desired animation
     # Let's make this one fill the entire board
