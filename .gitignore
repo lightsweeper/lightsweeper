@@ -69,5 +69,5 @@ docs/_build/
 
 # Ignore Lightsweeper floor configuration files
 *.floor
-
+lightsweeper.conf
 rpi
