@@ -6,7 +6,6 @@ from lightsweeper.lsapi import *
 from collections import defaultdict
 import random
 import time
-import pygame # pygame.event
 
 
 from lightsweeper import lsdisplay

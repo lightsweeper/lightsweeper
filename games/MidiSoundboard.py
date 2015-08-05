@@ -5,22 +5,13 @@ from lightsweeper.lsapi import *
 instrument_1 = 19
 instrument_2 = 20
 
-class MidiSoundboard():
-    def __init__(self, display, audio, rows, cols):
-        self.display = display
-        self.audio = audio
-        self.rows = rows
-        self.cols = cols
-        self.ended = False
-        self.handlesEvents = True
-        self.audio.setSongVolume(0)
-        self.handlesEvents = True
-        #self.audio.midiSoundOn()
-        self.board = None
-        for i in range(0, rows):
-            for j in range(0, cols):
-                self.display.setShape(i,j,Shapes.digitToLetter(j))
-                self.display.setColor(i, j, i + 1)
+class MidiSoundboard(LSGame):
+    def init(game):
+        game.duration = 5
+        for i in range(0, game.rows):
+            for j in range(0, game.cols):
+                game.display.setShape(i,j,Shapes.digitToLetter(j))
+                game.display.setColor(i, j, i + 1)
                 print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
 
     def heartbeat(self, sensorsChanged):

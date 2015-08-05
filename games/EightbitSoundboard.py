@@ -4,28 +4,24 @@ import random
 
 from lightsweeper.lsapi import *
 
-class EightbitSoundboard():
-    def __init__(self, display, audio, rows, cols):
-        self.display = display
-        self.audio = audio
-        self.rows = rows
-        self.cols = cols
-        self.ended = False
-        self.handlesEvents = True
+class EightbitSoundboard(LSGame):
+    def init(game):
+        game.duration = 5
         #self.audio.loadSong('8bit/8bit-loop.wav', 'between1')
         #self.audio.shuffleSongs()
-        self.audio.setSongVolume(0)
-        self.audio.loadSound('8bit/casio_C_4.wav', 'casioC4')
-        self.board = None
-        for i in range(0, rows):
-            for j in range(0, cols):
-                self.display.setShape(i,j,Shapes.digitToLetter(j))
-                self.display.setColor(i, j, i + 1)
-                print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
+        game.audio.setSongVolume(0)
+        game.audio.loadSound('8bit/casio_C_4.wav', 'casioC4')
+        for i in range(0, game.rows):
+            for j in range(0, game.cols):
+                game.display.setShape(i,j,Shapes.digitToLetter(j))
+                game.display.setColor(i, j, i + 1)
+              #  print("{:d},{:d} set to 0x{:b}".format(i,j,Shapes.digitToLetter(j)))
 
-    def heartbeat(self, sensorsChanged):
-        for move in sensorsChanged:
-            print("Tile:{:d},{:d} at {:d}".format(move.row, move.col, move.val))
+    def heartbeat(game, sensorsChanged):
+        pass
+     #   game.display.heartbeat()
+       # for move in sensorsChanged:
+       #     print("Tile:{:d},{:d} at {:d}".format(move.row, move.col, move.val))
             #self.playTileSound(move.row, move.col)
             #self.display.setColor(move.row, move.col, Colors.RANDOM())
 
