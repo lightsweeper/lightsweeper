@@ -14,7 +14,8 @@ Lightsweeper - a burning man project
 
 ### Installation:
 
-  > python setup.py install
+Download and install https://github.com/lightsweeper/lightsweeper-api
+Edit the file lightsweeper.conf to reflect the locations of your games and sounds directories
 
 
 ### Usage:
