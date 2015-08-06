@@ -7,6 +7,10 @@ import sys
 def bail(mess):
     print("\n{:s}".format(mess))
     sys.exit()
+    
+if __name__ != "__main__":
+    print("Oh no! Something went terribly wrong!")
+    bail("Please run installer.py directly.")
 
 if sys.hexversion < 0x030200a1:
     print("LightSweeper requires python 3.2 or higher but your current python version is:")
@@ -95,6 +99,8 @@ def main():
     
     f.close()
     print("okay.")
+    
+    print("Okay have fun!")
 
 def check_dir(path, name):
     from lightsweeper import lsconfig

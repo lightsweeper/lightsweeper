@@ -9,7 +9,11 @@ from lightsweeper.lsconfig import userSelect
 from lightsweeper import lsconfig
 
 conf = lsconfig.readConfiguration()
-GAMESDIRS = [conf["GAMESDIR"]]
+try:
+    GAMESDIRS = [conf["GAMESDIR"]]
+except KeyError:
+    print("WARNING: 'GAMESDIR' is not set.")
+    GAMESDIRS = [os.path.abspath(os.getcwd())]
 
 NUMPLAYS = 0 # The number of games the player can play (0 is infinite/free play)
 
