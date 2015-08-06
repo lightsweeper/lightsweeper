@@ -71,24 +71,28 @@ def main():
         utilsDir = os.path.join(basePath, "util")
 
     examplesDir = os.path.join(os.path.join(basePath, ".lightsweeper") if local else basePath, "examples")
+    
+    sysSoundsDir = os.path.join(lightsweeper.lsconfig.lsSysPath, "sounds")
+
+    entryPoint = chooseFile("Where should I put the LightSweeper entry point?", os.path.join(basePath, "LightSweeper.py"))
 
     check_dir(configDir, "configuration")
     check_dir(gamesDir, "games")
     check_dir(utilsDir, "utilities")
     check_dir(examplesDir, "examples")
-
+    
     print("Copying some data... ", end="")
 
     try:
-        shutil.copy2(sane_root("LightSweeper.py"), basePath)
-        copy_directory(sane_root("games"), gamesDir)
+        shutil.copyfile(sane_root("LightSweeper.py"), entryPoint)
         copy_directory(sane_root("util"), utilsDir)
         copy_directory(sane_root("examples"), examplesDir)
+        copy_directory(sane_root("sounds"), sysSoundsDir)
     except Exception as e:
         bail("Error copying data: {:s}".format(e))
 
     print("done.")
-
+    
     config = os.path.join(configDir, "lightsweeper.conf")
     print("Generating lightsweeper.conf... ", end="")
     if os.path.exists(config):
@@ -99,6 +103,25 @@ def main():
     
     f.close()
     print("okay.")
+    
+    if len(os.listdir(gamesDir)) == 0:
+        print("It appears your LightSweeper games folder is empty.")
+        if YESno("Would you like me to fetch the official game pack from the internet?"):
+            try:
+                lsGamesArchive = fetch_games()
+            except Exception as e:
+                try:
+                    lsGamesArchive = fetch_games()
+                except Exception as e:
+                    print("Failed to fetch games, sorry :(")
+            with tempfile.TemporaryDirectory() as td:
+                archive = ZipFile(lsGamesArchive)
+                archive.extractall(td)
+                setupPath = os.path.join(td, "games-master")
+                copy_directory(setupPath, gamesDir)
+        else:
+            print("So be it, jedi.")
+            shutil.copy2(os.path.join(examplesDir, "HelloWorld.py"), gamesDir)
     
     print("Okay have fun!")
 
@@ -137,9 +160,7 @@ def copy_directory(sourceDir, destDir):
 def sane_root(path):
     return(os.path.abspath(os.path.join(sys.path[0], path)))
 
-def fetch_ls_api():
-    url = "https://github.com/lightsweeper/lightsweeper-api/archive/master.zip"
-    print("Fetching source from {:s}...".format(url))
+def fetch_file(url):
     file_name = url.split('/')[-1]
     u = urlopen(url)
     f = tempfile.TemporaryFile()
@@ -147,9 +168,9 @@ def fetch_ls_api():
     file_size = int(meta.get("Content-Length"))
 
     file_size_dl = 0
-    block_sz = 8192
+    block_size = 8192
     while True:
-        buffer = u.read(block_sz)
+        buffer = u.read(block_size)
         if not buffer:
             break
 
@@ -161,6 +182,11 @@ def fetch_ls_api():
     print("")
 
     return(f)
+    
+def fetch_ls_api():
+    url = "https://github.com/lightsweeper/lightsweeper-api/archive/master.zip"
+    print("Fetching source from {:s}...".format(url))
+    return(fetch_file(url))
 
 def install_ls_api(archiveFile):
     backArgs = sys.argv[:]
@@ -176,6 +202,12 @@ def install_ls_api(archiveFile):
         exec(lsapiSetup)
     os.chdir(backDir)
     sys.argv = backArgs
+
+def fetch_games():
+    url = "https://github.com/lightsweeper/games/archive/master.zip"
+    print("Fetching games from {:s}...".format(url))
+    return(fetch_file(url))
+    
 
 def restarter():
         args = sys.argv[:]
@@ -209,5 +241,8 @@ def chooseDir(message, default):
     if fileName == "":
         fileName = default
     return(fileName)
+    
+def chooseFile(message, default):
+    return(chooseDir(message, default))
 
 main()
