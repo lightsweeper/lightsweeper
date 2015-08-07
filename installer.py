@@ -65,14 +65,14 @@ def main():
 
     gamesDir = chooseDir("Where would you like to store your games?", os.path.join(basePath, "lightsweeper-games" if local else "games"))
 
-    gamesDir = os.path.abspath(gamesDir)
+    gamesDir = os.path.abspath(os.path.expanduser(gamesDir))
 
     if local:
         utilsDir = chooseDir("Where would you like to store the LightSweeper utilities?", os.path.join(basePath, "lightsweeper-utilities"))
     else:
         utilsDir = os.path.join(basePath, "util")
 
-    utilsDir = os.path.abspath(utilsDir)
+    utilsDir = os.path.abspath(os.path.expanduser(utilsDir))
 
     examplesDir = os.path.join(os.path.join(basePath, ".lightsweeper") if local else basePath, "examples")
 
@@ -80,7 +80,10 @@ def main():
 
     entryPoint = chooseFile("Where should I put the LightSweeper entry point?", os.path.join(basePath, "LightSweeper.py"))
 
-    entryPoint = os.path.abspath(entryPoint)
+    entryPoint = os.path.abspath(os.path.expanduser(entryPoint))
+    
+    if not entryPoint.endswith(".py"):
+        entryPoint = os.path.join(entryPoint, "LightSweeper.py")
 
     check_dir(configDir, "configuration")
     check_dir(gamesDir, "games")
@@ -123,6 +126,7 @@ def main():
                     lsGamesArchive = fetch_games()
                 except Exception as e:
                     print("Failed to fetch games, sorry :(")
+                    return
             with tempfile.TemporaryDirectory() as td:
                 archive = ZipFile(lsGamesArchive)
                 archive.extractall(td)
