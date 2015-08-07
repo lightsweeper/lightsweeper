@@ -65,21 +65,30 @@ def main():
 
     gamesDir = chooseDir("Where would you like to store your games?", os.path.join(basePath, "lightsweeper-games" if local else "games"))
 
+    gamesDir = os.path.abspath(gamesDir)
+
     if local:
         utilsDir = chooseDir("Where would you like to store the LightSweeper utilities?", os.path.join(basePath, "lightsweeper-utilities"))
     else:
         utilsDir = os.path.join(basePath, "util")
 
+    utilsDir = os.path.abspath(utilsDir)
+
     examplesDir = os.path.join(os.path.join(basePath, ".lightsweeper") if local else basePath, "examples")
-    
+
     sysSoundsDir = os.path.join(lightsweeper.lsconfig.lsSysPath, "sounds")
 
     entryPoint = chooseFile("Where should I put the LightSweeper entry point?", os.path.join(basePath, "LightSweeper.py"))
+
+    entryPoint = os.path.abspath(entryPoint)
 
     check_dir(configDir, "configuration")
     check_dir(gamesDir, "games")
     check_dir(utilsDir, "utilities")
     check_dir(examplesDir, "examples")
+
+    if not os.path.exists(os.path.dirname(entryPoint)):
+        os.makedirs(os.path.dirname(entryPoint))
     
     print("Copying some data... ", end="")
 
@@ -130,7 +139,7 @@ def check_dir(path, name):
     if not os.path.exists(path):
         print("Creating {:s} directory... ".format(name), end="")
         try:
-            os.mkdir(path)
+            os.makedirs(path)
         except PermissionError:
             print("failed.")
             print("Could not create folder: {:s}".format(path))
