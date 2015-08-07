@@ -29,7 +29,7 @@ def main():
     print("Checking for LightSweeper API... ", end="")
     try:
         import lightsweeper
-    except:
+    except ImportError:
         print("not installed.")
         print("The LightSweeper API is not installed.")
         if YESno("Would you like me to fetch it from the internet and install it?"):
