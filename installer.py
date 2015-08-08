@@ -51,15 +51,17 @@ def main():
     sysPath = os.path.abspath("/LightSweeper")
     localPath = os.path.abspath(os.path.expanduser("~/.lightsweeper"))
 
-    scopes = ["System-wide", "For the local user only"]
-    installScope = lsconfig.userSelect(scopes, "\nHow would you like to install the LightSweeper environment?")
-
-    if (installScope == scopes[0]):
-        configDir = sysPath
-        local=False
-    else:
-        configDir = localPath
-        local=True
+ #   scopes = ["System-wide", "For the local user only"]
+ #   installScope = lsconfig.userSelect(scopes, "\nHow would you like to install the LightSweeper environment?")
+ #
+ #   if (installScope == scopes[0]):
+ #       configDir = sysPath
+ #       local=False
+ #   else:
+ #       configDir = localPath
+ #       local=True
+    configDir = localPath
+    local = True
 
     basePath = os.path.expanduser("~") if local else sysPath
 
@@ -188,6 +190,7 @@ def copy_directory(sourceDir, destDir):
                 shutil.copy2(source, dest)
             except PermissionError:
                 return False
+    return True
 
 def sane_root(path):
     return(os.path.abspath(os.path.join(sys.path[0], path)))
