@@ -1,18 +1,43 @@
 #!/usr/bin/python3
 
+import os
+
 from lightsweeper.lsconfig import LSFloorConfig
 from lightsweeper.lsconfig import userSelect
 from lightsweeper.lsconfig import interactiveConfig
 from lightsweeper.lsconfig import pickFile
 from lightsweeper.lsconfig import FileExistsError
 from lightsweeper.lsconfig import yesNO
+from lightsweeper import lsconfig
 
 def main():
 
     print("\nLightsweeper Configuration utility")
 
-    config = pickFile("\nEnter the name of the configuration you would like to edit or leave blank to create a new file: ")
- #   config = None
+    conf = lsconfig.readConfiguration()
+    try:
+        floorDir = conf["FLOORSDIR"]
+    except KeyError:
+        floorDir = conf["CONFIGDIR"]
+
+    floorFiles = list(filter(lambda ls: ls.endswith(".floor"), os.listdir(floorDir)))
+
+    if len(floorFiles) is 0:
+        config = None
+    else:
+        choices = floorFiles
+        NEW = "New Floor"
+        choices.insert(0, NEW)
+        selection = userSelect(choices, "\nWhich floor configuration would you like to edit?")
+        if selection == NEW:
+            config = None
+        else:
+            fileName = selection
+            absFloorConfig = os.path.abspath(os.path.join(floorDir, fileName))
+            try:
+                config = LSFloorConfig(absFloorConfig)
+            except lsconfig.CannotParseError as e:
+                print("\nCould not parse the configuration at {:s}: {:s}".format(absFloorConfig, e))
 
     if config is None:                              # Start a new configuration
         config = interactiveConfig()
