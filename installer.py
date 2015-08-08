@@ -97,11 +97,25 @@ def main():
 
     try:
         shutil.copyfile(sane_root("LightSweeper.py"), entryPoint)
-        copy_directory(sane_root("util"), utilsDir)
-        copy_directory(sane_root("examples"), examplesDir)
-        copy_directory(sane_root("sounds"), sysSoundsDir)
-    except Exception as e:
-        bail("Error copying data: {:s}".format(e))
+    except PermissionError:
+        print("failed.")
+        print("Could not write the file at {:s}".format(entryPoint))
+        bail("Please check your permissions and try again.")
+    if not copy_directory(sane_root("util"), utilsDir):
+        print("failed.")
+        print("Could not write the files in {:s}".format(utilsDir))
+        bail("Please check your permissions and try again.")
+    if not copy_directory(sane_root("examples"), examplesDir):
+        print("failed.")
+        print("Could not write the files in {:s}".format(examplesDir))
+        bail("Please check your permissions and try again.")
+    if not copy_directory(sane_root("sounds"), sysSoundsDir):
+        if not os.path.exists(os.path.join(gamesDir, "sounds")):
+            os.makedirs(os.path.join(gamesDir, "sounds"))
+        if not copy_directory(sane_root("sounds"), os.path.join(gamesDir, "sounds")):
+            print("failed.")
+            print("Could not write the files in {:s}".format(os.path.join(gamesDir, "sounds")))
+            bail("Please check your permissions and try again.")
 
     print("done.")
     
@@ -167,8 +181,13 @@ def copy_directory(sourceDir, destDir):
                 shutil.copytree(source, dest, False, None)
             except FileExistsError:
                 copy_directory(source, dest)
+            except PermissionError:
+                return False
         else:
-            shutil.copy2(source, dest)
+            try:
+                shutil.copy2(source, dest)
+            except PermissionError:
+                return False
 
 def sane_root(path):
     return(os.path.abspath(os.path.join(sys.path[0], path)))
