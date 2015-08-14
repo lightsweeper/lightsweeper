@@ -52,7 +52,7 @@ def main():
 
         games.append("Random")
 
-        game = userSelect(games, "\nWhich game do you want?")
+        game = userSelect(sorted(games), "\nWhich game do you want?")
 
         if game is "Random":
             currentGame = list(availableGames.values())
