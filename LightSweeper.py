@@ -58,8 +58,8 @@ def main():
     clearTerm()
     conf = lsconfig.LSFloorConfig()
     conf.selectConfig()
+    games = sorted([ g.__name__ for g in availableGames.values() ])
     if rfidcart is False:
-        games = sorted([ g.__name__ for g in availableGames.values() ])
 
         games.append("Random")
         runningGame = multiprocessing.Process(target=nullGame)
@@ -80,6 +80,7 @@ def main():
                 pass
 
     else:
+        errors = False
         while True:
             bannerPrinted = False
             clearTerm()
@@ -96,13 +97,22 @@ def main():
                     currentGame = availableGames[rfidcart.loadHint]
                 except KeyError:
                     print("Cannot find any game using the hint: '{:s}'".format(rfidcart.loadHint))
-                    exit()
+                    errors = True
+            else:
+                print("Unrecognized game cartridge!")
+                if lsconfig.YESno("Would you like to configure it now?"):
+                    game = userSelect(games, "\nWhich game should this cartridge activate?")
+                    rfidcart.setHint(game)
+                    currentGame = availableGames[game]
+                else:
+                    errors = True    
 
-            runningGame = multiprocessing.Process(target=runGame, args=(currentGame, conf.fileName))
-            runningGame.start()
-            while rfidcart.gameRunning:
-                pass
-            runningGame.terminate()
+            if not errors:
+                runningGame = multiprocessing.Process(target=runGame, args=(currentGame, conf.fileName))
+                runningGame.start()
+                while rfidcart.gameRunning:
+                    pass
+                runningGame.terminate()
 
 def runGame(gameObject, configurationFileName):
     gameEngine = LSGameEngine(gameObject, configurationFileName)
