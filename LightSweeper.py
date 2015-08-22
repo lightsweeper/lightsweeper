@@ -90,8 +90,11 @@ def main():
                     print("\nInsert a game cartridge.")
                     print("(Or press Ctrl-C to exit.)")
                 bannerPrinted = True
-            time.sleep(0.5) # Give the cartridge reader a moment to initialize the cart
-            print(rfidcart.gameID)
+            print("Game ID: 0x{:x}".format(rfidcart.gameID))
+            # TODO: Faster loading by indexing gameID over load hint
+            while not rfidcart.loaded:
+                pass # Give the cartridge reader a moment to initialize the cart
+            print("Load Hint: {:s}".format(repr(rfidcart.loadHint)))
             if rfidcart.loadHint is not False:
                 try:
                     currentGame = availableGames[rfidcart.loadHint]
@@ -105,7 +108,7 @@ def main():
                     rfidcart.setHint(game)
                     currentGame = availableGames[game]
                 else:
-                    errors = True    
+                    errors = True
 
             if not errors:
                 runningGame = multiprocessing.Process(target=runGame, args=(currentGame, conf.fileName))
@@ -113,9 +116,11 @@ def main():
                 while rfidcart.gameRunning:
                     pass
                 runningGame.terminate()
+            else:
+                bannerPrinted = False
 
 def runGame(gameObject, configurationFileName):
-    gameEngine = LSGameEngine(gameObject, configurationFileName)
+    gameEngine = LSGameEngine(gameObject, configurationFileName, cartridgeReader = rfidcart)
     try:
         gameEngine.beginLoop(plays=NUMPLAYS)
     except EOFError:
