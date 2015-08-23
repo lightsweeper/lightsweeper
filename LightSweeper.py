@@ -6,6 +6,8 @@ import os
 import random
 import time
 
+from multiprocessing import reduction
+
 from lightsweeper.lsgame import LSGameEngine
 from lightsweeper.lsconfig import userSelect
 from lightsweeper import lscartridge
@@ -83,12 +85,13 @@ def main():
                 pass
 
     else:
-        errors = False
         while True:
+            errors = False
             bannerPrinted = False
             clearTerm()
             while not rfidcart.gameRunning:
                 if not bannerPrinted:
+                    print("\n")
                     print(" L I G H T S W E E P E R ")
                     print("\nInsert a game cartridge.")
                     print("(Or press Ctrl-C to exit.)")
@@ -103,7 +106,9 @@ def main():
                     currentGame = availableGames[rfidcart.loadHint]
                 except KeyError:
                     print("Cannot find any game using the hint: '{:s}'".format(rfidcart.loadHint))
-                    errors = True
+                    print("Please eject cartridge.")
+                    while rfidcart.gameRunning:
+                        errors = True
             else:
                 print("Unrecognized game cartridge!")
                 if lsconfig.YESno("Would you like to configure it now?"):
@@ -111,22 +116,32 @@ def main():
                     rfidcart.setHint(game)
                     currentGame = availableGames[game]
                 else:
-                    errors = True
+                    print("Please eject cartridge.")
+                    while rfidcart.gameRunning:
+                        errors = True
 
             if not errors:
-                runningGame = multiprocessing.Process(target=runGame, args=(currentGame, conf.fileName))
+                runningGame = multiprocessing.Process(target=runGame, args=(currentGame, conf.fileName, rfidcart))
                 runningGame.start()
                 while rfidcart.gameRunning:
                     pass
                 runningGame.terminate()
+                # Regain control of the serial handle
+                rfidcart.serial.close()
+                rfidcart.serial.open()
             else:
                 bannerPrinted = False
+                rfidcart.resetState()
+                time.sleep(.5)
 
-def runGame(gameObject, configurationFileName):
-    gameEngine = LSGameEngine(gameObject, configurationFileName, cartridgeReader = rfidcart)
+def runGame(gameObject, configurationFileName, cartReader=False):
+    gameEngine = LSGameEngine(gameObject, configurationFileName, cartridgeReader = cartReader)
     try:
         gameEngine.beginLoop(plays=NUMPLAYS)
     except EOFError:
+        return
+    except Exception as e:
+        print(e)
         return
 
 def nullGame():
