@@ -61,7 +61,7 @@ def main():
     games = sorted([ g.__name__ for g in availableGames.values() ])
     if rfidcart is False:
 
-        games.append("Random")
+        games = ["Random"] + games
         games.append("Exit")
         runningGame = multiprocessing.Process(target=nullGame)
         while True:
