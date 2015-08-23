@@ -62,6 +62,7 @@ def main():
     if rfidcart is False:
 
         games.append("Random")
+        games.append("Exit")
         runningGame = multiprocessing.Process(target=nullGame)
         while True:
             clearTerm()
@@ -69,8 +70,10 @@ def main():
 
             game = userSelect(games, "\nWhich game do you want?")
 
-            if game is "Random":
+            if game == "Random":
                 currentGame = list(availableGames.values())
+            elif game == "Exit":
+                exit()
             else:
                 currentGame = availableGames[game]
 
@@ -128,14 +131,6 @@ def runGame(gameObject, configurationFileName):
 
 def nullGame():
     pass
-
-#class runGame(multiprocessing.Process):
-#    def __init__(self, gameObject, configurationFileName):
-#        super().__init__(name='TEST')
-#        self.gameEngine = LSGameEngine(gameObject, configurationFileName)
-
-#    def run(self):
-#        self.gameEngine.beginLoop(plays=NUMPLAYS)
 
 
 if __name__ == '__main__':
