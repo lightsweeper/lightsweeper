@@ -6,7 +6,8 @@ import os
 import random
 import time
 
-from multiprocessing import reduction
+
+from copy import copy
 
 from lightsweeper.lsgame import LSGameEngine
 from lightsweeper.lsconfig import userSelect
@@ -103,7 +104,10 @@ def main():
             print("Load Hint: {:s}".format(repr(rfidcart.loadHint)))
             if rfidcart.loadHint is not False:
                 try:
-                    currentGame = availableGames[rfidcart.loadHint]
+                    truncatedGames = dict() # Cartridges can only store 15 character game hints
+                    for key, val in availableGames.items():
+                        truncatedGames[key[:15]] = val
+                    currentGame = truncatedGames[rfidcart.loadHint]
                 except KeyError:
                     print("Cannot find any game using the hint: '{:s}'".format(rfidcart.loadHint))
                     print("Please eject cartridge.")
