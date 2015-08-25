@@ -59,7 +59,6 @@ if __name__ == '__main__':
 
 
 
-# Select com port
 
     lsls = LSOpen()
 
@@ -67,6 +66,7 @@ if __name__ == '__main__':
         print("Please attach some physical Lightsweeper tiles!")
         exit(1)
 
+# Select com port
     if args['-p']:
         if args['-p'] not in lsls.availPorts():
             print(args['-p'] + " does not exist!")
@@ -80,17 +80,18 @@ if __name__ == '__main__':
             pass
         else:
             com = lsls.selectPort()
-        
+  
+      
 # Select address
     if args['-a']:
         address = int(args['-a'])
-        if address is 0:    # 0 is the global address
+        if address == 0:    # 0 is the global address
             comList = list(lsls.validPorts())
         else:
             comList = list()
-        for key, val in lsls.lsMatrix.items():
-            if address in val:
-                comList.append(key)
+            for key, val in lsls.lsMatrix.items():
+                if address in val:
+                    comList.append(key)
         if len(comList) is 0:
             print("There is no tile with address " + repr(address) + ".")
             exit()
