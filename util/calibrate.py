@@ -5,15 +5,11 @@ import random
 from lightsweeper.lsapi import *
 
 class Calibrate(LSGame):
-        
-    def heartbeat(self, activeTiles):
-        for move in activeTiles:
-            s = self.sensors[move.row][move.col]
-            self.printPcnt(move.row, move.col, s)
+
         
     def printPcnt (self, r, c, pcnt):
         o = int(pcnt/10)
-        if o  is 0:
+        if o  == 0:
             color = Colors.GREEN
             print("({:d},{:d}): {:d}%    ".format(r, c, pcnt))
         elif o < 4:
@@ -39,7 +35,7 @@ class Calibrate(LSGame):
 
 
 def main():
-    gameEngine = LSGameEngine(Calibrate)
+    gameEngine = LSGameEngine(Calibrate, init=False)
     gameEngine.beginLoop()
 
 if __name__ == "__main__":
