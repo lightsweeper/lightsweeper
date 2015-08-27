@@ -1,10 +1,20 @@
 #!/usr/bin/python3
 
 import random
+from copy import copy
 
 from lightsweeper.lsapi import *
 
 class Calibrate(LSGame):
+
+    def init(self):
+        pass
+
+    def heartbeat(self, activeTiles):
+
+        for tile in activeTiles:
+            row, col = tile
+            self.printPcnt(row, col, self.sensors[row][col])
 
         
     def printPcnt (self, r, c, pcnt):
