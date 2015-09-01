@@ -107,9 +107,9 @@ def fullSuite(myTile):
         myTile.flip()
         testSleep(1)
 
-        print("\nTesting unflip")
-        myTile.unflip()
-        testSleep(1)
+#        print("\nTesting unflip")      # No more unflip
+#        myTile.unflip()
+#        testSleep(1)
 
         print("\nTesting reset")
         myTile.reset()
