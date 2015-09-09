@@ -28,6 +28,9 @@ try:
 except lscartridge.NoCartReader:
     print("No cartridge reader found.")
     rfidcart = False
+except lscartridge.ReaderNotSupported as e:
+    print("Cartridge reader is not supported: {:s}".format(str(e)))
+    rfidcart = False
 
 if rfidcart != False:
     useCart = lsconfig.YESno("Would you like to use the rfid cartridge reader?")
